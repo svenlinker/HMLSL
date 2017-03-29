@@ -105,9 +105,9 @@ abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Ri
 where "ts, v \<Turnstile> \<phi> == \<phi>(ts)(v)"
 
 
-abbreviation spatially_valid :: "traffic \<Rightarrow> (\<sigma> \<Rightarrow> bool)" ("_ \<Turnstile>s _" 10)
+(*abbreviation spatially_valid :: "traffic \<Rightarrow> (\<sigma> \<Rightarrow> bool)" ("_ \<Turnstile>s _" 10)
 where "ts \<Turnstile>s \<phi> \<equiv> \<forall>v. \<phi>(ts)(v)"
-
+*)
 abbreviation sat::"\<sigma> \<Rightarrow> bool" ("sat _" 10)
 where "sat \<phi> \<equiv> \<exists>ts. \<exists>v. (\<phi>(ts)(v))"
 
@@ -152,19 +152,12 @@ lemma vchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>) \<^bold>\<
 by blast
 
 lemma at_exists :"\<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. @c \<phi>)"
-proof
-  fix ts
-  show "ts \<Turnstile>s \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. @c \<phi>)"
-  proof
-    fix v
-    show "ts, v\<Turnstile>\<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. @c \<phi>)"
-    proof
-      assume assm:"ts,v \<Turnstile>\<phi>"
-      obtain d where d_def:"d=own v" by blast
-      then have "ts,v \<Turnstile> @d \<phi>" using assm switch_refl switch_unique by blast
-      thus "ts,v \<Turnstile> (\<^bold>\<exists> c. @c \<phi>)" ..
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>\<phi>"
+  obtain d where d_def:"d=own v" by blast
+  then have "ts,v \<Turnstile> @d \<phi>" using assm switch_refl switch_unique by blast
+  thus "ts,v \<Turnstile> (\<^bold>\<exists> c. @c \<phi>)" ..
 qed
 
 
@@ -175,22 +168,15 @@ lemma at_disj_dist:"\<Turnstile>(@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<lef
 using switch_unique by blast
 
 lemma at_hchop_dist1:"\<Turnstile>(@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<frown> (@c \<psi>))"
-proof
-  fix ts
-  show "ts \<Turnstile>s(@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<frown> (@c \<psi>))"
-  proof
-    fix v
-    show "ts, v \<Turnstile>(@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<frown> (@c \<psi>))"
-    proof
-      assume assm:"ts, v \<Turnstile>(@c (\<phi> \<^bold>\<frown> \<psi>))"
-      obtain v' where v':"v=c>v'" using switch_always_exists by blast
-      with assm obtain v1' and v2' where chop:"(v'=v1'\<parallel>v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
-        by blast
-      from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1\<parallel>v2)" using switch_hchop2 by blast
-      hence v1:"ts,v1 \<Turnstile> (@c \<phi>)" and v2:"ts,v2 \<Turnstile> (@c \<psi>)" using switch_unique chop by blast+      
-      from v1 and v2 and origin show "ts,v \<Turnstile> (@c \<phi>) \<^bold>\<frown> (@c \<psi>)" by blast
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts, v \<Turnstile>(@c (\<phi> \<^bold>\<frown> \<psi>))"
+  obtain v' where v':"v=c>v'" using switch_always_exists by blast
+  with assm obtain v1' and v2' where chop:"(v'=v1'\<parallel>v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
+    by blast
+  from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1\<parallel>v2)" using switch_hchop2 by blast
+  hence v1:"ts,v1 \<Turnstile> (@c \<phi>)" and v2:"ts,v2 \<Turnstile> (@c \<psi>)" using switch_unique chop by blast+      
+  from v1 and v2 and origin show "ts,v \<Turnstile> (@c \<phi>) \<^bold>\<frown> (@c \<psi>)" by blast
 qed
 
 lemma at_hchop_dist2:"\<Turnstile>( (@c \<phi>) \<^bold>\<frown> (@c \<psi>)) \<^bold>\<rightarrow> (@c (\<phi> \<^bold>\<frown> \<psi>))  "
@@ -200,22 +186,15 @@ lemma at_hchop_dist:"\<Turnstile>( (@c \<phi>) \<^bold>\<frown>  (@c \<psi>)) \<
 using at_hchop_dist1 at_hchop_dist2 by blast
 
 lemma at_vchop_dist1:"\<Turnstile>(@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<smile> (@c \<psi>))"
-proof
-  fix ts
-  show "ts \<Turnstile>s(@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<smile> (@c \<psi>))"
-  proof
-    fix v
-    show "ts, v \<Turnstile>(@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<smile> (@c \<psi>))"
-    proof
-      assume assm:"ts, v \<Turnstile>(@c (\<phi> \<^bold>\<smile> \<psi>))"
-      obtain v' where v':"v=c>v'" using switch_always_exists by blast
-      with assm obtain v1' and v2' where chop:"(v'=v1'--v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
-        by blast
-      from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1--v2)" using switch_vchop2 by blast
-      hence v1:"ts,v1 \<Turnstile> (@c \<phi>)" and v2:"ts,v2 \<Turnstile> (@c \<psi>)" using switch_unique chop by blast+      
-      from v1 and v2 and origin show "ts,v \<Turnstile> (@c \<phi>) \<^bold>\<smile> (@c \<psi>)" by blast
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts, v \<Turnstile>(@c (\<phi> \<^bold>\<smile> \<psi>))"
+  obtain v' where v':"v=c>v'" using switch_always_exists by blast
+  with assm obtain v1' and v2' where chop:"(v'=v1'--v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
+    by blast
+  from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1--v2)" using switch_vchop2 by blast
+  hence v1:"ts,v1 \<Turnstile> (@c \<phi>)" and v2:"ts,v2 \<Turnstile> (@c \<psi>)" using switch_unique chop by blast+      
+  from v1 and v2 and origin show "ts,v \<Turnstile> (@c \<phi>) \<^bold>\<smile> (@c \<psi>)" by blast
 qed
 
 lemma at_vchop_dist2:"\<Turnstile>( (@c \<phi>) \<^bold>\<smile> (@c \<psi>)) \<^bold>\<rightarrow> (@c (\<phi> \<^bold>\<smile> \<psi>))  "
@@ -247,41 +226,28 @@ using at_neg_neg1 at_neg_neg2 by metis
 
 lemma at_res1:"\<Turnstile>re(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d re(c))"
 by (metis (no_types, lifting)  ext_eq_len_eq switch_def switch_restrict_stable)
+
 lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)"
-proof
-  fix ts
-  show " ts \<Turnstile>s(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)"
-  proof
-    fix v
-    show "ts,v \<Turnstile>(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)"
-    proof
-      assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. @d re(c))"
-      obtain v' where v'_def:"(v=(own v)> v') " using switch_refl by auto
-      with assm have v':"ts,v' \<Turnstile> re(c)" by blast
-      have "v = v'" using v'_def switch_refl switch_unique by blast
-      with v' show "ts,v \<Turnstile>re(c)" by blast
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. @d re(c))"
+  obtain v' where v'_def:"(v=(own v)> v') " using switch_refl by auto
+  with assm have v':"ts,v' \<Turnstile> re(c)" by blast
+  have "v = v'" using v'_def switch_refl switch_unique by blast
+  with v' show "ts,v \<Turnstile>re(c)" by blast
 qed
 
 lemma at_res:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d re(c))"
 using at_res1 at_res2 by blast
 
 lemma at_res_inst:"\<Turnstile> (@d re(c)) \<^bold>\<rightarrow>re(c)"
-proof
-  fix ts
-  show " ts \<Turnstile>s( @d re(c)) \<^bold>\<rightarrow> re(c)"
-  proof
-    fix v
-    show "ts,v \<Turnstile>( @d re(c)) \<^bold>\<rightarrow> re(c)"
-    proof
-      assume assm:"ts,v \<Turnstile>( @d re(c))"
-      obtain v' where v'_def:"(v=(d)> v') " using switch_always_exists by blast
-      with assm have v':"ts,v' \<Turnstile> re(c)" by blast
-      with v' show "ts,v \<Turnstile>re(c)" using switch_restrict_stable switch_length_stable v'_def switch_def 
-        by (metis (no_types, lifting) ext_eq_len_eq)
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>( @d re(c))"
+  obtain v' where v'_def:"(v=(d)> v') " using switch_always_exists by blast
+  with assm have v':"ts,v' \<Turnstile> re(c)" by blast
+  with v' show "ts,v \<Turnstile>re(c)" using switch_restrict_stable switch_length_stable v'_def switch_def 
+    by (metis (no_types, lifting) ext_eq_len_eq)
 qed
 
 
@@ -289,40 +255,26 @@ lemma at_clm1:"\<Turnstile>cl(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d c
 by (metis (no_types, lifting)  ext_eq_len_eq switch_def switch_restrict_stable)
 
 lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. @d cl(c)) \<^bold>\<rightarrow> cl(c)"
-proof
-  fix ts
-  show " ts \<Turnstile>s(\<^bold>\<forall>d. @d cl(c)) \<^bold>\<rightarrow> cl(c)"
-  proof
-    fix v
-    show "ts,v \<Turnstile>(\<^bold>\<forall>d. @d cl(c)) \<^bold>\<rightarrow> cl(c)"
-    proof
-      assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. @d cl(c))"
-      obtain v' where v'_def:"(v=(own v)> v') " using switch_refl by auto
-      with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
-      have "v = v'" using v'_def switch_refl switch_unique by blast
-      with v' show "ts,v \<Turnstile>cl(c)" by blast
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. @d cl(c))"
+  obtain v' where v'_def:"(v=(own v)> v') " using switch_refl by auto
+  with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
+  have "v = v'" using v'_def switch_refl switch_unique by blast
+  with v' show "ts,v \<Turnstile>cl(c)" by blast
 qed
 
 lemma at_clm:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d cl(c))"
 using at_clm1 at_clm2 by blast
 
 lemma at_clm_inst:"\<Turnstile> (@d cl(c)) \<^bold>\<rightarrow>cl(c)"
-proof
-  fix ts
-  show " ts \<Turnstile>s( @d cl(c)) \<^bold>\<rightarrow> cl(c)"
-  proof
-    fix v
-    show "ts,v \<Turnstile>( @d cl(c)) \<^bold>\<rightarrow> cl(c)"
-    proof
-      assume assm:"ts,v \<Turnstile>( @d cl(c))"
-      obtain v' where v'_def:"(v=(d)> v') " using switch_always_exists by blast
-      with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
-      with v' show "ts,v \<Turnstile>cl(c)" using switch_restrict_stable switch_length_stable v'_def switch_def 
-        by (metis (no_types, lifting) ext_eq_len_eq)
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>( @d cl(c))"
+  obtain v' where v'_def:"(v=(d)> v') " using switch_always_exists by blast
+  with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
+  with v' show "ts,v \<Turnstile>cl(c)" using switch_restrict_stable switch_length_stable v'_def switch_def 
+    by (metis (no_types, lifting) ext_eq_len_eq)
 qed
 
 
@@ -419,100 +371,88 @@ lemma res_at_most_two2:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>(re(c) \<^bo
 using res_at_most_two by blast
 
 lemma res_at_most_somewhere:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> "
-proof -
-  {  fix ts v
-    have "ts,v \<Turnstile> \<^bold>\<not> (\<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> )"
-    proof
-      assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> )"
-      obtain vu and v1 and vm and vd 
-        where chops:"(v=vu--v1) \<and> (v1 = vm--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>re(c)\<^bold>\<rangle>) \<and> (ts,vm \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> ) \<and>( ts,vd \<Turnstile> \<^bold>\<langle> re(c)\<^bold>\<rangle>)"
-        using assm by blast
-      from chops have res_vu:"|restrict vu (res ts) c| \<ge> 1" 
-        by (metis restriction_card_somewhere_mon)
-      from chops have res_vm:"|restrict vm (res ts) c| \<ge> 1" 
-        by (metis restriction_card_somewhere_mon)
-      from chops have res_vd:"|restrict vd (res ts) c| \<ge> 1" 
-        by (metis restriction_card_somewhere_mon)
-      from chops have "|restrict v1 (res ts) c | = |restrict vm (res ts) c| + |restrict vd (res ts) c|"
-        using restriction_add_res by blast
-      with res_vm and res_vd have v1_res_geq_2:"|restrict v1 (res ts) c| \<ge> 2"
-        using restriction_add_res  add_mono_thms_linordered_semiring(1) one_add_one by linarith
-      from chops have "|restrict v (res ts) c | = |restrict vu (res ts) c| + |restrict v1 (res ts) c|"
-        using restriction_add_res by blast
-      with res_vu and v1_res_geq_2 have "|restrict v (res ts) c | \<ge> 3" 
-        using add.commute add_eq_self_zero dual_order.antisym le_add1 less_one not_le restriction_res_leq_two by linarith
-      with restriction_res_leq_two show False 
-        by (metis not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
-    qed
-  }
-  then show ?thesis by blast
+proof (rule allI|rule notI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> )"
+  obtain vu and v1 and vm and vd 
+    where chops:"(v=vu--v1) \<and> (v1 = vm--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>re(c)\<^bold>\<rangle>) \<and> (ts,vm \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> ) \<and>( ts,vd \<Turnstile> \<^bold>\<langle> re(c)\<^bold>\<rangle>)"
+    using assm by blast
+  from chops have res_vu:"|restrict vu (res ts) c| \<ge> 1" 
+    by (metis restriction_card_somewhere_mon)
+  from chops have res_vm:"|restrict vm (res ts) c| \<ge> 1" 
+    by (metis restriction_card_somewhere_mon)
+  from chops have res_vd:"|restrict vd (res ts) c| \<ge> 1" 
+    by (metis restriction_card_somewhere_mon)
+  from chops have "|restrict v1 (res ts) c | = |restrict vm (res ts) c| + |restrict vd (res ts) c|"
+    using restriction_add_res by blast
+  with res_vm and res_vd have v1_res_geq_2:"|restrict v1 (res ts) c| \<ge> 2"
+    using restriction_add_res  add_mono_thms_linordered_semiring(1) one_add_one by linarith
+  from chops have "|restrict v (res ts) c | = |restrict vu (res ts) c| + |restrict v1 (res ts) c|"
+    using restriction_add_res by blast
+  with res_vu and v1_res_geq_2 have "|restrict v (res ts) c | \<ge> 3" 
+    using add.commute add_eq_self_zero dual_order.antisym le_add1 less_one not_le restriction_res_leq_two by linarith
+  with restriction_res_leq_two show False 
+    by (metis not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
 qed
 
 lemma res_adj:"\<Turnstile>\<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) "
-proof
-  fix ts 
-  show "ts \<Turnstile>s \<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) "
-  proof
-    fix v
-    show "ts,v \<Turnstile> \<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) "
-    proof (rule ccontr)
-      assume "\<not>(ts,v \<Turnstile> \<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c))) "
-      hence contra:"ts,v \<Turnstile> (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " by blast
-      obtain v1 and v' and v2 and vn  
-      where chop:"(v=v1--v') \<and> (v'=vn--v2) \<and> (ts,v1\<Turnstile>re(c)) \<and> (ts,vn \<Turnstile> \<^bold>\<omega> > 0) \<and> (ts,v2\<Turnstile>re(c))"
-      using contra by blast
-    hence res1:"|restrict v1 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
-    from chop have res2: "|restrict v2 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
-    from res1 and res2 have resv:"|restrict v (res ts) c| = 2" 
-      by (smt add_mono_thms_linordered_semiring(1) chop dual_order.antisym one_add_one restriction_add_res restriction_card_mon2 restriction_res_leq_two)
-    hence res_two_lanes:"|res ts c| =2" using atMostTwoRes restrict_res 
-      by (metis (no_types, lifting) nat_int.card_subset_le dual_order.antisym)
-    from this obtain p where p_def:"Rep_nat_int (res ts c) = {p, p+1}" using consecutiveRes by blast
-    have "Abs_nat_int {p,p+1} \<sqsubseteq> lan v"  
-      by (metis Rep_nat_int_inverse atMostTwoRes card_seteq finite_atLeastAtMost insert_not_empty nat_int.card'.rep_eq nat_int.card_seq less_eq_nat_int.rep_eq p_def resv restrict_res restrict_view)
-    have vn_not_e:"lan vn \<noteq> \<emptyset>" using chop 
-      by (metis nat_int.card_empty_zero less_irrefl width_ge)
-    hence consec_vn_v2:"nat_int.consec (lan vn) (lan v2)" 
-      using nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def by auto
-    hence v'_not_e:"lan v' \<noteq> \<emptyset>" 
-      by (smt nat_int.card_empty_zero chop less_irrefl vertical_chop_assoc2 width_ge)
-    hence consec_v1_v':"nat_int.consec (lan v1) (lan v')" 
-      by (metis (no_types, lifting) nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def)
-    hence consec_v1_vn:"nat_int.consec (lan v1) (lan vn)" 
-      by (metis (no_types, lifting) chop consec_vn_v2 nat_int.consec_def nat_int.chop_min vchop_def)
-    hence lesser_con:"\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan v2) \<longrightarrow> n < m)" using consec_v1_vn consec_vn_v2 nat_int.consec_trans_lesser 
-      by blast
-    have p_in_v1:"p \<^bold>\<in> lan v1"  
-    proof (rule ccontr)
-      assume "\<not> p \<^bold>\<in> lan v1"
-      then have "p \<^bold>\<notin> lan v1" by (simp )
-      hence "p \<^bold>\<notin> restrict v1 (res ts) c" by (simp add: chop)
-      then have "p+1 \<^bold>\<in> restrict v1 (res ts) c" using p_def res_two_lanes 
-        by (metis (no_types, lifting) chop consec_v1_v' equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
-      hence suc_p:"p+1 \<^bold>\<in> lan v1"  by (simp add: chop)
-      hence "p+1 \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq by blast
-      then have "p \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes 
-        by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
-      hence p:"p \<^bold>\<in> lan v2" using p_def restrict_def 
-        by (smt One_nat_def Rep_nat_int add_0_left add_eq_self_zero arith_special(3) atMostTwoRes card.insert card_seteq chop doubleton_eq_iff insert_subset nat_int.card'_def nat_int.finite nat_int.el_def nat_int.singleton less_eq_nat_int.rep_eq plus_nat.simps(2) resv restrict_res)
-      show False using lesser_con suc_p p by blast
-    qed
-    hence "p \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq by blast
-    then have "p+1 \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes
-        by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
-    hence suc_p_in_v2:"p+1 \<^bold>\<in> lan v2" using p_def restrict_def using chop by auto
-    have lesser_con1: "\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan vn) \<longrightarrow> n < m)" using consec_v1_vn nat_int.consec_lesser by blast
-    have lesser_con2: "\<forall>n m. (n \<^bold>\<in> (lan vn) \<and> m \<^bold>\<in> (lan v2) \<longrightarrow> n < m)" using consec_vn_v2 nat_int.consec_lesser by blast
-    from lesser_con1 and  p_in_v1 have ge_p:"\<forall>m. (m \<^bold>\<in> lan vn \<longrightarrow> p < m)" by blast
-    from lesser_con2 and  suc_p_in_v2 have less_suc_p:"\<forall>m. (m \<^bold>\<in> lan vn \<longrightarrow>  m< p+1)" by blast
-    have "\<forall>m. (m \<^bold>\<in> lan vn \<longrightarrow>  (m< p+1 \<and> m > p) )" using ge_p less_suc_p  by auto
-    hence "\<not>(\<exists>m. (m \<^bold>\<in> lan vn))" 
-      by (metis One_nat_def Suc_leI add.right_neutral add_Suc_right linorder_not_less)
-    hence "lan vn = \<emptyset>" using nat_int.non_empty_elem_in by auto
-    with vn_not_e show False by blast 
+proof (rule allI|rule notI)+
+  fix ts v
+  assume "ts,v \<Turnstile> (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " 
+  then obtain v1 and v' and v2 and vn  
+    where chop:"(v=v1--v') \<and> (v'=vn--v2) \<and> (ts,v1\<Turnstile>re(c)) \<and> (ts,vn \<Turnstile> \<^bold>\<omega> > 0) \<and> (ts,v2\<Turnstile>re(c))"
+     by blast
+  hence res1:"|restrict v1 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
+  from chop have res2: "|restrict v2 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
+  from res1 and res2 have resv:"|restrict v (res ts) c| = 2" 
+    by (smt add_mono_thms_linordered_semiring(1) chop dual_order.antisym one_add_one restriction_add_res restriction_card_mon2 restriction_res_leq_two)
+  hence res_two_lanes:"|res ts c| =2" using atMostTwoRes restrict_res 
+    by (metis (no_types, lifting) nat_int.card_subset_le dual_order.antisym)
+  from this obtain p where p_def:"Rep_nat_int (res ts c) = {p, p+1}" using consecutiveRes by blast
+  have "Abs_nat_int {p,p+1} \<sqsubseteq> lan v"  
+    by (metis Rep_nat_int_inverse atMostTwoRes card_seteq finite_atLeastAtMost insert_not_empty nat_int.card'.rep_eq nat_int.card_seq less_eq_nat_int.rep_eq p_def resv restrict_res restrict_view)
+  have vn_not_e:"lan vn \<noteq> \<emptyset>" using chop 
+    by (metis nat_int.card_empty_zero less_irrefl width_ge)
+  hence consec_vn_v2:"nat_int.consec (lan vn) (lan v2)" 
+    using nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def by auto
+  hence v'_not_e:"lan v' \<noteq> \<emptyset>" 
+    by (smt nat_int.card_empty_zero chop less_irrefl vertical_chop_assoc2 width_ge)
+  hence consec_v1_v':"nat_int.consec (lan v1) (lan v')" 
+    by (metis (no_types, lifting) nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def)
+  hence consec_v1_vn:"nat_int.consec (lan v1) (lan vn)" 
+    by (metis (no_types, lifting) chop consec_vn_v2 nat_int.consec_def nat_int.chop_min vchop_def)
+  hence lesser_con:"\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan v2) \<longrightarrow> n < m)" using consec_v1_vn consec_vn_v2 nat_int.consec_trans_lesser 
+    by blast
+  have p_in_v1:"p \<^bold>\<in> lan v1"  
+  proof (rule ccontr)
+    assume "\<not> p \<^bold>\<in> lan v1"
+    then have "p \<^bold>\<notin> lan v1" by (simp )
+    hence "p \<^bold>\<notin> restrict v1 (res ts) c" by (simp add: chop)
+    then have "p+1 \<^bold>\<in> restrict v1 (res ts) c" using p_def res_two_lanes 
+      by (metis (no_types, lifting) chop consec_v1_v' equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
+    hence suc_p:"p+1 \<^bold>\<in> lan v1"  by (simp add: chop)
+    hence "p+1 \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq by blast
+    then have "p \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes 
+      by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
+    hence p:"p \<^bold>\<in> lan v2" using p_def restrict_def 
+      by (smt One_nat_def Rep_nat_int add_0_left add_eq_self_zero arith_special(3) atMostTwoRes card.insert card_seteq chop doubleton_eq_iff insert_subset nat_int.card'_def nat_int.finite nat_int.el_def nat_int.singleton less_eq_nat_int.rep_eq plus_nat.simps(2) resv restrict_res)
+    show False using lesser_con suc_p p by blast
   qed
+  hence "p \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq by blast
+  then have "p+1 \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes
+    by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
+  hence suc_p_in_v2:"p+1 \<^bold>\<in> lan v2" using p_def restrict_def using chop by auto
+  have lesser_con1: "\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan vn) \<longrightarrow> n < m)" using consec_v1_vn nat_int.consec_lesser by blast
+  have lesser_con2: "\<forall>n m. (n \<^bold>\<in> (lan vn) \<and> m \<^bold>\<in> (lan v2) \<longrightarrow> n < m)" using consec_vn_v2 nat_int.consec_lesser by blast
+  from lesser_con1 and  p_in_v1 have ge_p:"\<forall>m. (m \<^bold>\<in> lan vn \<longrightarrow> p < m)" by blast
+  from lesser_con2 and  suc_p_in_v2 have less_suc_p:"\<forall>m. (m \<^bold>\<in> lan vn \<longrightarrow>  m< p+1)" by blast
+  have "\<forall>m. (m \<^bold>\<in> lan vn \<longrightarrow>  (m< p+1 \<and> m > p) )" using ge_p less_suc_p  by auto
+  hence "\<not>(\<exists>m. (m \<^bold>\<in> lan vn))" 
+    by (metis One_nat_def Suc_leI add.right_neutral add_Suc_right linorder_not_less)
+  hence "lan vn = \<emptyset>" using nat_int.non_empty_elem_in by auto
+  with vn_not_e show False by blast 
 qed
-qed
+
 
 lemma test2:"\<Turnstile> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>\<ge> 0))"
 by simp
@@ -538,30 +478,23 @@ lemma clm_sing_somewhere3:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold
 by (meson clm_sing_not_interrupted vertical_chop_assoc1)
 
 lemma clm_at_most_somewhere:"\<Turnstile>\<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
-proof
-  fix ts
-  show "ts \<Turnstile>s \<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
-  proof
-    fix v
-    show "ts,v \<Turnstile> \<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
-    proof
-      assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
-      obtain vu and vd 
-        where chops:"(v=vu--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>cl(c)\<^bold>\<rangle>) \<and> ( ts,vd \<Turnstile> \<^bold>\<langle> cl(c)\<^bold>\<rangle>)"
-        using assm by blast
-      from chops have clm_vu:"|restrict vu (clm ts) c| \<ge> 1" 
-        by (metis restriction_card_somewhere_mon)
-      from chops have clm_vd:"|restrict vd (clm ts) c| \<ge> 1" 
-        by (metis restriction_card_somewhere_mon)
-      from chops have clm_add:"|restrict v (clm ts) c | = |restrict vu (clm ts) c| + |restrict vd (clm ts) c|"
-        using restriction_add_clm by blast
-      with clm_vu and clm_vd have "|restrict v (clm ts) c | \<ge> 2" 
-        using add.commute add_eq_self_zero dual_order.antisym le_add1 less_one not_le restriction_res_leq_two by linarith
-      with restriction_clm_leq_one show False 
-        by (metis One_nat_def not_less_eq_eq numeral_2_eq_2)
-    qed
-  qed
-qed  
+proof (rule allI| rule notI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
+  obtain vu and vd 
+    where chops:"(v=vu--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>cl(c)\<^bold>\<rangle>) \<and> ( ts,vd \<Turnstile> \<^bold>\<langle> cl(c)\<^bold>\<rangle>)"
+    using assm by blast
+  from chops have clm_vu:"|restrict vu (clm ts) c| \<ge> 1" 
+    by (metis restriction_card_somewhere_mon)
+  from chops have clm_vd:"|restrict vd (clm ts) c| \<ge> 1" 
+    by (metis restriction_card_somewhere_mon)
+  from chops have clm_add:"|restrict v (clm ts) c | = |restrict vu (clm ts) c| + |restrict vd (clm ts) c|"
+    using restriction_add_clm by blast
+  with clm_vu and clm_vd have "|restrict v (clm ts) c | \<ge> 2" 
+    using add.commute add_eq_self_zero dual_order.antisym le_add1 less_one not_le restriction_res_leq_two by linarith
+  with restriction_clm_leq_one show False 
+    by (metis One_nat_def not_less_eq_eq numeral_2_eq_2)
+qed
 
 
 
@@ -585,7 +518,7 @@ lemma no_clm_before_res:"\<Turnstile>\<^bold>\<not>(cl(c) \<^bold>\<frown> re(c)
 by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le disjoint hchop_def nat_int.inter_assoc nat_int.inter_subseteq1 not_one_le_zero restrict_def)
 
 lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
-  proof (rule ccontr)
+proof (rule ccontr)
   assume "\<not> (\<Turnstile> \<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c)))"
   then obtain ts and v where assm:"ts,v \<Turnstile> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))" by blast
   then have clm_subs:"restrict v (clm ts) c \<sqsubseteq> restrict v (res ts) c" using restriction_stable 
@@ -599,26 +532,25 @@ lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^
 qed
 
 lemma clm_decompose: "\<Turnstile>(cl(c)  \<^bold>\<rightarrow> cl(c) \<^bold>\<frown> cl(c))" 
-proof -
-  { fix ts v
-    assume assm: "ts,v \<Turnstile> cl(c)"
-    have restr:"restrict v (clm ts) c = lan v" using assm by simp
-    have len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" using assm by simp
-    have len:"len v ts c = ext v" using assm by simp
-    obtain v1 v2 where chop:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0 " 
-      using assm view.horizontal_chop_non_empty by blast    
-    from chop and len have len_v1:"len v1 ts c = ext v1" 
-      using perfect_sensors.len_view_hchop_left by blast
-    from chop and len have len_v2:"len v2 ts c = ext v2" 
-      using perfect_sensors.len_view_hchop_right by blast
-    from chop and restr have restr_v1:"restrict v1 (clm ts) c = lan v1" 
-      by (metis (no_types, lifting) hchop_def restriction.restriction_stable1)     
-    from chop and restr have restr_v2:"restrict v2 (clm ts) c = lan v2" 
-      by (metis (no_types, lifting) hchop_def restriction.restriction_stable2) 
-    from chop and len_v1 len_v2 restr_v1 restr_v2 have "ts,v \<Turnstile>cl(c) \<^bold>\<frown> cl(c)"
-      using hchop_def 
-      using assm by force
-  } then show ?thesis by blast
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm: "ts,v \<Turnstile> cl(c)"
+  have restr:"restrict v (clm ts) c = lan v" using assm by simp
+  have len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" using assm by simp
+  have len:"len v ts c = ext v" using assm by simp
+  obtain v1 v2 where chop:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0 " 
+    using assm view.horizontal_chop_non_empty by blast    
+  from chop and len have len_v1:"len v1 ts c = ext v1" 
+    using perfect_sensors.len_view_hchop_left by blast
+  from chop and len have len_v2:"len v2 ts c = ext v2" 
+    using perfect_sensors.len_view_hchop_right by blast
+  from chop and restr have restr_v1:"restrict v1 (clm ts) c = lan v1" 
+    by (metis (no_types, lifting) hchop_def restriction.restriction_stable1)     
+  from chop and restr have restr_v2:"restrict v2 (clm ts) c = lan v2" 
+    by (metis (no_types, lifting) hchop_def restriction.restriction_stable2) 
+  from chop and len_v1 len_v2 restr_v1 restr_v2 show "ts,v \<Turnstile>cl(c) \<^bold>\<frown> cl(c)"
+    using hchop_def 
+    using assm by force
 qed
 
 
@@ -646,60 +578,35 @@ by (metis less_irrefl)
 lemma free_no_clm:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. cl(c)))" 
 using nat_int.card_empty_zero one_neq_zero by (metis less_irrefl)
 
-
-
-
-
 lemma free_decompose:"\<Turnstile>free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free)"
-proof
-   fix ts 
-   show "ts \<Turnstile>s (free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free))"
-   proof 
-   fix v
-   show " ts,v \<Turnstile>(free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free))"
-   proof
-    assume assm:"ts,v \<Turnstile>free"
-    show "ts,v \<Turnstile>(free \<^bold>\<frown> free)"
-    proof -
-      obtain v1 and v2 where non_empty_v1_v2:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0" using assm length_dense by blast
-      have one_lane:"|lan v1| = 1 \<and> |lan v2| = 1" using assm hchop_def non_empty_v1_v2 by auto
-      have nothing_on_v1:" (\<forall>c. \<parallel>len v1 ts c\<parallel> = 0 \<or> restrict v1 (clm ts) c = \<emptyset> \<and> restrict v1 (res ts) c = \<emptyset>)"
-        using assm  by (metis (no_types, lifting) len_empty_on_subview1 non_empty_v1_v2 restriction_stable1)
-      have nothing_on_v2:" (\<forall>c. \<parallel>len v2 ts c\<parallel> = 0 \<or> restrict v2 (clm ts) c = \<emptyset> \<and> restrict v2 (res ts) c = \<emptyset>)"
-        using assm by (metis (no_types, lifting) len_empty_on_subview2 non_empty_v1_v2 restriction_stable2)
-      have  "(v=v1\<parallel>v2) \<and>
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>free"
+  obtain v1 and v2 where non_empty_v1_v2:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0" using assm length_dense by blast
+  have one_lane:"|lan v1| = 1 \<and> |lan v2| = 1" using assm hchop_def non_empty_v1_v2 by auto
+  have nothing_on_v1:" (\<forall>c. \<parallel>len v1 ts c\<parallel> = 0 \<or> restrict v1 (clm ts) c = \<emptyset> \<and> restrict v1 (res ts) c = \<emptyset>)"
+    using assm  by (metis (no_types, lifting) len_empty_on_subview1 non_empty_v1_v2 restriction_stable1)
+  have nothing_on_v2:" (\<forall>c. \<parallel>len v2 ts c\<parallel> = 0 \<or> restrict v2 (clm ts) c = \<emptyset> \<and> restrict v2 (res ts) c = \<emptyset>)"
+    using assm by (metis (no_types, lifting) len_empty_on_subview2 non_empty_v1_v2 restriction_stable2)
+  have  "(v=v1\<parallel>v2) \<and>
           (0 < \<parallel>ext v1\<parallel> \<and> |lan v1| = 1 \<and> (\<forall>c. \<parallel>len v1 ts c\<parallel> = 0 \<or> restrict v1 (clm ts) c = \<emptyset> \<and> restrict v1 (res ts) c = \<emptyset>)) \<and>
           0 < \<parallel>ext v2\<parallel> \<and> |lan v2| = 1 \<and> (\<forall>c. \<parallel>len v2 ts c\<parallel> = 0 \<or> restrict v2 (clm ts) c = \<emptyset> \<and> restrict v2 (res ts) c = \<emptyset>)"
-          using non_empty_v1_v2 nothing_on_v1 nothing_on_v2 one_lane by blast      
-     thus ?thesis  by blast 
-   qed
- qed
-qed
+    using non_empty_v1_v2 nothing_on_v1 nothing_on_v2 one_lane by blast      
+  then show "ts,v \<Turnstile>(free \<^bold>\<frown> free)" by blast
 qed
 
 lemma free_compose:"\<Turnstile>(free \<^bold>\<frown> free) \<^bold>\<rightarrow> free"
-proof
-  fix ts
-  show "ts \<Turnstile>s (free \<^bold>\<frown> free) \<^bold>\<rightarrow> free"
-  proof
-  fix v
-  show "ts,v \<Turnstile>(free \<^bold>\<frown> free) \<^bold>\<rightarrow> free"
-  proof 
-    assume assm:"ts,v \<Turnstile>free \<^bold>\<frown> free"
-    show "ts,v \<Turnstile>free"
-    proof
-      show len_ge_0:"\<parallel>ext v\<parallel> > 0" using assm 
-        using length_meld by blast
-      have widt_one:"|lan v| = 1" using assm 
-        by (metis horizontal_chop_width_stable)
-      have no_car:"(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
-        by (smt assm len_hchop_add restriction_stable1 restriction_stable2)
-      show "|lan v| = 1 \<and> 
-        (\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
-        using widt_one no_car by blast
-    qed
-  qed
-qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>free \<^bold>\<frown> free"
+  have len_ge_0:"\<parallel>ext v\<parallel> > 0" using assm 
+    using length_meld by blast
+  have widt_one:"|lan v| = 1" using assm 
+    by (metis horizontal_chop_width_stable)
+  have no_car:"(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
+    by (smt assm len_hchop_add restriction_stable1 restriction_stable2)
+  show "ts,v \<Turnstile>free"
+    using len_ge_0 widt_one no_car by blast
 qed
 
 
@@ -711,124 +618,110 @@ using horizontal_chop_empty_left horizontal_chop_empty_right by blast
 
 
 lemma no_cars_means_free:"\<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free" 
-proof
-  fix ts
-  show "ts \<Turnstile>s ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free"
-  proof
-  fix v
-  show "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free"
-  proof
-    assume assm:"ts,v \<Turnstile> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-    have ge_0:"ts,v \<Turnstile> \<^bold>\<l> > 0" using assm  by best
-    have one_lane:"ts,v \<Turnstile>\<^bold>\<omega> = 1" using assm by best    
-    show "ts,v \<Turnstile> free"
-    proof (rule ccontr)
-      have no_car: "ts,v \<Turnstile>\<^bold>\<not>( \<^bold>\<exists> c.  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))" using assm by best
-      assume "ts,v \<Turnstile> \<^bold>\<not> free"
-      hence contra:"\<not>(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
-        using ge_0 one_lane by blast
-      hence ex_car:"\<exists>c. \<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" 
-        using real_int.length_ge_zero using dual_order.antisym not_le by blast
-      obtain c where c_def:"\<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)"       
-        using ex_car by blast
-      hence "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" by best
-      thus False 
-      proof
-        assume "restrict v (clm ts) c \<noteq> \<emptyset>"
-        with one_lane have clm_one:"|restrict v (clm ts) c| = 1" using el_in_restriction_clm_singleton 
-          by (meson nat_int.card_non_empty_geq_one dual_order.antisym restriction_clm_leq_one)
-        obtain v1 and v2 and v3 and v4 where "v=v1\<parallel>v2" and "v2=v3\<parallel>v4" and len_eq:"len v3 ts c = ext v3 \<and> \<parallel>len v3 ts c\<parallel> = \<parallel>len v ts c\<parallel> " 
-          using horizontal_chop_empty_left horizontal_chop_empty_right len_fills_subview c_def by blast
-        then have res_non_empty:"restrict v3 (clm ts) c \<noteq> \<emptyset>" 
-          using \<open>restrict v (clm ts) c \<noteq> \<emptyset>\<close> restriction_stable restriction_stable1 by auto
-        have len_non_empty:"\<parallel>len v3 ts c\<parallel> > 0" 
-          using len_eq c_def by auto
-        have "|restrict v3 (clm ts) c| =1 " 
-          using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> clm_one restriction_stable restriction_stable1 by auto
-        have v3_one_lane:"|lan v3| = 1" 
-          using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane by auto
-        have clm_fills_v3:"restrict v3 (clm ts) c = lan v3" 
-        proof (rule ccontr)
-          assume  "restrict v3 (clm ts) c \<noteq> lan v3"
-          have "restrict v3 (clm ts) c \<sqsubseteq> lan v3" 
-            by (simp add: restrict_view)
-          hence "\<exists>n. n \<^bold>\<notin> restrict v3 (clm ts) c \<and> n \<^bold>\<in> lan v3" 
-            by (metis Rep_nat_int_inject \<open>restrict v3 (clm ts) c \<noteq> lan v3\<close> \<open>|lan v3| = 1\<close> \<open>|restrict v3 (clm ts) c| = 1\<close> insert_not_empty nat_int.singleton less_eq_nat_int.rep_eq subset_singletonD)
-          hence "|lan v3| > 1" 
-            using \<open>| (restrict v3 (clm ts) c)| = 1\<close> \<open>restrict v3 (clm ts) c \<le> lan v3\<close> \<open>restrict v3 (clm ts) c \<noteq> lan v3\<close> restriction.restrict_eq_lan_subs v3_one_lane by auto
-          thus False using v3_one_lane by auto
-        qed
-        have "\<parallel>ext v3\<parallel> > 0" using c_def len_eq by auto
-        have "ts, v3 \<Turnstile> cl(c)" using clm_one len_eq c_def using clm_fills_v3 v3_one_lane by auto
-        hence "ts,v \<Turnstile>  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
-          using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> by blast
-        hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by blast
-        thus False using no_car by best
-      next
-         assume "restrict v (res ts) c \<noteq> \<emptyset>"
-        with one_lane have clm_one:"|restrict v (res ts) c| = 1" using el_in_restriction_clm_singleton  
-          by (metis nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restrict_view)
-        obtain v1 and v2 and v3 and v4 where "v=v1\<parallel>v2" and "v2=v3\<parallel>v4" and len_eq:"len v3 ts c = ext v3 \<and> \<parallel>len v3 ts c\<parallel> = \<parallel>len v ts c\<parallel> " 
-          using horizontal_chop_empty_left horizontal_chop_empty_right len_fills_subview c_def by blast
-        then have res_non_empty:"restrict v3 (res ts) c \<noteq> \<emptyset>" 
-          using \<open>restrict v (res ts) c \<noteq> \<emptyset>\<close> restriction_stable restriction_stable1 by auto
-        have len_non_empty:"\<parallel>len v3 ts c\<parallel> > 0" 
-          using len_eq c_def by auto
-        have "|restrict v3 (res ts) c| =1 " 
-          using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> clm_one restriction_stable restriction_stable1 by auto
-        have v3_one_lane:"|lan v3| = 1" 
-          using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane by auto
-        have "restrict v3 (res ts) c = lan v3" 
-        proof (rule ccontr)
-          assume  "restrict v3 (res ts) c \<noteq> lan v3"
-          have "restrict v3 (res ts) c \<sqsubseteq> lan v3" 
-            by (simp add: restrict_view)
-          hence "\<exists>n. n \<^bold>\<notin> restrict v3 (res ts) c \<and> n \<^bold>\<in> lan v3" 
-            by (metis Rep_nat_int_inject \<open>restrict v3 (res ts) c \<noteq> lan v3\<close> \<open>|lan v3| = 1\<close> \<open>|restrict v3 (res ts) c| = 1\<close> insert_not_empty nat_int.singleton less_eq_nat_int.rep_eq subset_singletonD)
-          hence "|lan v3| > 1" 
-            using \<open>nat_int.card' (restrict v3 (fst (snd (Rep_traffic ts))) c) = 1\<close> \<open>restrict v3 (fst (snd (Rep_traffic ts))) c \<le> lan v3\<close> \<open>restrict v3 (fst (snd (Rep_traffic ts))) c \<noteq> lan v3\<close> restriction.restrict_eq_lan_subs v3_one_lane by auto
-          thus False using v3_one_lane by auto
-        qed
-        have "\<parallel>ext v3\<parallel> > 0" using c_def len_eq by auto
-        have "ts, v3 \<Turnstile> re(c)" using clm_one len_eq c_def using \<open>restrict v3 (res ts) c = lan v3\<close> v3_one_lane by auto
-        hence "ts,v \<Turnstile>  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
-          using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> by blast
-        hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by blast
-        thus False using no_car by best
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
+  have ge_0:"ts,v \<Turnstile> \<^bold>\<l> > 0" using assm  by best
+  have one_lane:"ts,v \<Turnstile>\<^bold>\<omega> = 1" using assm by best    
+  show "ts,v \<Turnstile> free"
+  proof (rule ccontr)
+    have no_car: "ts,v \<Turnstile>\<^bold>\<not>( \<^bold>\<exists> c.  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))" using assm by best
+    assume "ts,v \<Turnstile> \<^bold>\<not> free"
+    hence contra:"\<not>(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
+      using ge_0 one_lane by blast
+    hence ex_car:"\<exists>c. \<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" 
+      using real_int.length_ge_zero using dual_order.antisym not_le by blast
+    obtain c where c_def:"\<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)"       
+      using ex_car by blast
+    hence "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" by best
+    thus False 
+    proof
+      assume "restrict v (clm ts) c \<noteq> \<emptyset>"
+      with one_lane have clm_one:"|restrict v (clm ts) c| = 1" using el_in_restriction_clm_singleton 
+        by (meson nat_int.card_non_empty_geq_one dual_order.antisym restriction_clm_leq_one)
+      obtain v1 and v2 and v3 and v4 where "v=v1\<parallel>v2" and "v2=v3\<parallel>v4" and len_eq:"len v3 ts c = ext v3 \<and> \<parallel>len v3 ts c\<parallel> = \<parallel>len v ts c\<parallel> " 
+        using horizontal_chop_empty_left horizontal_chop_empty_right len_fills_subview c_def by blast
+      then have res_non_empty:"restrict v3 (clm ts) c \<noteq> \<emptyset>" 
+        using \<open>restrict v (clm ts) c \<noteq> \<emptyset>\<close> restriction_stable restriction_stable1 by auto
+      have len_non_empty:"\<parallel>len v3 ts c\<parallel> > 0" 
+        using len_eq c_def by auto
+      have "|restrict v3 (clm ts) c| =1 " 
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> clm_one restriction_stable restriction_stable1 by auto
+      have v3_one_lane:"|lan v3| = 1" 
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane by auto
+      have clm_fills_v3:"restrict v3 (clm ts) c = lan v3" 
+      proof (rule ccontr)
+        assume  "restrict v3 (clm ts) c \<noteq> lan v3"
+        have "restrict v3 (clm ts) c \<sqsubseteq> lan v3" 
+          by (simp add: restrict_view)
+        hence "\<exists>n. n \<^bold>\<notin> restrict v3 (clm ts) c \<and> n \<^bold>\<in> lan v3" 
+          by (metis Rep_nat_int_inject \<open>restrict v3 (clm ts) c \<noteq> lan v3\<close> \<open>|lan v3| = 1\<close> \<open>|restrict v3 (clm ts) c| = 1\<close> insert_not_empty nat_int.singleton less_eq_nat_int.rep_eq subset_singletonD)
+        hence "|lan v3| > 1" 
+          using \<open>| (restrict v3 (clm ts) c)| = 1\<close> \<open>restrict v3 (clm ts) c \<le> lan v3\<close> \<open>restrict v3 (clm ts) c \<noteq> lan v3\<close> restriction.restrict_eq_lan_subs v3_one_lane by auto
+        thus False using v3_one_lane by auto
       qed
+      have "\<parallel>ext v3\<parallel> > 0" using c_def len_eq by auto
+      have "ts, v3 \<Turnstile> cl(c)" using clm_one len_eq c_def using clm_fills_v3 v3_one_lane by auto
+      hence "ts,v \<Turnstile>  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> by blast
+      hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by blast
+      thus False using no_car by best
+    next
+      assume "restrict v (res ts) c \<noteq> \<emptyset>"
+      with one_lane have clm_one:"|restrict v (res ts) c| = 1" using el_in_restriction_clm_singleton  
+        by (metis nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restrict_view)
+      obtain v1 and v2 and v3 and v4 where "v=v1\<parallel>v2" and "v2=v3\<parallel>v4" and len_eq:"len v3 ts c = ext v3 \<and> \<parallel>len v3 ts c\<parallel> = \<parallel>len v ts c\<parallel> " 
+        using horizontal_chop_empty_left horizontal_chop_empty_right len_fills_subview c_def by blast
+      then have res_non_empty:"restrict v3 (res ts) c \<noteq> \<emptyset>" 
+        using \<open>restrict v (res ts) c \<noteq> \<emptyset>\<close> restriction_stable restriction_stable1 by auto
+      have len_non_empty:"\<parallel>len v3 ts c\<parallel> > 0" 
+        using len_eq c_def by auto
+      have "|restrict v3 (res ts) c| =1 " 
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> clm_one restriction_stable restriction_stable1 by auto
+      have v3_one_lane:"|lan v3| = 1" 
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane by auto
+      have "restrict v3 (res ts) c = lan v3" 
+      proof (rule ccontr)
+        assume  "restrict v3 (res ts) c \<noteq> lan v3"
+        have "restrict v3 (res ts) c \<sqsubseteq> lan v3" 
+          by (simp add: restrict_view)
+        hence "\<exists>n. n \<^bold>\<notin> restrict v3 (res ts) c \<and> n \<^bold>\<in> lan v3" 
+          by (metis Rep_nat_int_inject \<open>restrict v3 (res ts) c \<noteq> lan v3\<close> \<open>|lan v3| = 1\<close> \<open>|restrict v3 (res ts) c| = 1\<close> insert_not_empty nat_int.singleton less_eq_nat_int.rep_eq subset_singletonD)
+        hence "|lan v3| > 1" 
+          using \<open>nat_int.card' (restrict v3 (fst (snd (Rep_traffic ts))) c) = 1\<close> \<open>restrict v3 (fst (snd (Rep_traffic ts))) c \<le> lan v3\<close> \<open>restrict v3 (fst (snd (Rep_traffic ts))) c \<noteq> lan v3\<close> restriction.restrict_eq_lan_subs v3_one_lane by auto
+        thus False using v3_one_lane by auto
+      qed
+      have "\<parallel>ext v3\<parallel> > 0" using c_def len_eq by auto
+      have "ts, v3 \<Turnstile> re(c)" using clm_one len_eq c_def using \<open>restrict v3 (res ts) c = lan v3\<close> v3_one_lane by auto
+      hence "ts,v \<Turnstile>  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> by blast
+      hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by blast
+      thus False using no_car by best
     qed
   qed
-qed
 qed
 
 lemma free_means_no_cars:"\<Turnstile>free \<^bold>\<rightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
-proof
-  fix ts
-  show "ts \<Turnstile>s free \<^bold>\<rightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-  proof
-    fix v
-    show "ts,v \<Turnstile>free \<^bold>\<rightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-    proof
-      assume assm:"ts,v \<Turnstile> free"
-      have no_car:"ts,v \<Turnstile>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))"
-      proof (rule ccontr)
-        assume "\<not> (ts,v \<Turnstile>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-        hence contra:"ts,v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>" by blast
-        from this obtain c and v1 and v' and v2 and vc where 
-            vc_def:"(v=v1\<parallel>v') \<and> (v'=vc\<parallel>v2) \<and> (ts,vc \<Turnstile> cl(c) \<^bold>\<or> re(c))" by blast
-        hence len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" 
-          by (smt len_empty_on_subview1 len_empty_on_subview2 real_int.length_ge_zero)
-        from vc_def have vc_ex_car:"restrict vc (clm ts) c \<noteq> \<emptyset> \<or> restrict vc (res ts) c \<noteq>\<emptyset>" 
-          using nat_int.card_empty_zero one_neq_zero by auto
-        have eq_lan:"lan v = lan vc" using vc_def using hchop_def by auto
-        hence v_ex_car:"restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq>\<emptyset>" 
-          using vc_ex_car by (simp add: restrict_def)
-        from len_ge_zero and v_ex_car and assm show False by force
-      qed
-      with assm show "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-      by blast
-    qed
+proof (rule allI | rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile> free"
+  have no_car:"ts,v \<Turnstile>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))"
+  proof (rule ccontr)
+    assume "\<not> (ts,v \<Turnstile>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
+    hence contra:"ts,v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>" by blast
+    from this obtain c and v1 and v' and v2 and vc where 
+      vc_def:"(v=v1\<parallel>v') \<and> (v'=vc\<parallel>v2) \<and> (ts,vc \<Turnstile> cl(c) \<^bold>\<or> re(c))" by blast
+    hence len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" 
+      by (smt len_empty_on_subview1 len_empty_on_subview2 real_int.length_ge_zero)
+    from vc_def have vc_ex_car:"restrict vc (clm ts) c \<noteq> \<emptyset> \<or> restrict vc (res ts) c \<noteq>\<emptyset>" 
+      using nat_int.card_empty_zero one_neq_zero by auto
+    have eq_lan:"lan v = lan vc" using vc_def using hchop_def by auto
+    hence v_ex_car:"restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq>\<emptyset>" 
+      using vc_ex_car by (simp add: restrict_def)
+    from len_ge_zero and v_ex_car and assm show False by force
   qed
+  with assm show "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
+    by blast
 qed
 
 lemma free_eq_no_cars:"\<Turnstile>free \<^bold>\<leftrightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
@@ -858,21 +751,14 @@ by blast
 
 
 lemma one_lane_notfree:"\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free) \<^bold>\<rightarrow> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-proof
-  fix ts
-  show "ts \<Turnstile>s(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free) \<^bold>\<rightarrow> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-  proof
-    fix v
-    show "ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free) \<^bold>\<rightarrow> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-    proof
-      assume assm:"ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free)"
-      hence not_free:"ts,v \<Turnstile>\<^bold>\<not> free" by blast
-      with free_eq_no_cars have "ts,v \<Turnstile>\<^bold>\<not> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-      by blast
-      hence "ts,v \<Turnstile> \<^bold>\<not>  (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))" using assm by blast
-      thus "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> )" by blast
-    qed
-  qed
+proof (rule allI|rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free)"
+  hence not_free:"ts,v \<Turnstile>\<^bold>\<not> free" by blast
+  with free_eq_no_cars have "ts,v \<Turnstile>\<^bold>\<not> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
+    by blast
+  hence "ts,v \<Turnstile> \<^bold>\<not>  (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))" using assm by blast
+  thus "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> )" by blast
 qed
 
 lemma one_lane_empty_or_car:"\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<rightarrow> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
@@ -881,55 +767,49 @@ using one_lane_notfree by blast
 lemma backwards_res_act:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))"
 proof
   assume assm:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c))"
-  show "ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
-  proof -
-    from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
-    have "res ts c \<sqsubseteq> res ts' c" using assm create_res_subseteq1 by blast
-        hence restr_subs_res:"restrict v (res ts) c \<sqsubseteq> restrict v (res ts') c" by (simp add: restrict_view assm)
-        have "clm ts c \<sqsubseteq> res ts' c" using assm create_res_subseteq2 by blast
-        hence restr_subs_clm:"restrict v (clm ts) c \<sqsubseteq> restrict v (res ts') c" by (simp add: restrict_view assm)
-        have "restrict v (res ts) c = \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>" by simp
-        thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
-        proof
-          assume restr_res_nonempty:"restrict v (res ts) c \<noteq> \<emptyset>"
-          hence restrict_one:"|restrict v (res ts) c | = 1" 
-            using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_res assm by fastforce
-          have "restrict v (res ts ) c \<sqsubseteq> lan v" using restr_subs_res assm by auto
-          hence "restrict v (res ts)c = lan v" using restrict_eq_lan_subs using restrict_one assm by auto
-          thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
-       next
-         assume restr_res_empty:"restrict v (res ts) c = \<emptyset>"
-         have "restrict v (clm ts) c = \<emptyset> \<or> restrict v (clm ts) c \<noteq> \<emptyset>" by simp
-         thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
-         proof
-          assume clm_non_empty:"restrict v (clm ts) c \<noteq> \<emptyset>"
-          hence restrict_one:"|restrict v (clm ts) c | = 1" 
-            using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_clm assm by fastforce
-          have "restrict v (clm ts ) c \<sqsubseteq> lan v" using restr_subs_clm assm by auto
-          hence "restrict v (clm ts)c = lan v" using restrict_eq_lan_subs using restrict_one assm by auto
-          thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
-        next
-          assume clm_empty:"restrict v (clm ts) c = \<emptyset>"
-          hence "restrict v (clm ts) c \<squnion> restrict v (res ts) c = \<emptyset>" using nat_int.chop_empty nat_int.nchop_def restr_res_empty by auto                  
-          hence "restrict v (res ts') c \<noteq> restrict v (clm ts) c \<squnion> restrict v (res ts) c"  using assm create_reservation_def 
-            using nat_int.card_empty_zero assm by auto
-          hence False using create_reservation_restrict_union assm clm_empty restr_res_empty 
-            by metis
-          thus ?thesis by simp
-        qed
-     qed
+  from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
+  have "res ts c \<sqsubseteq> res ts' c" using assm create_res_subseteq1 by blast
+  hence restr_subs_res:"restrict v (res ts) c \<sqsubseteq> restrict v (res ts') c" by (simp add: restrict_view assm)
+  have "clm ts c \<sqsubseteq> res ts' c" using assm create_res_subseteq2 by blast
+  hence restr_subs_clm:"restrict v (clm ts) c \<sqsubseteq> restrict v (res ts') c" by (simp add: restrict_view assm)
+  have "restrict v (res ts) c = \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>" by simp
+  then show " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
+  proof
+    assume restr_res_nonempty:"restrict v (res ts) c \<noteq> \<emptyset>"
+    hence restrict_one:"|restrict v (res ts) c | = 1" 
+      using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_res assm by fastforce
+    have "restrict v (res ts ) c \<sqsubseteq> lan v" using restr_subs_res assm by auto
+    hence "restrict v (res ts)c = lan v" using restrict_eq_lan_subs using restrict_one assm by auto
+    thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
+  next
+    assume restr_res_empty:"restrict v (res ts) c = \<emptyset>"
+    have "restrict v (clm ts) c = \<emptyset> \<or> restrict v (clm ts) c \<noteq> \<emptyset>" by simp
+    thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
+    proof
+      assume clm_non_empty:"restrict v (clm ts) c \<noteq> \<emptyset>"
+      hence restrict_one:"|restrict v (clm ts) c | = 1" 
+        using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_clm assm by fastforce
+      have "restrict v (clm ts ) c \<sqsubseteq> lan v" using restr_subs_clm assm by auto
+      hence "restrict v (clm ts)c = lan v" using restrict_eq_lan_subs using restrict_one assm by auto
+      thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
+    next
+      assume clm_empty:"restrict v (clm ts) c = \<emptyset>"
+      hence "restrict v (clm ts) c \<squnion> restrict v (res ts) c = \<emptyset>" using nat_int.chop_empty nat_int.nchop_def restr_res_empty by auto                  
+      hence "restrict v (res ts') c \<noteq> restrict v (clm ts) c \<squnion> restrict v (res ts) c"  using assm create_reservation_def 
+        using nat_int.card_empty_zero assm by auto
+      hence False using create_reservation_restrict_union assm clm_empty restr_res_empty 
+        by metis
+      thus ?thesis by simp
+    qed
   qed
 qed
 
 lemma backwards_res_stab:"(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
 proof
   assume assm:"(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c))"
-  show "ts,v \<Turnstile> re(c)"
-  proof -
-    from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
-    have "res ts c = res ts' c" using assm create_res_subseteq1_neq by blast
-    thus " ts,v \<Turnstile> (re(c))" using assm len_eq restrict_def by auto
-  qed
+  from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
+  have "res ts c = res ts' c" using assm create_res_subseteq1_neq by blast
+  thus " ts,v \<Turnstile> (re(c))" using assm len_eq restrict_def by auto
 qed
 
 lemma backwards_c_res_stab:"(ts \<^bold>\<midarrow>c(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
@@ -945,60 +825,32 @@ using withdraw_reservation_length_stable withdraw_res_subseteq
 by (smt nat_int.inter_absorb2 nat_int.subseteq_trans restrict_def restrict_res) 
 
 lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)"
-proof -
-  {
-    fix ts v
-    assume "ts,v \<Turnstile>re(c) \<^bold>\<or> cl(c)"
-    then have "ts,v \<Turnstile> \<^bold>\<box>r(c) re(c)"
-    proof
-      assume re:"ts,v \<Turnstile>re(c)"
-      obtain ts' where ts'_def:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')" using always_create_res by blast
-      have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
-      have restrict:"restrict v (res ts ) c = restrict v (res ts' ) c" 
-        by (metis (no_types, lifting) nat_int.inter_absorb2 nat_int.subseteq_trans re restriction.restrict_def restriction.restrict_res traffic.create_res_subseteq1 ts'_def) 
-      have  re':"ts',v \<Turnstile> re(c)" using len_eq ts'_def restrict 
-        using re by auto
-      show "ts,v \<Turnstile> \<^bold>\<box>r(c) re(c)" using re' 
-        by (metis (no_types, lifting) create_reservation_length_stable create_reservation_restrict_union ts'_def)
-    next
-      assume cl:"ts,v \<Turnstile>cl(c)"
-      obtain ts' where ts'_def:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')" using always_create_res by blast
-      have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
-      have "(clm ts) c \<sqsubseteq> res ts' c"     
-         by (simp add: traffic.create_res_subseteq2 ts'_def)
-       then have restrict:"restrict v (clm ts ) c \<sqsubseteq> restrict v (res ts' ) c" using traffic.create_res_subseteq2 ts'_def  less_eq_nat_int.rep_eq 
-           using eq_iff by (metis (no_types) cl inf.orderE inf_commute order_trans restriction.restrict_clm restriction.restrict_def)
-      have  re':"ts',v \<Turnstile> re(c)" using len_eq cl restrict 
-        using nat_int.inter_absorb1 nat_int.inter_sym restriction.restrict_def by fastforce
-      show "ts,v \<Turnstile> \<^bold>\<box>r(c) re(c)" using re' ts'_def 
-        by (metis (no_types, lifting) create_reservation_length_stable create_reservation_restrict_union)
-    qed
-  }
-  then show ?thesis 
-    by blast
+proof (rule allI| rule impI)+ 
+  fix ts v ts'
+  assume assm:"ts,v \<Turnstile>re(c) \<^bold>\<or> cl(c)" and ts'_def:"ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts'"
+  from assm show "ts',v \<Turnstile>  re(c)"
+  proof
+    assume re:"ts,v \<Turnstile>re(c)"
+    have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
+    have restrict:"restrict v (res ts ) c = restrict v (res ts' ) c" 
+      by (metis (no_types, lifting) nat_int.inter_absorb2 nat_int.subseteq_trans re restriction.restrict_def restriction.restrict_res traffic.create_res_subseteq1 ts'_def) 
+    show  re':"ts',v \<Turnstile> re(c)" using len_eq ts'_def restrict 
+      using re by auto
+  next
+    assume cl:"ts,v \<Turnstile>cl(c)"
+    have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
+    have "(clm ts) c \<sqsubseteq> res ts' c"     
+      by (simp add: traffic.create_res_subseteq2 ts'_def)
+    then have restrict:"restrict v (clm ts ) c \<sqsubseteq> restrict v (res ts' ) c" using traffic.create_res_subseteq2 ts'_def  less_eq_nat_int.rep_eq 
+      using eq_iff by (metis (no_types) cl inf.orderE inf_commute order_trans restriction.restrict_clm restriction.restrict_def)
+    show  re':"ts',v \<Turnstile> re(c)" using len_eq cl restrict 
+      using nat_int.inter_absorb1 nat_int.inter_sym restriction.restrict_def by fastforce
+  qed
+    
 qed
-      
-
-  
-
 
 lemma reservation2: "(\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c)))" 
   using mlsl_perfect.backwards_res_act traffic.always_create_res by blast
-(*proof
-  fix ts
-  show "ts \<Turnstile>s (\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c))"
-  proof
-    fix v
-    show "ts,v \<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c))" 
-    proof
-      assume box:"ts,v \<Turnstile>\<^bold>\<box>r(c) re(c) "
-      obtain ts' where ts'_def:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')" using always_create_res by blast
-      hence ts'_res:"ts',v \<Turnstile>re(c)" using box by blast
-      from ts'_def have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
-      show "ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using backwards_res_act ts'_def ts'_res by blast 
-    qed
-  qed
-qed*)
 
 lemma reservation:"\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<leftrightarrow> (re(c) \<^bold>\<or> cl(c))"
 using reservation1 reservation2 by blast
