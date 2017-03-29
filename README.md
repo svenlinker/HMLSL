@@ -4,8 +4,15 @@ Proof of motorway safety with an extension of Multi-Lane Spatial Logic as an sem
 
 # Abbreviations
 The operators for HMLSL can be written using
-the abbreviations defind in the file "abbrev". Following
-the implementation of Benzm"uller, we whoose to prefix each
+the abbreviations defind in the file "abbrev".
+The file can be installed by copying it to the
+.isabelle/$ISABELLE_VERSION/jedit folder in the
+user's home directory.
+
+To activate them, please open the menu "Utilities->Global Options"
+and check the "Space bar expands abbrevs" option.
+
+Following the implementation of Benzmüller[1], we choose to prefix each
 abbreviation with "m". The first-order operators mostly 
 follow the conventions in Isabelle, while the HMLSL specific
 operators also carry semantically sensible names.
@@ -43,3 +50,7 @@ operators also carry semantically sensible names.
 * mabstrans : abstract transition
 
 
+
+
+[1] His website https://page.mi.fu-berlin.de/cbenzmueller/ contains
+course-work for GCAI 2016, which we used as a reference.
