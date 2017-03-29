@@ -1,3 +1,13 @@
+(*  Title:      imperfect/Safety_ip.thy
+    Author:     Sven Linker
+
+Distance and Lane change controller for cars with imperfect sensors.
+Flawed safety theorem and proof of flawedness.
+Controller definitions that take knowledge of other cars
+into account and correct safety theorem.
+*)
+
+section\<open>Safety for Cars with Imperfect Sensors\<close>
 theory Safety_ip
   imports MLSL_ip
 begin

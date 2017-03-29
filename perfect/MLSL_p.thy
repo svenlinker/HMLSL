@@ -1,8 +1,16 @@
+(*  Title:      perfect/MLSL_p.thy
+    Author:     Sven Linker
+
+Definition of HMLSL syntax over traffic snapshots and views for cars
+with perfect sensors. Each formula is a function with a traffic snapshot 
+and view as parameters, and evaluates to True or False.
+*)
+
+section\<open>HMLSL with Perfect Sensors\<close>
 theory MLSL_p 
-imports  "../Abstract_Model" "../Restriction" "../Move" Length_p
+imports  "../Traffic" "../Restriction" "../Move" Length_p
 begin
 
-declare[[show_types =false]]
 text {* the type of formulas  *}
 type_synonym \<sigma> = " traffic \<Rightarrow> view \<Rightarrow> bool"
 
@@ -96,9 +104,6 @@ where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>V. \<phi>(ts)(V)"
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
 where "ts, v \<Turnstile> \<phi> == \<phi>(ts)(v)"
 
-(*abbreviation dynamically_valid :: "view \<Rightarrow> (\<sigma> \<Rightarrow> bool)" ("_ \<Turnstile>d _" 10)
-where "v \<Turnstile>d \<phi> \<equiv> \<forall>ts. \<phi>(ts)(v)"
-*)
 
 abbreviation spatially_valid :: "traffic \<Rightarrow> (\<sigma> \<Rightarrow> bool)" ("_ \<Turnstile>s _" 10)
 where "ts \<Turnstile>s \<phi> \<equiv> \<forall>v. \<phi>(ts)(v)"

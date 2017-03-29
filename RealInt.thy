@@ -1,83 +1,93 @@
-theory RealInt
-imports Main Real
-begin
-(*  quotient_type real_int = "(real*real)" / "\<And> x1 x2. (fst x1 = fst x2) \<and> (snd x1 = snd x2)" 
-  setup_lifting *)
+(*  Title:      RealInt.thy
+    Author:     Sven Linker
 
-typedef real_int = "{r::(real*real) . fst r \<le> snd r}"
-  by auto
-    print_simpset
-print_theorems
- setup_lifting type_definition_real_int
-print_theorems
+Closed, non-empty intervals based on real numbers. Defines functions left, right
+to refer to the left (resp. right) border of an interval. 
 
-lift_definition left::"real_int \<Rightarrow> real" is fst proof - qed
-lift_definition right::"real_int \<Rightarrow> real" is snd proof - qed
-print_theorems
+Defines a length function as the difference between left and right border
+and a function to shift an interval by a real value (i.e., the value is added
+to both borders).
 
-lemmas[simp] = left.rep_eq right.rep_eq  
-  
-  print_simpset
-(*abbreviation left::"real_int \<Rightarrow> real"
-where "left i \<equiv> fst (Rep_real_int i)"
+Instantiates "order", as a notion of sub-intervals.
 
-abbreviation right::"real_int\<Rightarrow>real"
-where "right i \<equiv> snd (Rep_real_int i)"
-
+Also contains a "chopping" predicate R_Chop(r,s,t): r can be divided into
+sub-intervals s and t.
 *)
 
+section \<open>Closed Real-valued Intervals\<close>
+theory RealInt
+  imports Main Real
+begin
+  
+typedef real_int = "{r::(real*real) . fst r \<le> snd r}"
+  by auto
+setup_lifting type_definition_real_int
+  
+lift_definition left::"real_int \<Rightarrow> real" is fst proof - qed
+lift_definition right::"real_int \<Rightarrow> real" is snd proof - qed
+  
+lemmas[simp] = left.rep_eq right.rep_eq  
+  
 locale real_int
-  begin
-    
+begin
+  
 definition length :: "real_int \<Rightarrow> real" ("\<parallel>_\<parallel>" 70)
-where "\<parallel>r\<parallel> \<equiv> right r - left r"
-
+  where "\<parallel>r\<parallel> \<equiv> right r - left r"
+    
 definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift _ _")
-where "(shift r x) = Abs_real_int(left r +x, right r +x)"
-
-  end
+  where "(shift r x) = Abs_real_int(left r +x, right r +x)"
+    
+definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop '(_,_,_')" 51)
+  where rchop_def :"
+   R_Chop (r,s,t) ==  left r  = left s \<and>
+  right s = left t \<and>
+   right r =  right t  "
+    
+    
+    
+end
   
 instantiation real_int :: order
 begin
-    definition "less_eq_real_int r s \<equiv> (left r \<ge> left s) \<and> (right r \<le> right s)"
-    definition "less_real_int r s \<equiv> (left r \<ge> left s) \<and> (right r \<le> right s) 
+definition "less_eq_real_int r s \<equiv> (left r \<ge> left s) \<and> (right r \<le> right s)"
+definition "less_real_int r s \<equiv> (left r \<ge> left s) \<and> (right r \<le> right s) 
                                   \<and>  \<not>((left s \<ge> left r) \<and> (right s \<le> right r))"
-    instance   
-    proof 
-      fix r s t :: real_int
-      show "(r < s) = (r \<le> s \<and> \<not> s \<le> r)" using less_eq_real_int_def less_real_int_def by auto
-      show "r \<le> r" using less_eq_real_int_def by auto
-      show "r \<le> s \<Longrightarrow> s \<le> t \<Longrightarrow> r \<le> t" using less_eq_real_int_def by auto
-      show "r \<le> s \<Longrightarrow> s \<le> r \<Longrightarrow> r = s"   
-        by (metis Rep_real_int_inject left.rep_eq less_le less_eq_real_int_def  not_le prod.collapse right.rep_eq) 
-    qed
+instance   
+proof 
+  fix r s t :: real_int
+  show "(r < s) = (r \<le> s \<and> \<not> s \<le> r)" using less_eq_real_int_def less_real_int_def by auto
+  show "r \<le> r" using less_eq_real_int_def by auto
+  show "r \<le> s \<Longrightarrow> s \<le> t \<Longrightarrow> r \<le> t" using less_eq_real_int_def by auto
+  show "r \<le> s \<Longrightarrow> s \<le> r \<Longrightarrow> r = s"   
+    by (metis Rep_real_int_inject left.rep_eq less_le less_eq_real_int_def  not_le prod.collapse right.rep_eq) 
+qed
 end
-
+  
 context real_int
-  begin
-
+begin
+  
 lemma left_leq_right: "left r \<le> right r" 
   using Rep_real_int left.rep_eq right.rep_eq by auto
-
-
+    
+    
 lemma length_ge_zero :" \<parallel>r\<parallel> \<ge> 0" 
-(*using Rep_real_int le_diff_eq length_def by fastforce*)
- using Rep_real_int left.rep_eq right.rep_eq length_def by auto
+  (*using Rep_real_int le_diff_eq length_def by fastforce*)
+  using Rep_real_int left.rep_eq right.rep_eq length_def by auto
 lemma consec_add:"left r = left s \<and> right r = right t \<and> right s = left t \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel> "
-by (simp add:length_def)
-
+  by (simp add:length_def)
+    
 lemma length_zero_iff_borders_eq:"\<parallel>r\<parallel> = 0 \<longleftrightarrow> left r = right r"
-using length_def by auto
-
+  using length_def by auto
+    
 lemma shift_left_eq_right:"left (shift r x) \<le> right (shift r x)"
-using left_leq_right .
-
+  using left_leq_right .
+    
 lemma shift_keeps_length:"\<parallel>r\<parallel> = \<parallel> shift r x\<parallel>" 
   using Abs_real_int_inverse left.rep_eq real_int.length_def length_ge_zero shift_def right.rep_eq by auto
-
+    
 lemma shift_zero:"(shift r 0) = r"
-by (simp add: Rep_real_int_inverse shift_def )
-
+  by (simp add: Rep_real_int_inverse shift_def )
+    
 lemma shift_additivity:"(shift r (x+y)) = shift (shift r x) y"
 proof-
   have 1:"(shift r (x+y)) = Abs_real_int ((left r) +(x+y), (right r)+(x+y))" using shift_def
@@ -92,17 +102,10 @@ proof-
   have r1:"right (shift r x) = right r + x" using shift_def  Abs_real_int_inverse 
     using "2" fstI mem_Collect_eq prod.sel(2) right.rep_eq by auto
   from 3 and l1 and r1 have "(shift (shift r x) y) = Abs_real_int(left  r+  x +y, right  r + x+y) " 
-  by auto
+    by auto
   with 1 show ?thesis by (simp add: add.assoc)
 qed
-
-definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop '(_,_,_')" 51)
-where rchop_def :"
-   R_Chop (r,s,t) ==  left r  = left s \<and>
-  right s = left t \<and>
-   right r =  right t  "
-
-declare[[show_types = false]]
+  
 lemma chop_always_possible: "\<forall>r .\<exists> s t. R_Chop(r,s,t)"  
 proof
   fix x
@@ -126,46 +129,42 @@ proof
         using Abs_real_int_inverse rchop_def snd_conv x2_def x2_in_type by auto 
       then show "\<exists>x2. R_Chop(x,x1,x2)" .. 
     qed
-  then show "\<exists>x1 x2. R_Chop(x,x1,x2)" ..
+    then show "\<exists>x1 x2. R_Chop(x,x1,x2)" ..
   qed
 qed
- 
+  
 lemma chop_singleton_right: "\<forall>r.\<exists> s. R_Chop(r,r,s)" 
 proof
-  {
-    fix x 
-    obtain y where  "y =  Abs_real_int(right x, right x)" by simp
-    then have "R_Chop(x,x,y)" 
-      by (simp add: Abs_real_int_inverse real_int.rchop_def)
-    then show "\<exists>y. R_Chop(x,x,y)" by blast
-  }
+  fix x 
+  obtain y where  "y =  Abs_real_int(right x, right x)" by simp
+  then have "R_Chop(x,x,y)" 
+    by (simp add: Abs_real_int_inverse real_int.rchop_def)
+  then show "\<exists>y. R_Chop(x,x,y)" by blast
 qed
-
+  
 lemma chop_singleton_left: "\<forall>r.\<exists> s. R_Chop(r,s,r)"  
 proof
-  {
-    fix x 
-    obtain y where  "y =  Abs_real_int(left x, left x)" by simp
-    then have "R_Chop(x,y,x)" 
-      by (simp add: Abs_real_int_inverse real_int.rchop_def)
-    then show "\<exists>y. R_Chop(x,y,x)" by blast
-  }
+  fix x 
+  obtain y where  "y =  Abs_real_int(left x, left x)" by simp
+  then have "R_Chop(x,y,x)" 
+    by (simp add: Abs_real_int_inverse real_int.rchop_def)
+  then show "\<exists>y. R_Chop(x,y,x)" by blast
 qed
-
+  
 lemma chop_add_length:"R_Chop(r,s,t) \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel>"
-using consec_add by (simp add: rchop_def)
-
+  using consec_add by (simp add: rchop_def)
+    
 lemma chop_add_length_ge_0:"R_Chop(r,s,t) \<and> \<parallel>s\<parallel> > 0 \<and> \<parallel>t\<parallel>>0 \<longrightarrow> \<parallel>r\<parallel>>0"
-using chop_add_length by auto
-
+  using chop_add_length by auto
+    
 lemma chop_dense : "\<parallel>r\<parallel> > 0 \<longrightarrow> (\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0)"
 proof
   assume "\<parallel>r\<parallel> > 0"
   have ff1: " left r < right r"
-      using Rep_real_int \<open>0 < \<parallel>r\<parallel>\<close> length_def by auto
+    using Rep_real_int \<open>0 < \<parallel>r\<parallel>\<close> length_def by auto
   have l_in_type:"(left r, right r) \<in> {r :: real*real . fst r \<le> snd r }" 
     using Rep_real_int by auto
-
+      
   obtain x where  x_def:" x  = (left r + right r) / 2" 
     by blast
   have x_gr:"x > left r" using ff1 real_less_half_sum x_def by blast
@@ -194,7 +193,7 @@ proof
   qed
   thus "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" .
 qed  
-
+  
 lemma chop_assoc1: "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4) \<longrightarrow> (R_Chop(r, Abs_real_int(left r1, right r3), r4) \<and> R_Chop(Abs_real_int(left r1, right r3), r1,r3))"
 proof 
   assume assm: "R_Chop (r,r1,r2) \<and> R_Chop (r2,r3,r4)"
@@ -225,12 +224,12 @@ proof
   have g2:"R_Chop(?y1, r4,r2)" using assm  rchop_def r1 l1 by simp
   show "R_Chop(r, r3, ?y1) \<and> R_Chop(?y1, r4,r2)" using g1 g2 by simp
 qed
-
+  
 lemma chop_leq1:"R_Chop(r,s,t) \<longrightarrow> s \<le> r" 
   by (metis (full_types) less_eq_real_int_def order_refl real_int.left_leq_right real_int.rchop_def)
-
+    
 lemma chop_leq2:"R_Chop(r,s,t) \<longrightarrow> t \<le> r"
   by (metis (full_types) less_eq_real_int_def order_refl real_int.left_leq_right real_int.rchop_def)
-
-  end
+    
+end
 end

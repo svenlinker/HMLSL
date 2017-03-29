@@ -1,10 +1,11 @@
-(*  Title:      MLSL/Safety_p.thy
-    Author:     Sven Linker, University of Liverpool
-    Copyright   2016
+(*  Title:      perfect/Safety_p.thy
+    Author:     Sven Linker
 
-    Safety for MLSL with perfect knowledge of cars.
+Distance and Lane change controller for cars with perfect sensors.
+Safety theorem and invariance with respect to switching views.
 *)
 
+section\<open>Safety for Cars with Perfect Sensors\<close>
 theory Safety_p
 imports MLSL_p
 begin
@@ -43,7 +44,6 @@ proof (rule allI)+
           assume abs:"(ts \<^bold>\<Rightarrow> ts')"
           show "ts',move ts ts' v \<Turnstile> (\<^bold>\<forall> e. safe e)" using abs
           proof (induct ts\<equiv>"ts" ts'\<equiv>ts' arbitrary:ts'  rule:abstract.induct )
-          print_cases
           case (refl ) 
             have "move ts ts v = v" using move_nothing by simp
             thus ?case using init move_nothing by simp

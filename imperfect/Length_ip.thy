@@ -1,5 +1,13 @@
+(*  Title:      imperfect/Length_ip.thy
+    Author:     Sven Linker
+
+The length of cars visible to the owner of a given view given 
+imperfect sensors. The length is may reduce, if we switch owners of the view.
+*)
+
+section\<open>Visible Length of Cars with Imperfect Sensors\<close>
 theory Length_ip
-  imports "../Abstract_Model" Sensors_ip
+  imports "../Traffic" Sensors_ip
 begin
   
 context imperfect_sensors

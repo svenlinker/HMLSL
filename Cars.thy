@@ -1,3 +1,12 @@
+(*  Title:      Cars.thy
+    Author:     Sven Linker
+
+A countably infinite type to denote cars in the model of HMLSL.
+Also defines type synonyms for lanes and extension of views and traffic snapshots.
+*)
+
+section\<open>Cars\<close>
+
 theory Cars
 imports RealInt NatInt
 begin

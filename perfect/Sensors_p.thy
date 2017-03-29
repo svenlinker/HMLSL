@@ -1,5 +1,14 @@
+(*  Title:      perfect/Sensors_p.thy
+    Author:     Sven Linker
+
+Defines perfect sensors for cars. Cars can perceive both
+the physical size and braking distance of all other cars.
+*)
+
+section\<open>Perfect Sensors for Cars\<close>
+  
 theory Sensors_p
-  imports "../Abstract_Model" "../Views"
+  imports "../Traffic" "../Views"
 begin 
   
 locale perfect_sensors = traffic + view
@@ -21,6 +30,6 @@ proof -
 qed
   
 lemma space_eq: "space ts v c = space ts v' c" using space_def sensors_def by auto
-
+    
 end
 end

@@ -1,3 +1,20 @@
+(*  Title:      NatInt.thy
+    Author:     Sven Linker
+
+Intervals based on natural numbers. Defines a 
+bottom element (empty set), infimum (set intersection),
+partial order (subset relation), cardinality (set cardinality).
+
+The union of intervals i and j can only be created, if they are consecutive, i.e.,
+max i +1 = min j (or vice versa). To express consecutiveness, we employ the 
+predicate consec.
+
+Also contains a "chopping" predicate N_Chop(i,j,k): i can be divided into
+consecutive intervals j and k.
+*)
+
+section \<open>Discrete Intervals based on Natural Numbers\<close>
+  
 theory NatInt
   imports Main 
 begin

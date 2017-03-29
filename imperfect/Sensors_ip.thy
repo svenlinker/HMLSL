@@ -1,5 +1,14 @@
+(*  Title:      imperfect/Sensors_ip.thy
+    Author:     Sven Linker
+
+Defines imperfect sensors for cars. Cars can  perceive 
+the physical size and braking distance of themselves, but
+only the physical size of all other cars.
+*)
+
+section\<open>Imperfect Sensors for Cars\<close>
 theory Sensors_ip
-imports "../Abstract_Model" "../Views"
+imports "../Traffic" "../Views"
 begin 
 
     

@@ -1,31 +1,28 @@
+(*  Title:      perfect/Length_p.thy
+    Author:     Sven Linker
+
+The length of cars visible to the owner of a given view given 
+perfect sensors. The length is stable, of we switch owners of the view.
+*)
+
+section\<open>Visible Length of Cars with Perfect Sensors\<close>
 theory Length_p
-imports "../Abstract_Model" Sensors_p
+imports "../Traffic" Sensors_p
 begin
 
 context perfect_sensors
 begin
   
 definition len:: "view \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real_int"
-  where len_def :"len V ( ts ) c ==
-    if (left (space ts V c) > right (ext V))  
-      then  Abs_real_int (right (ext V),right (ext V)) 
+  where len_def :"len v ( ts ) c ==
+    if (left (space ts v c) > right (ext v))  
+      then  Abs_real_int (right (ext v),right (ext v)) 
     else
-      if (right (space ts V c) < left (ext V)) 
-        then Abs_real_int (left (ext V),left (ext V))
+      if (right (space ts v c) < left (ext v)) 
+        then Abs_real_int (left (ext v),left (ext v))
       else  
-        Abs_real_int (max (left (ext V)) (left (space ts V c)), 
-                      min (right (ext V)) (right (space ts V c)))"
-
-(*  
-definition len:: "(view \<Rightarrow> (traffic) \<Rightarrow> cars \<Rightarrow> real_int)"
-where len_def :"
-len V ts c == if  (left ((space ts V) c) \<le> right (ext V) \<and> right ((space ts V) c) \<ge> left (ext V) )
-then (Abs_real_int ((max (left (ext V)) (left ((space ts V) c))), 
-                              min (right (ext V)) (right ((space ts V) c))))
-else if left ((space ts V) c) > right (ext V)  
-      then  (Abs_real_int (right (ext V),right (ext V)))
-      else  (Abs_real_int (left (ext V),left (ext V)))"
-*)
+        Abs_real_int (max (left (ext v)) (left (space ts v c)), 
+                      min (right (ext v)) (right (space ts v c)))"
 
 lemma len_left: " left ((len v  ts) c) \<ge> left (ext v)" 
 proof - 

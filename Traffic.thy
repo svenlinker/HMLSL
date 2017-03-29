@@ -1,4 +1,20 @@
-theory Abstract_Model
+(*  Title:      Traffic.thy
+    Author:     Sven Linker
+
+Defines a type for traffic snapshots. Consists of six elements:
+pos: positions of cars
+res: reservations of cars
+clm: claims of cars
+dyn: current dynamic behaviour of cars
+physical_size: the real sizes of cars
+braking_distance: braking distance each car needs in emergency
+
+Definitions for transitions between traffic snapshots.
+*)
+
+section\<open>Traffic Snapshots\<close>
+
+theory Traffic
 imports Cars
 begin
   (* syntax for discrete intervals *)    

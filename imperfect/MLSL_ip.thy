@@ -1,5 +1,14 @@
+(*  Title:      imperfect/MLSL_ip.thy
+    Author:     Sven Linker
+
+Definition of HMLSL syntax over traffic snapshots and views for cars
+with imperfect sensors. Each formula is a function with a traffic snapshot 
+and view as parameters, and evaluates to True or False.
+*)
+
+section\<open>HMLSL with Imperfect Sensors\<close>
 theory MLSL_ip 
-imports  "../Abstract_Model" "../Restriction" "../Move" Length_ip
+imports  "../Traffic" "../Restriction" "../Move" Length_ip
 begin
 
 declare[[show_types =false]]
