@@ -1,10 +1,21 @@
 # HMLSL
 Proof of motorway safety with an extension of Multi-Lane Spatial Logic as an semantic embedding in Isabelle/HOL 
 
+# Code Structure
+The main directory contains definitions that are shared between the
+different sensor implementations: intervals (real-valued and discrete),
+cars, views, traffic snapshots, moving views, and restricting
+functions to views.
+
+The folders "perfect" and "imperfect" contain the theories
+specific to the corresponding sensor implementation. In particular,
+they contain the definition the sensors, the visible length,
+HMLSL and the safety proofs.
+
 
 # Abbreviations
 The operators for HMLSL can be written using
-the abbreviations defind in the file "abbrev".
+the abbreviations defined in the file "abbrev".
 The file can be installed by copying it to the
 .isabelle/$ISABELLE_VERSION/jedit folder in the
 user's home directory.
