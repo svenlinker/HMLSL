@@ -83,6 +83,7 @@ int|∫
 lhd|▷
 approx|≈
 notexists|∄
+mat|❙@
 bigcirc|◯
 alpha|α
 simeq|≃
@@ -93,6 +94,7 @@ ss|ß
 psi|ψ
 gg|≫
 OO|Ø
+mtau|❙τ
 niton|∌
 gamma|γ
 clubsuit|♣
@@ -104,6 +106,7 @@ triangleleft|⊲
 mbot|❙⊥
 cap|∩
 setminus|∖
+mabstrans|❙⇒
 vee|∨
 searrow|↘
 bemol|♭
@@ -116,6 +119,7 @@ sqcap|⊔
 pounds|£
 neq|≠
 leq|≤
+mevolve|❙↝
 dashv|⊢
 neg|¬
 AE|Æ
@@ -149,10 +153,13 @@ sun|☼
 sum|∑
 exists|∃
 inter|∩
+mtransr|❙→
+mgeq|❙≥
 mwidth|❙ω
 bigtriangledown|∇
 mequiv|❙↔
 supseteq|⊇
+mtransl|❙─
 smile|‿
 preceq|≼
 smallin|∊
@@ -161,8 +168,8 @@ rightharpoonup|⇀
 mid||
 msomer|❙⟩
 mexe2|⦇\|,,⦈
-mexe1|⦇\|,⦈
 oe|œ
+mexe1|⦇\|,⦈
 copyright|©
 theta|ϴ
 msomel|❙⟨
@@ -185,8 +192,8 @@ ni|∋
 notparallel|∦
 Sigma|Σ
 cup|∪
-asymp|≍
 ominus|⊝
+asymp|≍
 notsim|≁
 odot|⊙
 lambda|λ
@@ -201,6 +208,7 @@ sqcup|⊔
 aa|å
 =>|⇒
 chi|χ
+mge|❙>
 sqsubset|⊏
 rightharpoondown|⇁
 bowtie|⋈
@@ -210,6 +218,7 @@ hookrightarrow|↩
 sqsupset|⊐
 increment|∆
 mdia|❙◇
+mglobally|❙G
 dag|†
 Uparrow|⇑
 ll|≪
