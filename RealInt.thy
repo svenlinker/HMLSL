@@ -209,7 +209,7 @@ qed
 lemma chop_leq1:"R_Chop(r,s,t) \<longrightarrow> s \<le> r" 
   by (metis (full_types) less_eq_real_int_def order_refl real_int.left_leq_right real_int.rchop_def)
     
-lemma chop_leq2:"R_Chop(r,s,t) \<longrightarrow> t \<le> r"
+lemma chop_leq2:"R_Chop(r,s,t) \<longrightarrow> t \<le> r" 
   by (metis (full_types) less_eq_real_int_def order_refl real_int.left_leq_right real_int.rchop_def)
     
 end

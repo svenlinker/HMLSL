@@ -374,14 +374,10 @@ proof (rule allI|rule notI)+
     by (metis restriction_card_somewhere_mon)
   from chops have res_vd:"|restrict vd (res ts) c| \<ge> 1" 
     by (metis restriction_card_somewhere_mon)
-  from chops have "|restrict v1 (res ts) c | = |restrict vm (res ts) c| + |restrict vd (res ts) c|"
-    using restriction_add_res by blast
-  with res_vm and res_vd have v1_res_geq_2:"|restrict v1 (res ts) c| \<ge> 2"
-    using restriction_add_res  add_mono_thms_linordered_semiring(1) one_add_one by linarith
-  from chops have "|restrict v (res ts) c | = |restrict vu (res ts) c| + |restrict v1 (res ts) c|"
-    using restriction_add_res by blast
-  with res_vu and v1_res_geq_2 have "|restrict v (res ts) c | \<ge> 3" 
-    using add.commute add_eq_self_zero dual_order.antisym le_add1 less_one not_le restriction_res_leq_two by linarith
+  from chops have "|restrict v (res ts) c | = |restrict vu (res ts ) c| +  |restrict vm (res ts) c| + |restrict vd (res ts) c|"
+    using restriction_add_res by force
+  with res_vu and res_vm res_vd have "|restrict v (res ts) c | \<ge> 3" 
+    by linarith
   with restriction_res_leq_two show False 
     by (metis not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
 qed
@@ -839,7 +835,7 @@ proof (rule allI| rule impI)+
   qed
 qed
 
-lemma reservation2: "(\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c)))" 
+lemma reservation2: "\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c))" 
   using mlsl_perfect.backwards_res_act traffic.always_create_res by blast
 
 lemma reservation:"\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<leftrightarrow> (re(c) \<^bold>\<or> cl(c))"

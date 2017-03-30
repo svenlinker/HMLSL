@@ -249,7 +249,7 @@ proof
   have own_v2:"own v2 = own v'" using v2 by auto
   have ext_v2:"ext v2 =ext v" using v2 v2_in_type Abs_real_int_inverse  by (simp add: Rep_real_int_inverse )
       
-  show "(\<exists>v1 v2 v3 vl vr vu vd. (v'=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v--vu))"
+  show "(\<exists>v1 v2 v3 vl vr vu vd. (v'=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v--vu))" 
   proof (cases "lan v' = lan v")
     assume eq:"lan v' = lan v"
     obtain vd v3 vu where vd:"vd = \<lparr> ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
@@ -313,7 +313,7 @@ proof
           have consec:"nat_int.consec (lan vd) (lan v)" using min 
             by (simp add:  Suc_leI   nat_int.consec_def nat_int.leq_max_sup' nat_int.leq_nat_non_empty neq2  vd)
           have disjoint:"lan vd \<sqinter> lan v = \<emptyset>" using min consec nat_int.consec_inter_empty by auto
-          have union:" lan v' = lan vd \<squnion> lan v" using min max consec neq2 
+          have union:" lan v' = lan vd \<squnion> lan v" using min max consec neq2  
             by (smt Rep_nat_int_inverse   bot_nat_int.rep_eq atLeastatMost_empty_iff nat_int.leq_max_sup nat_int.maximum_def nat_int.consec_def nat_int.leq_min_inf' nat_int.rep_non_empty_means_seq nat_int.union_def select_convs(2) nat_int.un_consec_seq v'_neq_empty vd)
           then have "(v2=vd--v3) \<and> (v3=v--vu)" using vd v3 vu vchop_def nat_int.nchop_def nat_int.un_empty_absorb1 nat_int.un_empty_absorb2
               nat_int.inter_empty1 nat_int.inter_empty2 lanes_v2 own_v2 ext_v2 assm_exp vd_in_type  Abs_nat_int_inverse  disjoint consec union
