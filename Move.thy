@@ -47,6 +47,7 @@ lemma move_stability_res:"(ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<
   using create_reservation_def create_claim_def withdraw_reservation_def
     withdraw_claim_def move_def move_nothing 
   by (auto)+
-    
+
 end
+  
 end

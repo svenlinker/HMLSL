@@ -187,7 +187,13 @@ lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(@c \<^bold>\<not> \<phi>) \<^bold>
     
 lemma at_neg_neg:"\<Turnstile> (@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(@c \<^bold>\<not> \<phi>)" 
   using at_neg_neg1 at_neg_neg2 by metis
+
+lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
+
+lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
+  using traffic.abstract.refl traffic.move_nothing by fastforce 
     
+          
 lemma spatial_weaken: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle>)" 
   using horizontal_chop_empty_left horizontal_chop_empty_right vertical_chop_empty_down vertical_chop_empty_up by blast
     
