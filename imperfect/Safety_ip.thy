@@ -28,7 +28,7 @@ abbreviation LC::"\<sigma>"
     
     
     
-theorem safety_flawed:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)" 
+theorem safety_flawed:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)"
 proof (rule allI|rule impI)+  
   fix ts v ts' e
   assume assm:"ts,v \<Turnstile> ( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC"
