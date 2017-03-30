@@ -29,112 +29,21 @@ begin
 lemma un_consec_seq: "(m::nat)\<le> n \<and> n+1 \<le> l \<longrightarrow> {m..n} \<union> {n+1..l} = {m..l}" 
   by auto
     
-    (*
-lemma int_conseq_seq: "(m::nat)\<le> n \<and> n+1 \<le> l \<longrightarrow> {m..n} \<inter> {n+1..l} = {}"
-by auto
-*)
 lemma int_conseq_seq: " {(m::nat)..n} \<inter> {n+1..l} = {}"
   by auto
-    
-    
+        
 lemma empty_type: "{} \<in> { S . \<exists> (m:: nat) n . {m..n}=S}"
   by auto
     
 lemma inter_result: "\<forall>x \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }. 
          \<forall>y \<in> {S . (\<exists> (m::nat) n . {m..n }=S) }. 
            x \<inter> y \<in>{S . (\<exists> (m::nat) n .  {m..n }=S)}" 
-  using Int_atLeastAtMost by blast  
-    (*
-proof
-  fix x
-  assume "x\<in> {S . (\<exists> (m::nat) n .  {m..n }=S)  }" 
-  then obtain    mx and nx where x_def:"{mx .. nx} = x" by blast
-   show " \<forall>y\<in>{S. (\<exists>m n. {m..n} = S)  }.
-            x \<inter> y \<in> {S. (\<exists>m n.  {m..n} = S)}"
-  proof
-        fix y
-        assume "y\<in> {S . (\<exists> (m::nat) n .  {m..n }=S)  }"  
-        then obtain my and ny where y_def :"{my..ny} = y" by blast
-        have "ny < mx \<or> ny \<ge> mx" by auto
-        then show " x \<inter> y \<in> {S. (\<exists>m n.  {m..n} = S) }"
-        proof
-          assume "ny < mx" 
-          then have "x \<inter> y = {}" using x_def y_def by auto
-          thus "x \<inter> y \<in> {S. \<exists> (m::nat) n. {m..n} =S}" using empty_type by auto
-        next
-          assume yleft:"ny \<ge> mx"
-          have "my > nx \<or> my \<le> nx" by auto
-          thus " x \<inter> y \<in> {S. (\<exists>m n.  {m..n} = S) }"
-          proof
-            assume "my > nx" 
-            then have "x \<inter> y = {}" using x_def y_def by auto
-            thus "x \<inter> y \<in> {S. \<exists> (m::nat) n. {m..n} =S}" using empty_type by auto
-          next 
-            assume yright:"my \<le> nx"
-            have "my > ny \<or> my \<le> ny" by auto
-            thus "x \<inter> y \<in> {S. \<exists> (m::nat) n. {m..n} =S}" 
-            proof
-              assume "ny < my"
-              hence "y={}" using y_def by auto
-              thus "x \<inter> y \<in> {S. \<exists> (m::nat) n. {m..n} =S}" by auto
-            next
-              assume y_non_empty:" ny\<ge> my"
-              have "mx > nx \<or> mx \<le> nx" by auto
-              thus "x \<inter> y \<in> {S. \<exists> (m::nat) n. {m..n} =S}"
-              proof
-                assume "mx > nx"
-                hence "x = {}" using x_def by auto
-                thus "x \<inter> y \<in> {S. \<exists> (m::nat) n. {m..n} =S}" by auto
-              next
-                assume x_non_empty:"mx \<le> nx"
-                have "ny \<le> nx \<or> ny > nx" by auto
-                then show "x \<inter> y \<in> {S. \<exists>(m :: nat) n. {m..n}=S}"
-                proof
-                  assume right_y_leq_right_x:"ny \<le> nx"
-                  then have min:"min ny nx = ny"  using min.absorb_iff1 by blast
-                  have "mx \<le> my \<or> mx > my" by auto    
-                  then show "x \<inter> y \<in> {S. \<exists>(m :: nat) n. {m..n}=S}"
-                  proof 
-                    assume "mx \<le> my"
-                    then have max:"max mx my = my" by simp
-                    then have "x \<inter> y = {my..ny}"  using min x_def y_def by auto
-                    thus ?thesis by auto
-                  next
-                    assume "mx > my"
-                    then have max:"max mx my = mx" by simp
-                    then have "x \<inter> y = {mx..ny}"  using min x_def y_def by auto
-                    then show ?thesis by auto                        
-                  qed
-                  next
-                  assume right_y_geq_right_x:"ny > nx"
-                  then have min:"min ny nx = nx"   by simp
-                  have "mx \<le> my \<or> mx > my" by auto    
-                  then show "x \<inter> y \<in> {S. \<exists>(m :: nat) n. {m..n}=S}"
-                  proof 
-                    assume "mx \<le> my"
-                    then have max:"max mx my = my" by simp
-                    then have "x \<inter> y = {my..nx}"  using min x_def y_def by auto
-                    thus ?thesis by auto
-                  next
-                    assume "mx > my"
-                    then have max:"max mx my = mx" by simp
-                    then have "x \<inter> y = {mx..nx}"  using min x_def y_def by auto
-                    then show ?thesis by auto                        
-                  qed
-                qed    
-              qed
-            qed
-          qed
-        qed
-      qed
-    qed
-*)
-    
+  using Int_atLeastAtMost by blast      
     
 lemma union_result: "\<forall>x \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }. 
          \<forall>y \<in> {S . (\<exists> (m::nat) n .  {m..n }=S)  }. 
            x \<noteq> {} \<and> y \<noteq> {} \<and> Max x +1 = Min y \<longrightarrow> x \<union> y \<in>{S . (\<exists> (m::nat) n . {m..n }=S)  }"  
-proof
+proof 
   fix x
   assume "x\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }"
   then show " \<forall>y\<in>{S. (\<exists>m n.  {m..n} = S) }.
@@ -171,7 +80,7 @@ proof
               
           then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
               x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S)}" 
-          proof    
+          proof (rule exE )     
             fix ya
             assume "\<exists>n\<ge>ya. {ya..n} = y"
             then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
@@ -310,11 +219,12 @@ definition minimum :: "nat_int \<Rightarrow> nat"
 definition consec:: "nat_int\<Rightarrow>nat_int \<Rightarrow> bool" 
   where "consec i j \<equiv> (i\<noteq>\<emptyset> \<and> j \<noteq> \<emptyset> \<and> (maximum(i)+1 = minimum j))"
     
-    (*definition el:: "nat \<Rightarrow> nat_int \<Rightarrow> bool" (infix " \<^bold>\<in> " 40)
-where "n \<^bold>\<in> i \<equiv> n \<in> Rep_nat_int(i)"
-*)
-lift_definition el::"nat \<Rightarrow> nat_int \<Rightarrow> bool" is Set.member .
+definition N_Chop :: "nat_int \<Rightarrow> nat_int \<Rightarrow> nat_int \<Rightarrow> bool" ("N'_Chop'(_,_,_')" 51)
+  where nchop_def :
+    "N_Chop(i,j,k) \<equiv> (i =  j \<squnion> k  \<and> j \<sqinter> k = \<emptyset> \<and> (j = \<emptyset> \<or>  k = \<emptyset> \<or> consec j k))"
     
+    
+lift_definition el::"nat \<Rightarrow> nat_int \<Rightarrow> bool" is Set.member .    
 notation el (infix " \<^bold>\<in> " 40)
   
 lift_definition not_in ::"nat \<Rightarrow> nat_int \<Rightarrow> bool" is Set.not_member .
@@ -325,10 +235,7 @@ notation card' ( "|_|" 70)
 end
   
 lemmas[simp] = nat_int.el.rep_eq nat_int.not_in.rep_eq nat_int.card'.rep_eq
-  (*
-abbreviation not_in::" nat \<Rightarrow> nat_int \<Rightarrow> bool" (infix "\<^bold>\<notin>" 40)
-where "n \<^bold>\<notin> i \<equiv> n \<notin> Rep_nat_int(i)"
-*)
+
 context nat_int 
 begin
   
@@ -337,19 +244,7 @@ lemma in_not_in_iff2: "n\<^bold>\<notin> i \<longleftrightarrow> \<not> n \<^bol
     
     
 lemma rep_non_empty_means_seq:"i \<noteq>\<emptyset> \<longrightarrow> (\<exists>m n. m \<le> n \<and> ({m..n} =( Rep_nat_int i)))" 
-proof
-  assume "i \<noteq> \<emptyset>"
-  then have "Rep_nat_int i \<noteq> {} " 
-    by (metis Rep_nat_int_inverse bot_nat_int_def)
-  then show "(\<exists>m n. m \<le> n \<and> ({m..n} =( Rep_nat_int i)))" 
-    using not_empty_means_seq Rep_nat_int 
-  proof -
-    have "\<exists>n na. {n..na} = Rep_nat_int i"
-      using Rep_nat_int by blast
-    then show ?thesis
-      by (metis (no_types) \<open>Rep_nat_int i \<noteq> {}\<close> atLeastatMost_empty_iff2)
-  qed 
-qed
+  by (metis Rep_nat_int Rep_nat_int_inject bot_nat_int.rep_eq nat_int.not_empty_means_seq)
   
 lemma non_empty_max: "i \<noteq> \<emptyset> \<longrightarrow> (\<exists>m . maximum(i) = m)" 
   by auto
@@ -363,7 +258,7 @@ lemma minimum_in: "i \<noteq> \<emptyset> \<longrightarrow> minimum i \<^bold>\<
 lemma maximum_in: "i \<noteq> \<emptyset> \<longrightarrow> maximum i \<^bold>\<in> i"
   by (metis Max_in atLeastatMost_empty_iff2 finite_atLeastAtMost maximum_def el.rep_eq rep_non_empty_means_seq)
     
-lemma non_empty_elem_in:"i \<noteq> \<emptyset> \<longleftrightarrow> (\<exists>n. n \<^bold>\<in> i)" 
+lemma non_empty_elem_in:"i \<noteq> \<emptyset> \<longleftrightarrow> (\<exists>n. n \<^bold>\<in> i)"   
 proof
   assume assm:"i \<noteq> \<emptyset>"
   show "\<exists>n . n \<^bold>\<in> i" 
@@ -380,7 +275,7 @@ proof
   then have non_empty:"{m..n} \<noteq> {} " 
     using atLeastatMost_empty_iff by blast
   with assm have "{m..n} \<in> {S . (\<exists> (m::nat) n .  {m..n }=S)  }" by blast
-  thus "Abs_nat_int {m..n} \<noteq> \<emptyset>" 
+  then show "Abs_nat_int {m..n} \<noteq> \<emptyset>" 
     using Abs_nat_int_inject empty_type non_empty bot_nat_int_def 
     by (simp add: bot_nat_int.abs_eq)
 qed
@@ -425,7 +320,7 @@ lemma in_refl:"(n::nat)  \<^bold>\<in> Abs_nat_int {n}"
 proof -
   have "(n::nat) \<le> n" by simp
   hence "{n} \<in> {S . (\<exists> (m::nat) n . m \<le> n \<and> {m..n }=S) \<or> S={} }" by auto
-  thus "n \<^bold>\<in> Abs_nat_int {n}" 
+  then show "n \<^bold>\<in> Abs_nat_int {n}" 
     by (simp add: Abs_nat_int_inverse el_def)
 qed
   
@@ -437,58 +332,18 @@ proof
   with assm show "m=n" by (simp add: Abs_nat_int_inverse el_def)
 qed
   
-lemma subseteq_refl:" i \<sqsubseteq> i" by auto
-    
-lemma subseteq_trans:"i \<sqsubseteq> j \<Longrightarrow> j \<sqsubseteq> k \<Longrightarrow> i \<sqsubseteq> k" by auto
-    
-    
-lemma inter_sym : "(i::nat_int) \<sqinter> j = j \<sqinter> i" 
-  using inf.commute by auto
-    
-lemma inter_absorb : "(i::nat_int) \<sqinter> i = i" using inf_idem by auto
-    
 lemma inter_empty1:"(i::nat_int) \<sqinter> \<emptyset> = \<emptyset>" 
   using Rep_nat_int_inject inf_nat_int.rep_eq bot_nat_int.abs_eq bot_nat_int.rep_eq by fastforce 
     
 lemma inter_empty2:"\<emptyset> \<sqinter> (i::nat_int) = \<emptyset>" 
   by (metis inf_commute nat_int.inter_empty1)
-    
-    
-lemma inter_left_absorb: "(i::nat_int) \<sqinter> (i \<sqinter> j) = i \<sqinter> j" using inf.left_idem by auto 
-    
-lemma inter_left_commute: "(i::nat_int) \<sqinter> (j \<sqinter> k) = j \<sqinter> (i \<sqinter> k)" using inf.left_commute by auto
-    
-lemma inter_assoc: "((i::nat_int) \<sqinter> j) \<sqinter> k = i \<sqinter> (j \<sqinter> k)" using inf.assoc by auto
-    
-    
-lemma inter_absorb1: "(i::nat_int) \<sqsubseteq> j \<Longrightarrow> i \<sqinter> j = i"  
-  by (simp add: inf_absorb1 less_eq_nat_int.rep_eq )
-    
-lemma inter_absorb2: "i \<sqsubseteq> j \<Longrightarrow> j \<sqinter> i = i"
-  by (simp add: inter_absorb1 inter_sym) 
-    
-    
-lemma inter_subseteq1: "((i::nat_int) \<sqinter> j) \<sqsubseteq> i"  
-  by (simp add: inf_nat_int.rep_eq ) 
-    
-lemma inter_subseteq2: "((i::nat_int) \<sqinter> j) \<sqsubseteq> j"  
-  using inter_subseteq1 inter_sym by fastforce 
-    
-lemma inter_mon1:"(i::nat_int) \<sqsubseteq> j \<longrightarrow> i \<sqinter> k \<sqsubseteq> j \<sqinter> k" 
-  using inf_mono by blast 
-    
-lemma inter_mon2:"(i::nat_int)\<sqsubseteq> j \<longrightarrow> k \<sqinter> i \<sqsubseteq> k \<sqinter> j" 
-  using inf_mono eq_iff by blast
-    
-    
+        
 lemma un_empty_absorb1:"i \<squnion> \<emptyset> = i" 
   using  Abs_nat_int_inverse Rep_nat_int_inverse union_def empty_type bot_nat_int.rep_eq by auto
     
 lemma un_empty_absorb2:"\<emptyset> \<squnion> i = i" 
   using  Abs_nat_int_inverse Rep_nat_int_inverse union_def empty_type bot_nat_int.rep_eq by auto
-    
-    
-    
+          
 lemma consec_un:"consec i j \<and> n \<notin> Rep_nat_int(i) \<union> Rep_nat_int j \<longrightarrow> n \<^bold>\<notin>  (i \<squnion> j)"
 proof
   assume assm:"consec i j \<and> n \<notin>  Rep_nat_int i \<union> Rep_nat_int j" 
@@ -532,16 +387,6 @@ proof
     by (metis (mono_tags, lifting) Un_upper2 less_eq_nat_int.rep_eq mem_Collect_eq nat_int.union_def)
 qed
   
-lemma consec_inter_empty:"consec i j \<Longrightarrow> i \<sqinter> j = \<emptyset>"  
-  unfolding consec_def 
-proof -
-  assume assm:"i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> maximum i +1 = minimum j"
-  obtain nn :: "nat_int \<Rightarrow> nat" and nna :: "nat_int \<Rightarrow> nat" where
-    "\<forall>n. n = Abs_nat_int {} \<or> nn n \<le> nna n \<and> {nn n..nna n} = Rep_nat_int n"
-    by (metis nat_int.rep_non_empty_means_seq bot_nat_int_def)
-  then show "i \<sqinter> j = \<emptyset>" using int_conseq_seq 
-    by (metis (no_types) Rep_nat_int_inverse assm inf_nat_int.rep_eq nat_int.int_conseq_seq nat_int.leq_max_sup nat_int.leq_min_inf nat_int.maximum_def nat_int.minimum_def bot_nat_int.rep_eq)
-qed 
   
 lemma inter_distr1:"consec j k \<longrightarrow> i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)"  
   unfolding consec_def
@@ -552,9 +397,7 @@ proof
 qed
   
 lemma inter_distr2:"consec j k \<longrightarrow> (j \<squnion> k) \<sqinter> i = (j \<sqinter> i) \<squnion> (k \<sqinter> i)"
-  by (simp add: inter_distr1 inter_sym)
-    
-    
+  by (simp add: inter_distr1 inf_commute)
     
 lemma consec_un_not_elem1:"consec i j \<and> n\<^bold>\<notin> i \<squnion> j \<longrightarrow>  n \<^bold>\<notin> i"
   using un_subset1 less_eq_nat_int.rep_eq not_in.rep_eq by blast 
@@ -563,25 +406,6 @@ lemma consec_un_not_elem2:"consec i j \<and> n\<^bold>\<notin> i \<squnion> j \<
   using  un_subset2 less_eq_nat_int.rep_eq not_in.rep_eq by blast
     
     
-lemma consec_in_exclusive1:"consec i j \<and> n \<^bold>\<in> i \<longrightarrow> n \<^bold>\<notin> j"
-proof -
-  { assume "\<exists>na nb. \<not> na \<le> n \<and> consec i nb"
-    moreover
-    { assume "\<exists>na nb. \<emptyset> \<noteq> i \<and> \<not> na \<le> n \<and> consec nb j"
-      have "\<emptyset> \<noteq> j \<and> \<emptyset> \<noteq> i \<and> n \<notin> {minimum j..maximum i} \<or> (consec i j \<and> n \<^bold>\<in> i \<longrightarrow> n \<^bold>\<notin> j)"
-        by (metis (no_types) atLeastAtMost_iff atLeastatMost_empty_iff inf.idem int_conseq_seq consec_def)
-      then have ?thesis 
-        by (metis atLeastAtMost_iff el.rep_eq nat_int.leq_max_sup nat_int.leq_min_inf nat_int.maximum_def nat_int.minimum_def nat_int.rep_non_empty_means_seq not_in.rep_eq)
-    }
-    ultimately have ?thesis
-      using consec_def by blast }
-  then show ?thesis
-    by (metis (no_types) atLeastatMost_empty_iff inf.idem int_conseq_seq)
-qed
-  
-lemma consec_in_exclusive2:"consec i j \<and> n \<^bold>\<in> j \<longrightarrow> n \<^bold>\<notin> i"
-  using consec_in_exclusive1 el.rep_eq not_in.rep_eq by blast
-    
 lemma consec_un_element1:"consec i j \<and> n \<^bold>\<in> i \<longrightarrow> n \<^bold>\<in> i \<squnion> j" 
   using less_eq_nat_int.rep_eq nat_int.el.rep_eq nat_int.un_subset1 by blast
     
@@ -589,41 +413,46 @@ lemma consec_un_element2:"consec i j \<and> n \<^bold>\<in> j \<longrightarrow> 
   using less_eq_nat_int.rep_eq nat_int.el.rep_eq nat_int.un_subset2 by blast
     
 lemma consec_lesser:" consec i j  \<longrightarrow> (\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" 
-proof
+proof (rule allI|rule impI)+
   assume "consec i j"
-  show "(\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" 
-  proof -
-    {
-      fix n and m  
-      assume assump:"n \<^bold>\<in> i \<and> m \<^bold>\<in> j "
-      then have  max:"n \<le> maximum i" 
-        by (metis \<open>consec i j\<close> atLeastAtMost_iff leq_max_sup maximum_def consec_def el.rep_eq rep_non_empty_means_seq)
-      from assump have min: "m \<ge> minimum j" 
-        by (metis Min_le \<open>consec i j\<close> finite_atLeastAtMost minimum_def consec_def el.rep_eq rep_non_empty_means_seq)
-      from min and max have less:"n < m" 
-        using One_nat_def Suc_le_lessD \<open>consec i j\<close> add.right_neutral add_Suc_right dual_order.trans leD leI consec_def by auto
-      hence "( (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))"   by blast
-    } thus "(\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" by blast
-  qed
+  fix n and m  
+  assume assump:"n \<^bold>\<in> i \<and> m \<^bold>\<in> j "
+  then have  max:"n \<le> maximum i" 
+    by (metis \<open>consec i j\<close> atLeastAtMost_iff leq_max_sup maximum_def consec_def el.rep_eq rep_non_empty_means_seq)
+  from assump have min: "m \<ge> minimum j" 
+    by (metis Min_le \<open>consec i j\<close> finite_atLeastAtMost minimum_def consec_def el.rep_eq rep_non_empty_means_seq)
+  from min and max show less:"n < m" 
+    using One_nat_def Suc_le_lessD \<open>consec i j\<close> add.right_neutral add_Suc_right dual_order.trans leD leI consec_def by auto
 qed
+
+lemma consec_in_exclusive1:"consec i j \<and> n \<^bold>\<in> i \<longrightarrow> n \<^bold>\<notin> j" 
+  using nat_int.consec_lesser nat_int.in_not_in_iff2 by blast
+
+lemma consec_in_exclusive2:"consec i j \<and> n \<^bold>\<in> j \<longrightarrow> n \<^bold>\<notin> i"
+  using consec_in_exclusive1 el.rep_eq not_in.rep_eq by blast
   
 lemma consec_trans_lesser:" consec i j \<and> consec j k \<longrightarrow> (\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> k \<longrightarrow> n < m))"
-proof 
+proof (rule allI|rule impI)+
   assume cons:" consec i j \<and> consec j k"
-  show "(\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> k \<longrightarrow> n < m))"
-  proof -
-    {
-      fix n and m
-      assume assump:"n \<^bold>\<in> i \<and> m \<^bold>\<in> k "
-      have "\<forall>k . k \<^bold>\<in> j \<longrightarrow> n < k" using consec_lesser assump cons by blast
-      hence n_less: " n < minimum j" using cons minimum_in consec_def by blast
-      have "\<forall>k . k \<^bold>\<in> j \<longrightarrow> k < m" using consec_lesser assump cons by blast
-      hence m_greater:"maximum j < m" using cons maximum_in consec_def by blast 
-      have " (n \<^bold>\<in> i \<and> m \<^bold>\<in> k \<longrightarrow> n < m)" using n_less m_greater  
-        by (metis cons consec_lesser dual_order.strict_trans maximum_in consec_def)
-    } thus "(\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> k \<longrightarrow> n < m))" by blast
-  qed
+  fix n and m
+  assume assump:"n \<^bold>\<in> i \<and> m \<^bold>\<in> k "
+  have "\<forall>k . k \<^bold>\<in> j \<longrightarrow> n < k" using consec_lesser assump cons by blast
+  hence n_less: " n < minimum j" using cons minimum_in consec_def by blast
+  have "\<forall>k . k \<^bold>\<in> j \<longrightarrow> k < m" using consec_lesser assump cons by blast
+  hence m_greater:"maximum j < m" using cons maximum_in consec_def by blast
+  then show "n < m" 
+    by (metis assump cons consec_def dual_order.strict_trans nat_int.consec_lesser nat_int.maximum_in)      
 qed
+  
+lemma consec_inter_empty:"consec i j \<Longrightarrow> i \<sqinter> j = \<emptyset>" 
+proof -
+  assume "consec i j"
+  then have "i \<noteq> bot \<and> j \<noteq> bot \<and> maximum i + 1 = minimum j"
+    using consec_def by force
+  then show ?thesis
+    by (metis (no_types) Rep_nat_int_inverse bot_nat_int_def inf_nat_int.rep_eq int_conseq_seq nat_int.leq_max_sup nat_int.leq_min_inf nat_int.maximum_def nat_int.minimum_def nat_int.rep_non_empty_means_seq)
+qed 
+
   
 lemma consec_intermediate1:"consec j k \<and> consec i (j \<squnion> k) \<longrightarrow> consec i j "
 proof
@@ -748,11 +577,7 @@ proof
   qed
 qed
   
-  
-  
-  (*definition card' :: "nat_int \<Rightarrow> nat" ("|_|" 70)
-where "|i| == card (Rep_nat_int i)"
-*)
+    
 lemma card_subset_le: "i \<sqsubseteq> i' \<longrightarrow> |i| \<le> |i'|"  
 proof -
   have "\<exists>n na. {n..na} = Rep_nat_int i'"
@@ -835,60 +660,53 @@ proof (induct x)
   assume IH:"\<forall>i. |i| = x \<longrightarrow> Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (x - 1)})"
   show   " \<forall>i. |i| = Suc x \<longrightarrow>
              Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (Suc x - 1)})"
-  proof
+  proof (rule allI|rule impI)+
     fix i
-    show "|i| = Suc x \<longrightarrow> Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (Suc x - 1)})"
-    proof
-      assume assm_IS:"|i| = Suc x"
-      show " Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (Suc x - 1)})"
-      proof (cases "x = 0")
-        assume "x=0"
-        hence "|i| = 1" 
-          using assm_IS by auto 
-        then have "\<exists>n'. Rep_nat_int i = {n'}" 
-          using nat_int.singleton by blast 
-        hence "\<exists>n'. Rep_nat_int i = {n'.. n' + (Suc x) -1}"
-          by (simp add: \<open>x = 0\<close>)
-        thus "Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (Suc x - 1)})"            
-          by simp
-      next
-        assume x_neq_0:"x \<noteq>0 "
-        hence x_ge_0:"x > 0" using gr0I by blast
-        from assm_IS have i_is_seq:"\<exists>n m. n \<le> m \<and> Rep_nat_int i = {n..m}" 
-          by (metis One_nat_def Suc_le_mono card_non_empty_geq_one le0 rep_non_empty_means_seq)
-        obtain n and m where seq_def:" n  \<le> m \<and> Rep_nat_int i = {n..m}" 
-          using i_is_seq by auto
-        have n_le_m:"n < m"
-        proof (rule ccontr)
-          assume "\<not>n < m"
-          hence "n = m" by (simp add: less_le seq_def)
-          hence "Rep_nat_int i = {n}" by (simp add: seq_def)
-          hence "x = 0" using assm_IS card'.rep_eq by auto
-          thus False by (simp add: x_neq_0)
-        qed
-        hence "n \<le> (m-1)" by simp
-        obtain i' where  "i' = Abs_nat_int {n..m-1}" by blast
-        have card_i':"|i'| = x" 
-          by (metis One_nat_def Suc_leI \<open>i' = Abs_nat_int {n..m - 1}\<close> \<open>n \<le> m - 1\<close> add_gr_0 assm_IS card_atLeastAtMost diff_Suc_1 diff_Suc_diff_eq2 diff_diff_left leq_max_sup leq_min_inf less_imp_add_positive maximum_def minimum_def n_le_m card'.rep_eq leq_max_sup' leq_min_inf' leq_nat_non_empty rep_non_empty_means_seq seq_def)
-        hence "Rep_nat_int i' = {} \<or> (\<exists>n. Rep_nat_int i' = {n.. n + (x - 1)})" 
-          using IH by auto
-        hence " (\<exists>n. Rep_nat_int i' = {n.. n + (x - 1)})" using x_neq_0 
-          using card.empty card_i' card'.rep_eq by auto
-        hence "m-1 = n + x -1" using assm_IS card'.rep_eq seq_def by auto
-        hence "m = n +x" using n_le_m x_ge_0 by linarith
-        hence "( Rep_nat_int i = {n.. n + (Suc x -1) })" using seq_def by (simp )
-        hence "\<exists>n. (Rep_nat_int i = {n.. n + (Suc x -1) })" ..
-        thus  "Rep_nat_int i = {} \<or> (\<exists>n. (Rep_nat_int i = {n.. n + (Suc x -1) }))" by blast
+    assume assm_IS:"|i| = Suc x"
+    show " Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (Suc x - 1)})"
+    proof (cases "x = 0")
+      assume "x=0"
+      hence "|i| = 1" 
+        using assm_IS by auto 
+      then have "\<exists>n'. Rep_nat_int i = {n'}" 
+        using nat_int.singleton by blast 
+      hence "\<exists>n'. Rep_nat_int i = {n'.. n' + (Suc x) -1}"
+        by (simp add: \<open>x = 0\<close>)
+      thus "Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i = {n.. n + (Suc x - 1)})"            
+        by simp
+    next
+      assume x_neq_0:"x \<noteq>0 "
+      hence x_ge_0:"x > 0" using gr0I by blast
+      from assm_IS have i_is_seq:"\<exists>n m. n \<le> m \<and> Rep_nat_int i = {n..m}" 
+        by (metis One_nat_def Suc_le_mono card_non_empty_geq_one le0 rep_non_empty_means_seq)
+      obtain n and m where seq_def:" n  \<le> m \<and> Rep_nat_int i = {n..m}" 
+        using i_is_seq by auto
+      have n_le_m:"n < m"
+      proof (rule ccontr)
+        assume "\<not>n < m"
+        hence "n = m" by (simp add: less_le seq_def)
+        hence "Rep_nat_int i = {n}" by (simp add: seq_def)
+        hence "x = 0" using assm_IS card'.rep_eq by auto
+        thus False by (simp add: x_neq_0)
       qed
+      hence "n \<le> (m-1)" by simp
+      obtain i' where  "i' = Abs_nat_int {n..m-1}" by blast
+      have card_i':"|i'| = x" 
+        by (metis One_nat_def Suc_leI \<open>i' = Abs_nat_int {n..m - 1}\<close> \<open>n \<le> m - 1\<close> add_gr_0 assm_IS card_atLeastAtMost diff_Suc_1 diff_Suc_diff_eq2 diff_diff_left leq_max_sup leq_min_inf less_imp_add_positive maximum_def minimum_def n_le_m card'.rep_eq leq_max_sup' leq_min_inf' leq_nat_non_empty rep_non_empty_means_seq seq_def)
+      hence "Rep_nat_int i' = {} \<or> (\<exists>n. Rep_nat_int i' = {n.. n + (x - 1)})" 
+        using IH by auto
+      hence " (\<exists>n. Rep_nat_int i' = {n.. n + (x - 1)})" using x_neq_0 
+        using card.empty card_i' card'.rep_eq by auto
+      hence "m-1 = n + x -1" using assm_IS card'.rep_eq seq_def by auto
+      hence "m = n +x" using n_le_m x_ge_0 by linarith
+      hence "( Rep_nat_int i = {n.. n + (Suc x -1) })" using seq_def by (simp )
+      hence "\<exists>n. (Rep_nat_int i = {n.. n + (Suc x -1) })" ..
+      thus  "Rep_nat_int i = {} \<or> (\<exists>n. (Rep_nat_int i = {n.. n + (Suc x -1) }))" by blast
     qed
   qed
 qed
   
   
-definition N_Chop :: "nat_int \<Rightarrow> nat_int \<Rightarrow> nat_int \<Rightarrow> bool" ("N'_Chop '(_,_,_')" 51)
-  where nchop_def :
-    "N_Chop(i,j,k) \<equiv>   (i =  j \<squnion> k  \<and> j \<sqinter> k = \<emptyset> \<and>
-        (j = \<emptyset> \<or>  k = \<emptyset> \<or> consec j k))"
     
 lemma rep_single: "Rep_nat_int (Abs_nat_int {m..m}) = {m}"
   by (simp add: Abs_nat_int_inverse)
@@ -896,10 +714,10 @@ lemma rep_single: "Rep_nat_int (Abs_nat_int {m..m}) = {m}"
 lemma chop_empty_right: "\<forall>i. N_Chop(i,i,\<emptyset>)"  
   using bot_nat_int.abs_eq nat_int.inter_empty1 nat_int.nchop_def nat_int.un_empty_absorb1 by auto
     
-lemma chop_empty_left: "\<forall>i. N_Chop (i, \<emptyset>, i)"
+lemma chop_empty_left: "\<forall>i. N_Chop(i, \<emptyset>, i)"
   using bot_nat_int.abs_eq nat_int.inter_empty2 nat_int.nchop_def nat_int.un_empty_absorb2 by auto
     
-lemma chop_empty : "N_Chop(\<emptyset>, \<emptyset>, \<emptyset>)"
+lemma chop_empty : "N_Chop(\<emptyset>,\<emptyset>,\<emptyset>)"
   by (simp add: chop_empty_left)
     
 lemma chop_always_possible:"\<forall>i.\<exists> j k. N_Chop(i,j,k)" 
@@ -1021,14 +839,14 @@ proof
     by (metis Max_ge max_in_k dual_order.antisym finite_atLeastAtMost k_non_e maximum_def maximum_in el.rep_eq rep_non_empty_means_seq)
 qed
   
-lemma chop_assoc1:"N_Chop(i,i1,i2) \<and> N_Chop(i2,i3,i4) \<longrightarrow> (N_Chop (i, i1 \<squnion> i3, i4) \<and> N_Chop(i1 \<squnion> i3, i1, i3))"
+lemma chop_assoc1:"N_Chop(i,i1,i2) \<and> N_Chop(i2,i3,i4) \<longrightarrow> (N_Chop(i, i1 \<squnion> i3, i4) \<and> N_Chop(i1 \<squnion> i3, i1, i3))"
 proof 
   assume assm:"N_Chop(i,i1,i2) \<and> N_Chop(i2,i3,i4)"
   then have chop_def:"(i =  i1 \<squnion> i2  \<and> i1 \<sqinter> i2 = \<emptyset> \<and>
         (i1 = \<emptyset> \<or>  i2 = \<emptyset> \<or> ( consec i1 i2)))"
     using nchop_def by blast
   hence "(i1 = \<emptyset> \<or>  i2 = \<emptyset> \<or> ( consec i1 i2))" by simp 
-  then show "N_Chop (i, i1 \<squnion> i3, i4) \<and> N_Chop(i1 \<squnion> i3, i1, i3)"
+  then show "N_Chop(i, i1 \<squnion> i3, i4) \<and> N_Chop(i1 \<squnion> i3, i1, i3)"
   proof 
     assume empty:"i1 = \<emptyset>"
     then have l_eq_i2:"i = i2" by (simp add: chop_def un_empty_absorb2)
@@ -1037,15 +855,15 @@ proof
       by (simp add: assm empty l_eq_i2 chop_empty_left)
   next
     assume "i2 = \<emptyset> \<or> ( consec i1 i2)"
-    then show "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)"
+    then show "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)"
     proof 
       assume empty:"i2 = \<emptyset>"
       then have l_eq_i1:" i= i1" by (simp add: chop_def un_empty_absorb1)
       from empty have i3_empty:"i3 = \<emptyset>" 
-        by (metis assm inter_absorb1 inter_empty1 un_empty_absorb1 un_subset1 nchop_def)
+        by (metis assm inf.absorb1 inter_empty1 un_empty_absorb1 un_subset1 nchop_def)
       from empty have i4_empty:"i4 = \<emptyset>" 
         using assm i3_empty un_empty_absorb2 nchop_def by auto  
-      then show "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
+      then show "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
         using assm chop_def empty i3_empty l_eq_i1 by auto
     next
       assume " consec i1 i2"
@@ -1053,22 +871,22 @@ proof
         using consec_def by blast
       from assm have "i3 = \<emptyset> \<or> i4 = \<emptyset> \<or> consec i3 i4" 
         using nchop_def by blast
-      then show "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
+      then show "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
       proof
         assume i3_empty:"i3 = \<emptyset>"
         then have i1_sq_i3:"i1 \<squnion> i3 = i1" using un_empty_absorb1 by blast
         from i3_empty have "i2 = i4" 
           using assm un_empty_absorb2 nchop_def by auto
-        thus "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" using assm i1_sq_i3 
+        thus "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" using assm i1_sq_i3 
           by (simp add: i3_empty chop_empty_right)
       next 
         assume "i4 = \<emptyset> \<or> consec i3 i4"
-        then show "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
+        then show "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
         proof
           assume i4_empty:"i4 = \<emptyset>"
           then have  i2_eq_i3:"i2 = i3" 
             using assm un_empty_absorb1 nchop_def by auto
-          thus "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)"  
+          thus "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)"  
             using assm chop_def i4_empty chop_empty_right by auto
         next
           assume consec_i3_i4:"consec i3 i4"
@@ -1079,7 +897,7 @@ proof
             using consec_i1_i2 consec_i3_i4 consec_def by auto
           hence "consec (i1 \<squnion> i3) i4" 
             using assm consec_assoc1 consec_i1_i2 consec_i3_i4  nchop_def by auto
-          thus "N_Chop (i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
+          thus "N_Chop(i, i1 \<squnion> i3, i4)\<and> N_Chop(i1 \<squnion> i3, i1, i3)" 
             using assm consec_inter_empty consec_i1_i3 consec_i3_i4 un_assoc nchop_def by auto 
         qed
       qed
@@ -1087,50 +905,50 @@ proof
   qed
 qed
   
-lemma chop_assoc2:"N_Chop(i,i1,i2) \<and> N_Chop(i1,i3,i4) \<longrightarrow> N_Chop (i, i3, i4 \<squnion> i2) \<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+lemma chop_assoc2:"N_Chop(i,i1,i2) \<and> N_Chop(i1,i3,i4) \<longrightarrow> N_Chop(i, i3, i4 \<squnion> i2) \<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
 proof 
   assume assm: "N_Chop(i,i1,i2) \<and> N_Chop(i1,i3,i4)"
   hence "(i1 = \<emptyset> \<or>  i2 = \<emptyset> \<or> ( consec i1 i2))" 
     using nchop_def by blast 
-  then show "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)"
+  then show "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)"
   proof
     assume i1_empty:"i1 = \<emptyset>"
     then have i3_empty:"i3 = \<emptyset>" 
-      by (metis assm inter_absorb1 inter_empty1 un_empty_absorb1 un_subset1 nchop_def)
+      by (metis assm inf_absorb1 inter_empty1 un_empty_absorb1 un_subset1 nchop_def)
     from i1_empty have i4_empty:"i4 = \<emptyset>" 
       using assm i3_empty un_empty_absorb2 nchop_def by auto
-    then show "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+    then show "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
       using assm i3_empty chop_empty_left nchop_def by auto
   next
     assume "i2 = \<emptyset> \<or> consec i1 i2"
-    thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)"
+    thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)"
     proof
       assume i2_empty:"i2=\<emptyset>"
       then have l_eq_i1:"i = i1" 
         using assm chop_empty_right nchop_def by auto
       have "i4 \<squnion> i2 = i4" 
         by (simp add: i2_empty un_empty_absorb1)
-      thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+      thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
         by (simp add: assm i2_empty l_eq_i1 chop_empty_right) 
     next
       assume consec_i1_i2:"consec i1 i2"
       from assm have "(i3 = \<emptyset> \<or>  i4 = \<emptyset> \<or> ( consec i3 i4))" 
         by (simp add: nchop_def)
-      thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)"
+      thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)"
       proof
         assume i3_empty:"i3=\<emptyset>"
         then have i1_eq_i3:"i1 = i4" 
           using assm un_empty_absorb2 nchop_def by auto
-        thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+        thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
           using assm i3_empty chop_empty_left nchop_def by auto
       next
         assume " i4 = \<emptyset> \<or> ( consec i3 i4)"
-        thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+        thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
         proof
           assume i4_empty:"i4=\<emptyset>"
           hence i1_eq_i3:"i1 = i3" 
             using assm un_empty_absorb1 nchop_def by auto
-          thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+          thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
             using assm i4_empty un_empty_absorb2 chop_empty_left by auto 
         next
           assume consec_i3_i4:"consec i3 i4"
@@ -1140,7 +958,7 @@ proof
             using consec_i1_i2 consec_i3_i4 consec_def by auto 
           then have consec_i3_un:"consec i3 (i4 \<squnion> i2)" 
             using assm consec_assoc2 consec_i1_i2 consec_i3_i4 nchop_def by auto
-          thus "N_Chop (i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
+          thus "N_Chop(i, i3, i4 \<squnion> i2)\<and> N_Chop(i4 \<squnion> i2, i4,i2)" 
             using assm consec_inter_empty consec_i3_i4 consec_i4_i2 un_assoc nchop_def by auto
         qed
       qed

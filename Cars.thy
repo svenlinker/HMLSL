@@ -28,4 +28,26 @@ proof -
     by (metis (mono_tags, lifting) Abs_cars_inverse mem_Collect_eq)
   thus ?thesis by blast
 qed
+
+notation inf (infix "\<sqinter>" 70)
+notation nat_int.empty ("\<emptyset>")
+notation nat_int.subseteq  (infix "\<sqsubseteq>" 30)
+notation nat_int.union (infix "\<squnion>" 65)
+notation nat_int.maximum ("maximum _")
+notation nat_int.minimum  ("minimum _")
+notation nat_int.consec ("consec _ _") 
+notation nat_int.el (infix " \<^bold>\<in> " 40)
+notation nat_int.not_in (infix "\<^bold>\<notin>" 40)
+  
+notation RealInt.real_int.shift (" shift _ _")
+  
+notation nat_int.card' ("|_|" 70)
+notation RealInt.real_int.length ("\<parallel>_\<parallel>" 70)
+  
+notation NatInt.nat_int.N_Chop ("N'_Chop'(_,_,_')")
+notation RealInt.real_int.R_Chop ("R'_Chop'(_,_,_')")  
+
+  
+  
+  
 end

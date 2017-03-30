@@ -104,15 +104,6 @@ where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>V. \<phi>(ts)(V)"
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
 where "ts, v \<Turnstile> \<phi> == \<phi>(ts)(v)"
 
-
-(*abbreviation spatially_valid :: "traffic \<Rightarrow> (\<sigma> \<Rightarrow> bool)" ("_ \<Turnstile>s _" 10)
-where "ts \<Turnstile>s \<phi> \<equiv> \<forall>v. \<phi>(ts)(v)"
-*)
-abbreviation sat::"\<sigma> \<Rightarrow> bool" ("sat _" 10)
-where "sat \<phi> \<equiv> \<exists>ts. \<exists>v. (\<phi>(ts)(v))"
-
-
-
 text {* Some general theorems about MLSL *}
 
 lemma hchop_weaken1: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>)) " 
@@ -353,7 +344,7 @@ using horizontal_chop_width_stable vertical_chop_width_mon
 by smt
 
 lemma clm_disj_res:"\<Turnstile> \<^bold>\<not> \<^bold>\<langle> cl(c) \<^bold>\<and> re(c) \<^bold>\<rangle>"
-by (metis (no_types, lifting) nat_int.card_empty_zero disjoint nat_int.inter_assoc nat_int.inter_empty1 nat_int.inter_sym restrict_def zero_neq_one) 
+by (metis (no_types, lifting) nat_int.card_empty_zero disjoint inf_assoc nat_int.inter_empty1 inf_commute restrict_def zero_neq_one) 
 
 lemma width_ge:"\<Turnstile> (\<^bold>\<omega>> 0) \<^bold>\<rightarrow> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>> 0))"
 using  vertical_chop_add1  add_gr_0 zero_less_one by auto
@@ -515,7 +506,7 @@ lemma res_continuous :"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<not>
 by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right restrict_def)
 
 lemma no_clm_before_res:"\<Turnstile>\<^bold>\<not>(cl(c) \<^bold>\<frown> re(c))"
-by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le disjoint hchop_def nat_int.inter_assoc nat_int.inter_subseteq1 not_one_le_zero restrict_def)
+by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le disjoint hchop_def inf_assoc inf_le1 not_one_le_zero restrict_def)
 
 lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
 proof (rule ccontr)
@@ -526,7 +517,7 @@ proof (rule ccontr)
   have "restrict v (clm ts )c \<noteq> \<emptyset>" using assm 
     using nat_int.card_non_empty_geq_one restriction_stable1 by auto
   then have res_in_neq:"restrict v (clm ts) c \<sqinter> restrict v (res ts) c \<noteq>\<emptyset>" 
-    by (simp add: clm_subs nat_int.inter_absorb1)   
+    by (simp add: clm_subs inf_absorb1)   
   then show False using restriction_clm_res_disjoint    
     by (simp add:inf_commute)
 qed
@@ -822,7 +813,7 @@ by (metis (mono_tags, lifting) withdraw_claim_def)
 
 lemma backwards_wdr_res_stab:"(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
 using withdraw_reservation_length_stable withdraw_res_subseteq
-by (smt nat_int.inter_absorb2 nat_int.subseteq_trans restrict_def restrict_res) 
+by (smt inf_absorb2 order_trans restrict_def restrict_res) 
 
 lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)"
 proof (rule allI| rule impI)+ 
@@ -833,7 +824,7 @@ proof (rule allI| rule impI)+
     assume re:"ts,v \<Turnstile>re(c)"
     have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
     have restrict:"restrict v (res ts ) c = restrict v (res ts' ) c" 
-      by (metis (no_types, lifting) nat_int.inter_absorb2 nat_int.subseteq_trans re restriction.restrict_def restriction.restrict_res traffic.create_res_subseteq1 ts'_def) 
+      by (metis (no_types, lifting) inf_absorb2 order_trans re restriction.restrict_def restriction.restrict_res traffic.create_res_subseteq1 ts'_def) 
     show  re':"ts',v \<Turnstile> re(c)" using len_eq ts'_def restrict 
       using re by auto
   next
@@ -844,9 +835,8 @@ proof (rule allI| rule impI)+
     then have restrict:"restrict v (clm ts ) c \<sqsubseteq> restrict v (res ts' ) c" using traffic.create_res_subseteq2 ts'_def  less_eq_nat_int.rep_eq 
       using eq_iff by (metis (no_types) cl inf.orderE inf_commute order_trans restriction.restrict_clm restriction.restrict_def)
     show  re':"ts',v \<Turnstile> re(c)" using len_eq cl restrict 
-      using nat_int.inter_absorb1 nat_int.inter_sym restriction.restrict_def by fastforce
+      using  restriction.restrict_def by (simp add: inf_absorb1 inf_commute)
   qed
-    
 qed
 
 lemma reservation2: "(\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c)))" 

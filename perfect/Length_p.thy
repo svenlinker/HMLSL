@@ -172,8 +172,7 @@ proof
         hence "right ((space ts v) c) < right (ext v)" 
           using r2 by linarith
         from assm have len_v_in_type:"((max (left (ext v)) (left ((space ts v) c)), min (right (ext v)) (right ((space ts v) c)))) \<in> {r :: real*real . fst r \<le> snd r}"                 
-          using \<open>right ((space ts v) c) < right (ext v)\<close> l2 len_in_type by auto
-            
+          using \<open>right ((space ts v) c) < right (ext v)\<close> l2 len_in_type by auto            
         hence " right (len v ( ts) c) \<noteq> right (ext v)" 
           using Abs_real_int_inverse Pair_inject \<open>right ((space ts v) c) < right (ext v)\<close> len_def real_int.left_leq_right surjective_pairing by auto 
         with r1 show False by best
@@ -196,8 +195,7 @@ proof
     using len_right by blast
   show "(left ((len v1 ts) c) = left (ext v1))"  
   proof (cases "left ((space ts v) c) \<le> right (ext v1) \<and> right ((space ts v) c) \<ge> left (ext v1)")
-    assume inside:"left ((space ts v) c) \<le> right (ext v1) \<and> right ((space ts v) c) \<ge> left (ext v1)"
-      
+    assume inside:"left ((space ts v) c) \<le> right (ext v1) \<and> right ((space ts v) c) \<ge> left (ext v1)"      
     show "(left ((len v1 ts) c) = left (ext v1))"
     proof (rule ccontr)
       assume neq:" left (len v1 ( ts) c) \<noteq> left (ext v1)"
@@ -870,8 +868,7 @@ proof
         using len_def inside_left inside_right by simp
       from inside_left and inside_right have len_in_type:"((max (left (ext v)) (left ((space ts v) c)), min (right (ext v)) (right ((space ts v) c)))) 
             \<in> {r :: real*real . fst r \<le> snd r}" 
-        using CollectD CollectI Rep_real_int fst_conv snd_conv by auto
-          
+        using CollectD CollectI Rep_real_int fst_conv snd_conv by auto          
       show "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>"
       proof (cases "right (len v ( ts) c) < right (ext v1)")
         assume inside_v1:"right (len v ( ts) c) < right (ext v1)"

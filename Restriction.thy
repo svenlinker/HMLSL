@@ -21,16 +21,16 @@ lemma restrict_def':" restrict v f c = lan v \<sqinter> f c"
   using inf_commute restriction.restrict_def by auto
     
 lemma restrict_subseteq:"restrict v f c \<sqsubseteq> f c"
-  using nat_int.inter_subseteq1 restrict_def by auto
+  using inf_le1 restrict_def by auto
     
 lemma restrict_clm : "restrict v (clm ts) c \<sqsubseteq> clm ts c" 
-  using nat_int.inter_subseteq1 restrict_def by auto
+  using inf_le1 restrict_def by auto
     
 lemma restrict_res: "restrict v (res ts) c \<sqsubseteq> res ts c"
-  using nat_int.inter_subseteq1 restrict_def by auto
+  using inf_le1 restrict_def by auto
     
 lemma restrict_view:"restrict v f c \<sqsubseteq> lan v"
-  using nat_int.inter_subseteq1 restrict_def by auto
+  using inf_le1 restrict_def by auto
     
 lemma restriction_stable:"(v=u\<parallel>w) \<longrightarrow> restrict u f  c = restrict w f  c"
   using hchop_def restrict_def by auto
@@ -45,15 +45,18 @@ lemma restriction_un:"(v=u--w) \<longrightarrow> restrict v f c = (restrict u f 
   using nat_int.inter_distr1 nat_int.inter_empty1 nat_int.un_empty_absorb1 nat_int.un_empty_absorb2 nat_int.nchop_def restrict_def vchop_def by auto
     
 lemma restriction_mon1:"(v=u--w) \<longrightarrow> restrict u f c \<sqsubseteq> restrict v f c" 
-  using nat_int.inter_mon2 nat_int.chop_subset1 restrict_def vchop_def by auto
+  using inf_mono nat_int.chop_subset1 restrict_def vchop_def
+  by (metis (no_types, hide_lams) order_refl)
     
 lemma restriction_mon2:"(v=u--w) \<longrightarrow> restrict w f c \<sqsubseteq> restrict v f c" 
-  using nat_int.inter_mon2 nat_int.chop_subset2 restrict_def vchop_def by auto
+  using inf_mono nat_int.chop_subset2 restrict_def vchop_def 
+  by (metis (no_types, hide_lams) order_refl)
+
     
-lemma vertical_chop_restriction_res_consec_or_empty:"(V=V1--V2) \<and> restrict v1 (res ts) c \<noteq> \<emptyset> \<and> nat_int.consec ((lan v1)) ((lan v2)) \<and>  
-    \<not> nat_int.consec (restrict v1 (res ts) c) (restrict v2 (res ts) c) \<longrightarrow> restrict v2 (res ts) c = \<emptyset>"
+lemma vertical_chop_restriction_res_consec_or_empty:"(v=v1--v2) \<and> restrict v1 (res ts) c \<noteq> \<emptyset> \<and> nat_int.consec ((lan v1)) ((lan v2)) \<and>  
+    \<not> nat_int.consec (restrict v1 (res ts) c) (restrict v2 (res ts) c) \<longrightarrow> restrict v2 (res ts) c = \<emptyset>" 
 proof
-  assume assm:"(V=V1--V2) \<and> restrict v1 (res ts) c \<noteq> \<emptyset> \<and> nat_int.consec ((lan v1)) ((lan v2)) \<and>  \<not> nat_int.consec (restrict v1 (res ts) c) (restrict v2 (res ts) c)"
+  assume assm:"(v=v1--v2) \<and> restrict v1 (res ts) c \<noteq> \<emptyset> \<and> nat_int.consec ((lan v1)) ((lan v2)) \<and>  \<not> nat_int.consec (restrict v1 (res ts) c) (restrict v2 (res ts) c)"
   hence "restrict v1 (res ts) c = \<emptyset> \<or> restrict v2 (res ts) c = \<emptyset> \<or> (nat_int.maximum (restrict v1 (res ts) c)+1 \<noteq>nat_int.minimum (restrict v2 (res ts) c))"
     using nat_int.consec_def by blast
   hence empty_or_non_consec:"restrict v2 (res ts) c = \<emptyset> \<or> (nat_int.maximum (restrict v1 (res ts) c)+1 \<noteq>nat_int.minimum (restrict v2 (res ts) c))"
@@ -81,14 +84,11 @@ proof
       proof -
         have "restrict v1 (res ts) c \<noteq> (res ts c \<sqinter> lan v2) \<sqinter> (lan v1 \<sqinter> lan v2)"
           using assm nat_int.inter_empty1 nat_int.nchop_def vchop_def nat_int.consec_inter_empty by auto
+        have "restrict v1 (res ts) c \<noteq> lan v1 \<sqinter> ((res ts c \<sqinter> lan v2) \<sqinter> lan v2)"
+          using \<open>restrict v1 (res ts) c \<noteq> (res ts c \<sqinter> lan v2) \<sqinter> (lan v1 \<sqinter> lan v2)\<close>  
+          by (simp add: inf_left_commute)
         then have "res ts c \<noteq> restrict v2 (res ts) c"
-          using nat_int.inter_left_commute nat_int.inter_sym restrict_def 
-        proof -
-          have "restrict v1 (res ts) c \<noteq> lan v1 \<sqinter> ((res ts c \<sqinter> lan v2) \<sqinter> lan v2)"
-            using \<open>restrict v1 (res ts) c \<noteq> (res ts c \<sqinter> lan v2) \<sqinter> (lan v1 \<sqinter> lan v2)\<close> nat_int.inter_left_commute by auto
-          then show ?thesis
-            using nat_int.inter_sym restrict_def by auto
-        qed
+          using restrict_def inf_commute by metis 
         then show ?thesis
           by (metis (no_types) Rep_nat_int_inject \<open>Rep_nat_int (res ts c) = {n}\<close>less_eq_nat_int.rep_eq restrict_res subset_singletonD)
       qed
@@ -146,20 +146,17 @@ proof
           thus False using ex_n by blast
         next
           assume suc_n_in_res_v2:"n+1 \<in> Rep_nat_int (restrict v2 (res ts) c)"
-          hence min:"nat_int.minimum (restrict v2 (res ts) c) = n+1" 
-          proof -
-            obtain NN :: "nat set \<Rightarrow> nat \<Rightarrow> nat set" where
-              "\<forall>x0 x1. (\<exists>v2. x0 = insert x1 v2 \<and> x1 \<notin> v2) = (x0 = insert x1 (NN x0 x1) \<and> x1 \<notin> NN x0 x1)"
-              by moura
-            then have f1: "Rep_nat_int (restrict v2 (res ts) c) = insert (n + 1) (NN (Rep_nat_int (restrict v2 (res ts) c)) (n + 1)) \<and> n + 1 \<notin> NN (Rep_nat_int (restrict v2 (res ts) c)) (n + 1)"
-              by (meson mk_disjoint_insert suc_n_in_res_v2)
-            then have "insert (n + 1) (NN (Rep_nat_int (restrict v2 (res ts) c)) (n + 1)) \<subseteq> {n + 1} \<union> {}"
-              by (metis (no_types) insert_is_Un n_def n_not_in_res_v2 less_eq_nat_int.rep_eq restrict_res subset_insert)
-            then have "{n + 1} = Rep_nat_int (restrict v2 (res ts) c)"
-              using f1 by blast
-            then show ?thesis
-              by (metis (no_types) Min_singleton nat_int.minimum_def non_empty)
-          qed
+          obtain NN :: "nat set \<Rightarrow> nat \<Rightarrow> nat set" where
+            "\<forall>x0 x1. (\<exists>v2. x0 = insert x1 v2 \<and> x1 \<notin> v2) = (x0 = insert x1 (NN x0 x1) \<and> x1 \<notin> NN x0 x1)"
+            by moura
+          then have f1: "Rep_nat_int (restrict v2 (res ts) c) = insert (n + 1) (NN (Rep_nat_int (restrict v2 (res ts) c)) (n + 1)) \<and> n + 1 \<notin> NN (Rep_nat_int (restrict v2 (res ts) c)) (n + 1)"
+            by (meson mk_disjoint_insert suc_n_in_res_v2)
+          then have "insert (n + 1) (NN (Rep_nat_int (restrict v2 (res ts) c)) (n + 1)) \<subseteq> {n + 1} \<union> {}"
+            by (metis (no_types) insert_is_Un n_def n_not_in_res_v2 less_eq_nat_int.rep_eq restrict_res subset_insert)
+          then have "{n + 1} = Rep_nat_int (restrict v2 (res ts) c)"
+            using f1 by blast
+          then have min:"nat_int.minimum (restrict v2 (res ts) c) = n+1" 
+            by (metis (no_types) Min_singleton nat_int.minimum_def non_empty)              
           then have suc_n_in_v2:"n+1 \<^bold>\<in> (lan v2)" using nat_int.el.rep_eq less_eq_nat_int.rep_eq subs suc_n_in_res_v2 by blast
           have "\<forall>m . m \<^bold>\<in> lan v1 \<longrightarrow> m \<le> nat_int.maximum (lan v1)" 
             using consec_lanes nat_int.maximum_def nat_int.card_seq nat_int.consec_def nat_int.el.rep_eq 
@@ -217,15 +214,11 @@ proof
   hence ex_n_in_res_v2:"\<exists>n. (n \<^bold>\<in> restrict w (clm ts) c)" 
     using nat_int.non_empty_elem_in by blast
   obtain n where n_in_res_v2: "(n \<^bold>\<in> restrict w (clm ts) c)" using ex_n_in_res_v2 by auto
-  hence n_in_v2:"n \<^bold>\<in> (lan w)" 
+  then have n_in_v2:"n \<^bold>\<in> (lan w)" 
     by (meson nat_int.el.rep_eq less_eq_nat_int.rep_eq restrict_view subsetCE)
-  hence n_not_in_lan_v1:"n \<^bold>\<notin> (lan u)" using assm nat_int.consec_in_exclusive2 by blast
-  hence n_not_in_res_v1:"n \<^bold>\<notin> restrict u (clm ts) c" 
-    using less_eq_nat_int.rep_eq restrict_view nat_int.not_in.rep_eq by blast  
-  have "lan u \<sqinter> lan w =\<emptyset>" 
-    by (simp add: assm nat_int.consec_inter_empty)      
+  then have n_not_in_lan_v1:"n \<^bold>\<notin> (lan u)" using assm nat_int.consec_in_exclusive2 by blast
   have clm_sing:"(clm ts) c = Abs_nat_int({n})" using n_in_res_v2  by (simp add: el_in_restriction_clm_singleton)   
-  thus "restrict u (clm ts) c = \<emptyset>" using n_not_in_lan_v1 Abs_nat_int_inverse nat_int.inter_absorb1  nat_int.not_in.rep_eq  
+  then show "restrict u (clm ts) c = \<emptyset>" using n_not_in_lan_v1 Abs_nat_int_inverse inf_absorb1  nat_int.not_in.rep_eq  
     by (smt Int_insert_right Rep_nat_int_inverse bot.extremum bot_nat_int.rep_eq inf.absorb_iff2 inf_nat_int.rep_eq nat_int.rep_single restriction.restrict_def')
 qed
   
@@ -245,22 +238,6 @@ lemma restriction_add_res:"(v=u--w) \<longrightarrow> |restrict v (res ts) c| = 
     restriction_consec_res
   by (smt plus_nat.add_0)
     
-lemma restriction_add_clm:"(v=u--w) \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c|"
-proof -
-  { assume "(lan u) \<noteq> \<emptyset>"
-    have "N_Chop ((lan v),(lan u),(lan w)) \<longrightarrow> (v=u--w) 
-      \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c|  \<or> restrict u (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset> \<or> restrict w (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset>"
-      by (metis (no_types) nat_int.inter_empty1 nat_int.inter_empty2 nat_int.nchop_def restrict_def restriction_consec_clm)
-    then have "N_Chop ((lan v),(lan u),(lan w)) \<longrightarrow> (v=u--w) 
-      \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c| \<or> (\<exists>f c. restrict u f c \<squnion> restrict w f c \<noteq> restrict v f c) \<or> N_Chop (restrict v (clm ts) c,restrict u (clm ts) c,restrict w (clm ts) c) \<or> restrict u (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset>"
-      using nat_int.nchop_def by (metis (no_types, lifting))
-  }
-  then have "N_Chop ((lan v),(lan u),(lan w)) \<longrightarrow> (v=u--w) \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c| \<or> (\<exists>f c. restrict u f c \<squnion> restrict w f c \<noteq> restrict v f c) \<or> N_Chop (restrict v (clm ts) c,restrict u (clm ts) c,restrict w (clm ts) c) \<or> restrict u (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset>"
-    by (metis nat_int.inter_empty1 nat_int.inter_empty2 restrict_def)
-  then have "N_Chop (restrict v (clm ts) c,restrict u (clm ts) c,restrict w (clm ts) c) \<or> (\<exists>f c. restrict u f c \<squnion> restrict w f c \<noteq> restrict v f c) \<or> ((v=u--w) \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c| )"
-    using nat_int.nchop_def vchop_def by force
-  then show ?thesis using nat_int.chop_add1 restriction_un by auto
-qed
   
 lemma restriction_eq_view_card:"restrict v f c = lan v \<longrightarrow> |restrict v f c| =|lan v|" 
   by simp
@@ -277,22 +254,37 @@ lemma restriction_res_leq_two:"|restrict v (res ts) c| \<le> 2"
 lemma restriction_clm_leq_one:"|restrict v (clm ts) c| \<le> 1"
   using atMostOneClm nat_int.card_subset_le le_trans restrict_clm by blast
     
+
+lemma restriction_add_clm:"(v=u--w) \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c|"  
+proof -
+  { assume "(lan u) \<noteq> \<emptyset>"
+    have "N_Chop((lan v),(lan u),(lan w)) \<longrightarrow> (v=u--w) 
+      \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c|  \<or> restrict u (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset> \<or> restrict w (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset>"
+      by (metis (no_types) nat_int.inter_empty1 nat_int.inter_empty2 nat_int.nchop_def restrict_def restriction_consec_clm)
+    then have "N_Chop((lan v),(lan u),(lan w)) \<longrightarrow> (v=u--w) 
+      \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c| \<or> (\<exists>f c. restrict u f c \<squnion> restrict w f c \<noteq> restrict v f c) \<or> N_Chop(restrict v (clm ts) c,restrict u (clm ts) c,restrict w (clm ts) c) \<or> restrict u (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset>"
+      using nat_int.nchop_def 
+      by (metis (no_types, lifting)) 
+  }
+  then have "N_Chop((lan v),(lan u),(lan w)) \<longrightarrow> (v=u--w) \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c| \<or> (\<exists>f c. restrict u f c \<squnion> restrict w f c \<noteq> restrict v f c) \<or> N_Chop(restrict v (clm ts) c,restrict u (clm ts) c,restrict w (clm ts) c) \<or> restrict u (clm ts) c = \<emptyset> \<and> restrict u (clm ts) c \<sqinter> restrict w (clm ts) c = \<emptyset>"
+    by (metis nat_int.inter_empty1 nat_int.inter_empty2 restrict_def)
+  then have "N_Chop(restrict v (clm ts) c,restrict u (clm ts) c,restrict w (clm ts) c) \<or> (\<exists>f c. restrict u f c \<squnion> restrict w f c \<noteq> restrict v f c) \<or> ((v=u--w) \<longrightarrow> |restrict v (clm ts) c| = |restrict u (clm ts) c| + |restrict w (clm ts) c| )"
+    using nat_int.nchop_def vchop_def by force
+  then show ?thesis using nat_int.chop_add1 restriction_un by auto
+qed
+
 lemma restriction_card_mon_trans:"(v=v1--v2) \<and> (v2=v3--v4) \<and> |restrict v3 f c| = 1
     \<longrightarrow> |restrict v f c| \<ge>1"
   by (metis One_nat_def Suc_leI neq0_conv not_less_eq_eq restriction_card_mon1 restriction_card_mon2)
+
     
 lemma restriction_card_somewhere_mon :"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vu--v3) \<and> (v3=v'--vd) \<and> |restrict v' f c| = 1
-  \<longrightarrow> |restrict v f c| \<ge> 1"
-  using restriction_card_mon_trans restriction_stable1 restriction_stable2 
-proof -
-  { assume "\<not> 1 \<le> |restrict v f c|"
-    { assume "\<not> 1 \<le> |restrict v2 f c|"
-      then have ?thesis
-        by (meson restriction_card_mon_trans) }
-    then have ?thesis
-      by (metis (no_types) restriction_stable1 restriction_stable2) }
-  then show ?thesis
-    by fastforce
+  \<longrightarrow> |restrict v f c| \<ge> 1" 
+proof
+  assume assm:"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vu--v3) \<and> (v3=v'--vd) \<and> |restrict v' f c| = 1"
+  then have "|restrict v2 f c| \<ge> 1" using restriction_card_mon_trans by blast
+  then show "|restrict v f c| \<ge> 1" using restriction_stable1 restriction_stable2 assm
+    by metis
 qed
   
 lemma restrict_eq_lan_subs:"|restrict v f c| = |lan v| \<and> (restrict v f c \<sqsubseteq> lan v) \<longrightarrow> restrict v f c = lan v"
@@ -300,13 +292,13 @@ proof
   assume assm:"|restrict v f c| = |lan v| \<and> (restrict v f c \<sqsubseteq> lan v)" 
   have "|restrict v f c| = 0 \<or> |restrict v f c| \<noteq> 0" by auto
   thus "restrict v f c = lan v"
-  proof
-    assume zero:"|restrict v f c| = 0"
-    hence res_empty:"restrict v f c = \<emptyset>" using nat_int.card_empty_zero by (metis nat_int.card_non_empty_geq_one) 
-    from zero have lan_empty:"lan v = \<emptyset>" using assm nat_int.card_empty_zero by (metis nat_int.card_non_empty_geq_one)
-    thus "restrict v f c = lan v" using res_empty lan_empty by auto
+  proof (cases "|restrict v f c| = 0")
+    case True
+    then have res_empty:"restrict v f c = \<emptyset>" using nat_int.card_empty_zero by (metis nat_int.card_non_empty_geq_one) 
+    then have lan_empty:"lan v = \<emptyset>" using assm nat_int.card_empty_zero by (metis nat_int.card_non_empty_geq_one)
+    then show "restrict v f c = lan v" using res_empty lan_empty by auto
   next
-    assume non_zero:"|restrict v f c| \<noteq> 0"
+    case False
     show "restrict v f c = lan v"
     proof (rule ccontr)
       assume non_eq:"restrict v f c \<noteq> lan v"
@@ -318,9 +310,9 @@ proof
       from assm and n_outside_res have "Rep_nat_int (restrict v f c) \<union>  {n} \<subseteq> Rep_nat_int (lan v)" 
         using Un_insert_right insert_subset n_def nat_int.el.rep_eq less_eq_nat_int.rep_eq sup_bot.right_neutral by auto
       have "card ((Rep_nat_int (restrict v f c)) \<union> {n}) > card (Rep_nat_int (restrict v f c))" using n_def 
-        by (metis Un_empty_right Un_insert_right card.infinite card.insert lessI nat_int.card'.rep_eq nat_int.not_in.rep_eq non_zero)
+        by (metis Un_empty_right Un_insert_right card.infinite card.insert lessI nat_int.card'.rep_eq nat_int.not_in.rep_eq False)
       with assm and n_outside_res have "|lan v| \<ge> card ((Rep_nat_int (restrict v f c)) \<union> {n})"  
-        by (metis Rep_nat_int_inject card.infinite card_seteq less_le nat_int.card'.rep_eq less_eq_nat_int.rep_eq non_eq non_zero not_less)
+        by (metis Rep_nat_int_inject card.infinite card_seteq less_le nat_int.card'.rep_eq less_eq_nat_int.rep_eq non_eq False not_less)
       hence "|lan v| > card (Rep_nat_int (restrict v f c))" 
         using \<open>card (Rep_nat_int (restrict v f c)) < card (Rep_nat_int (restrict v f c) \<union> {n})\<close> less_le_trans by blast
       thus False using assm by (simp add: nat_int.card'_def not_less_iff_gr_or_eq)

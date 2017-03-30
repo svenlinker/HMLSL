@@ -451,7 +451,7 @@ proof -
           have left_ok:"left (ext vc') \<ge> left (ext vc)" using vc'_def ext_vc Abs_real_int_inverse by auto
           hence ext_leq: "ext vc' \<le> ext vc" using right_ok left_ok less_eq_real_int_def by auto
           have "lan vc = Abs_nat_int{0}" using v_def switch_def sw by force
-          hence lan_leq:"lan vc' \<sqsubseteq> lan vc" using  vc'_def  nat_int.subseteq_refl by force
+          hence lan_leq:"lan vc' \<sqsubseteq> lan vc" using  vc'_def  order_refl by force
           have leqvc:"vc' \<le> vc" using ext_leq lan_leq own_eq less_eq_view_ext_def by force
               
           have sensors_c:"sensors (own vc') ts c = 3"  using  vc'_def sensors_def ps_def 
@@ -465,7 +465,7 @@ proof -
           have len_c:"len vc' ts c = Abs_real_int(2,3)" using space_c v_def len_def lc lv rv rc by auto
           have res_c: "restrict vc' (res ts) c = Abs_nat_int {0}" using 
               ts_def ts_rep_def ts_in_type Abs_traffic_inverse res_def
-              nat_int.inter_absorb restrict_def vc'_def by force 
+              inf_idem restrict_def vc'_def by force 
               
           have sensors_d:"sensors (own vc') ts d = 1" using vc'_def sensors_def ts_def size sd_def Abs_traffic_inverse ts_in_type
               ts_rep_def assumption by auto
@@ -476,7 +476,7 @@ proof -
           have len_d :"len vc' ts d = Abs_real_int(2,3)" using space_d v_def len_def ld rd lv rv by auto
           have  res_d:"restrict vc' (res ts) d = Abs_nat_int {0}" using 
               ts_def ts_rep_def ts_in_type Abs_traffic_inverse res_def
-              nat_int.inter_absorb restrict_def vc'_def by force 
+              inf_idem restrict_def vc'_def by force 
               
               
           have "ts,vc' \<Turnstile> re(c) \<^bold>\<and> re(d)" using 

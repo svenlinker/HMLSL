@@ -37,11 +37,8 @@ definition length :: "real_int \<Rightarrow> real" ("\<parallel>_\<parallel>" 70
 definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift _ _")
   where "(shift r x) = Abs_real_int(left r +x, right r +x)"
     
-definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop '(_,_,_')" 51)
-  where rchop_def :"
-   R_Chop (r,s,t) ==  left r  = left s \<and>
-  right s = left t \<and>
-   right r =  right t  "
+definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop'(_,_,_')" 51)
+  where rchop_def :" R_Chop(r,s,t) ==  left r  = left s \<and> right s = left t \<and> right r =  right t"
     
     
     
@@ -71,8 +68,8 @@ lemma left_leq_right: "left r \<le> right r"
     
     
 lemma length_ge_zero :" \<parallel>r\<parallel> \<ge> 0" 
-  (*using Rep_real_int le_diff_eq length_def by fastforce*)
   using Rep_real_int left.rep_eq right.rep_eq length_def by auto
+
 lemma consec_add:"left r = left s \<and> right r = right t \<and> right s = left t \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel> "
   by (simp add:length_def)
     
@@ -111,26 +108,19 @@ proof
   fix x
   obtain s where l:"left x \<le> s  \<and> s \<le> right x" 
     using left_leq_right by auto
-  show "\<exists>x1 x2. R_Chop (x,x1,x2)" 
-  proof -
-    obtain x1  where x1_def:"x1 = Abs_real_int(left x,s)"  by simp
-    have "\<exists>x2. R_Chop(x,x1,x2)" 
-    proof -
-      obtain x2 where x2_def:"x2 = Abs_real_int(s, right x)" by simp
-      have x1_in_type:"(left x, s) \<in> {r :: real*real . fst r \<le> snd r }" using l by auto 
-      have x2_in_type:"(s, right x) \<in> {r :: real*real . fst r \<le> snd r }" using l by auto 
-      have 1:"left x = left x1" using x1_in_type l Abs_real_int_inverse 
-        by (simp add:  x1_def)
-      have 2:"right x1 = s" 
-        using Abs_real_int_inverse x1_def x1_in_type right.rep_eq by auto
-      have 3:"right x1 = left x2" 
-        using Abs_real_int_inverse x1_def x1_in_type x2_def x2_in_type left.rep_eq by auto
-      from 1 and 2 and 3 have "R_Chop(x,x1,x2)" 
-        using Abs_real_int_inverse rchop_def snd_conv x2_def x2_in_type by auto 
-      then show "\<exists>x2. R_Chop(x,x1,x2)" .. 
-    qed
-    then show "\<exists>x1 x2. R_Chop(x,x1,x2)" ..
-  qed
+  obtain x1  where x1_def:"x1 = Abs_real_int(left x,s)"  by simp
+  obtain x2 where x2_def:"x2 = Abs_real_int(s, right x)" by simp
+  have x1_in_type:"(left x, s) \<in> {r :: real*real . fst r \<le> snd r }" using l by auto 
+  have x2_in_type:"(s, right x) \<in> {r :: real*real . fst r \<le> snd r }" using l by auto 
+  have 1:"left x = left x1" using x1_in_type l Abs_real_int_inverse 
+    by (simp add:  x1_def)
+  have 2:"right x1 = s" 
+    using Abs_real_int_inverse x1_def x1_in_type right.rep_eq by auto
+  have 3:"right x1 = left x2" 
+    using Abs_real_int_inverse x1_def x1_in_type x2_def x2_in_type left.rep_eq by auto
+  from 1 and 2 and 3 have "R_Chop(x,x1,x2)" 
+    using Abs_real_int_inverse rchop_def snd_conv x2_def x2_in_type by auto 
+  then show "\<exists>x1 x2. R_Chop(x,x1,x2)" by blast
 qed
   
 lemma chop_singleton_right: "\<forall>r.\<exists> s. R_Chop(r,r,s)" 
@@ -163,40 +153,31 @@ proof
   have ff1: " left r < right r"
     using Rep_real_int \<open>0 < \<parallel>r\<parallel>\<close> length_def by auto
   have l_in_type:"(left r, right r) \<in> {r :: real*real . fst r \<le> snd r }" 
-    using Rep_real_int by auto
-      
+    using Rep_real_int by auto      
   obtain x where  x_def:" x  = (left r + right r) / 2" 
     by blast
   have x_gr:"x > left r" using ff1 real_less_half_sum x_def by blast
   have x_le:"x < right r" using ff1 x_def by (simp add: real_sum_of_halves)
-  have "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0"
-  proof -
-    obtain s where s_def:"s = Abs_real_int(left r, x)"  by simp
-    have "\<exists> t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0"
-    proof -
-      obtain t where t_def:"t = Abs_real_int(x, right r)"  by simp
-      have s_in_type:"(left r, x) \<in> {r :: real*real . fst r \<le> snd r }" 
-        using x_def x_le by auto
-      have t_in_type:"(x, right r) \<in> {r :: real*real . fst r \<le> snd r }" 
-        using x_def x_gr by auto
-      have s_gr_0:"\<parallel>s\<parallel> > 0" 
-        using Abs_real_int_inverse s_def length_def x_gr by auto
-      have t_gr_0:"\<parallel>t\<parallel> > 0" 
-        using Abs_real_int_inverse t_def length_def x_le by auto
-      have "R_Chop(r,s,t)" 
-        using Abs_real_int_inverse s_def s_in_type t_def t_in_type rchop_def by auto
-      hence "R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" 
-        using s_gr_0 t_gr_0 by blast
-      thus "\<exists> t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" ..
-    qed
-    thus "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" ..
-  qed
-  thus "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" .
+  obtain s where s_def:"s = Abs_real_int(left r, x)"  by simp
+  obtain t where t_def:"t = Abs_real_int(x, right r)"  by simp
+  have s_in_type:"(left r, x) \<in> {r :: real*real . fst r \<le> snd r }" 
+    using x_def x_le by auto
+  have t_in_type:"(x, right r) \<in> {r :: real*real . fst r \<le> snd r }" 
+    using x_def x_gr by auto
+  have s_gr_0:"\<parallel>s\<parallel> > 0" 
+    using Abs_real_int_inverse s_def length_def x_gr by auto
+  have t_gr_0:"\<parallel>t\<parallel> > 0" 
+    using Abs_real_int_inverse t_def length_def x_le by auto
+  have "R_Chop(r,s,t)" 
+    using Abs_real_int_inverse s_def s_in_type t_def t_in_type rchop_def by auto
+  hence "R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" 
+    using s_gr_0 t_gr_0 by blast
+  thus "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" by blast
 qed  
   
 lemma chop_assoc1: "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4) \<longrightarrow> (R_Chop(r, Abs_real_int(left r1, right r3), r4) \<and> R_Chop(Abs_real_int(left r1, right r3), r1,r3))"
 proof 
-  assume assm: "R_Chop (r,r1,r2) \<and> R_Chop (r2,r3,r4)"
+  assume assm: "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4)"
   let ?y1 = " Abs_real_int(left r1, right r3)" 
   have l1:"left r1 = left ?y1" 
     by (metis  Abs_real_int_inverse assm fst_conv left.rep_eq mem_Collect_eq order_trans real_int.left_leq_right real_int.rchop_def snd_conv)
@@ -209,7 +190,7 @@ qed
   
 lemma chop_assoc2: "R_Chop(r,r1,r2) \<and> R_Chop(r1,r3,r4) \<longrightarrow> R_Chop(r,r3, Abs_real_int(left r4, right r2)) \<and> R_Chop(Abs_real_int(left r4, right r2), r4,r2)"
 proof 
-  assume assm: "R_Chop (r,r1,r2) \<and> R_Chop (r1,r3,r4)"
+  assume assm: "R_Chop(r,r1,r2) \<and> R_Chop(r1,r3,r4)"
   let ?y1 = " Abs_real_int(left r4, right r2)" 
   have "left ?y1 \<le> right ?y1"
     using real_int.left_leq_right by blast
