@@ -83,56 +83,56 @@ locale traffic
 begin   
 
 
-abbreviation pos::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
+definition pos::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
 where "pos ts \<equiv> fst (Rep_traffic ts)"
 
 
-abbreviation res::"traffic \<Rightarrow> (cars \<Rightarrow> lanes)"
+definition res::"traffic \<Rightarrow> (cars \<Rightarrow> lanes)"
 where "res ts \<equiv> fst (snd (Rep_traffic ts))"
 
-abbreviation clm ::"traffic \<Rightarrow> (cars \<Rightarrow> lanes)"
+definition clm ::"traffic \<Rightarrow> (cars \<Rightarrow> lanes)"
 where "clm ts \<equiv> fst (snd (snd (Rep_traffic ts)))"
 
-abbreviation dyn::"traffic \<Rightarrow> (cars \<Rightarrow> (real\<Rightarrow> real))"
+definition dyn::"traffic \<Rightarrow> (cars \<Rightarrow> (real\<Rightarrow> real))"
 where "dyn ts \<equiv> fst (snd (snd (snd (Rep_traffic ts))))"
 
-abbreviation physical_size::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
+definition physical_size::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
 where "physical_size ts \<equiv> fst (snd (snd (snd (snd (Rep_traffic ts)))))"
 
-abbreviation braking_distance::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
+definition braking_distance::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
 where "braking_distance ts \<equiv> snd (snd (snd (snd (snd (Rep_traffic ts)))))"
 
 
 
 lemma disjoint: "((res ts) c) \<sqinter> ((clm ts) c) = \<emptyset>"
-using Rep_traffic    by auto 
+using Rep_traffic res_def clm_def   by auto 
 
 lemma atLeastOneRes: "1 \<le> |((res ts) c)|" 
-using Rep_traffic  by auto 
+using Rep_traffic  res_def by auto 
 
 lemma atMostTwoRes:" |((res ts) c)| \<le> 2"
-using Rep_traffic  by auto 
+using Rep_traffic  res_def  by auto 
 
 lemma  atMostOneClm: "|((clm ts) c)| \<le> 1" 
-using Rep_traffic  by auto 
+using Rep_traffic  clm_def  by auto 
 
 lemma atMostTwoLanes: "|((res ts) c)| +|((clm ts) c)| \<le> 2"
-using Rep_traffic   by auto 
+using Rep_traffic  res_def clm_def  by auto 
 
 lemma  consecutiveRes:" |((res ts)  c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((res ts) c) = {n,n+1})"
-using Rep_traffic  by auto 
+using Rep_traffic  res_def  by auto 
 
 lemma clmNextRes : "((clm ts) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n, n+1})"
-using Rep_traffic by auto 
+using Rep_traffic res_def clm_def by auto 
 
 lemma dynGeqZero:"\<forall>x. (dyn ts c x \<ge> 0)" 
-using Rep_traffic  by auto 
+using Rep_traffic  dyn_def by auto 
 
 lemma psGeZero:"\<forall>c. (physical_size ts c > 0)"
-using Rep_traffic  by auto 
+using Rep_traffic physical_size_def by auto 
 
 lemma sdGeZero:"\<forall>c. (braking_distance ts c > 0)"
-using Rep_traffic  by auto 
+using Rep_traffic braking_distance_def by auto 
 
 lemma clm_consec_res: "(clm ts) c \<noteq> \<emptyset> \<longrightarrow> nat_int.consec (clm ts c) (res ts c) \<or> nat_int.consec (res ts c) (clm ts c)"
 proof
@@ -394,15 +394,15 @@ proof
         clNextRe mem_Collect_eq dyn_geq_zero ps_ge_zero sd_ge_zero by blast
     have rep_eq:"Rep_traffic (Abs_traffic ts') = ts'" using ts'_def ts'_type Abs_traffic_inverse by blast 
     have sp_eq:"(pos (Abs_traffic ts')) = (pos ts) "  using rep_eq ts'_def
-      using Rep_traffic  by auto 
+      using Rep_traffic pos_def by auto 
     have res_eq:"(res  (Abs_traffic ts')) = (res ts)(c:=( (res ts c)\<squnion> (clm ts c) ))" 
       using Rep_traffic 
-        ts'_def ts'_type Abs_traffic_inverse rep_eq using fstI sndI by auto
+        ts'_def ts'_type Abs_traffic_inverse rep_eq using res_def clm_def fstI sndI by auto
     have dyn_eq:"(dyn  (Abs_traffic ts')) = (dyn ts)" using
         Rep_traffic   
-        ts'_def ts'_type Abs_traffic_inverse rep_eq using fstI sndI by auto
+        ts'_def ts'_type Abs_traffic_inverse rep_eq using dyn_def fstI sndI by auto
     have clm_eq:"(clm  (Abs_traffic ts')) = (clm ts)(c:=\<emptyset>)" using
-        ts'_def ts'_type Abs_traffic_inverse rep_eq using fstI sndI 
+        ts'_def ts'_type Abs_traffic_inverse rep_eq using clm_def fstI sndI 
       using Rep_traffic 
       by fastforce 
         
@@ -410,7 +410,7 @@ proof
     hence "ts  \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> Abs_traffic ts'" using ts'_def ts'_type  create_reservation_def 
         ts'_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re  
         fst_conv snd_conv rep_eq sp_eq res_eq dyn_eq clm_eq 
-        Rep_traffic by auto 
+        Rep_traffic clm_def res_def clm_def dyn_def physical_size_def braking_distance_def by auto 
         
     thus ?thesis ..
   qed
