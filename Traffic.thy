@@ -48,12 +48,12 @@ proof -
   obtain ts where ts_def:"ts =  (pos,re,cl, dyn, ps, sd)" by simp
 
   have disj:"\<forall>c .((re c) \<sqinter> (cl c) = \<emptyset>)" by (simp add: cl_def nat_int.inter_empty1)
-  have re_geq_one:"\<forall>c. |re c| \<ge> 1" by (simp add: Abs_nat_int_inverse  re_def)
-  have re_leq_two:"\<forall>c. |re c| \<le> 2" using  re_def nat_int.rep_single by auto
-  have cl_leq_one:"\<forall>c. |cl c| \<le> 1" using nat_int.card_empty_zero cl_def by auto  
-  have add_leq_two:"\<forall>c . |re c| + |cl c| \<le> 2"  using nat_int.card_empty_zero cl_def re_leq_two by (simp )
+  have re_geq_one:"\<forall>c. |re c| \<ge> 1" by (simp add: Abs_nat_int_inverse card'_dict re_def)
+  have re_leq_two:"\<forall>c. |re c| \<le> 2" using  re_def nat_int.rep_single card'_dict by auto
+  have cl_leq_one:"\<forall>c. |cl c| \<le> 1" using nat_int.card_empty_zero cl_def card'_dict by auto  
+  have add_leq_two:"\<forall>c . |re c| + |cl c| \<le> 2"  using nat_int.card_empty_zero cl_def re_leq_two card'_dict by (simp )
   have consec_re:" \<forall>c. |(re c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int (re c) = {n,n+1})" 
-    by (simp add: Abs_nat_int_inverse  re_def)
+    by (simp add: Abs_nat_int_inverse  re_def card'_dict)
   have  clNextRe : "\<forall>c. ((cl c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int (re c) \<union> Rep_nat_int (cl c) = {n, n+1}))"
     by (simp add: cl_def)
   from dyn_def have dyn_geq_zero:"\<forall>c. \<forall>x. dyn(c) x \<ge> 0" by auto
@@ -142,69 +142,71 @@ proof
     by blast
   have disj:"res ts c \<sqinter> clm ts c = \<emptyset>" using disjoint by blast
   from n_def and disj have "n \<^bold>\<in> res ts c \<or> n \<^bold>\<in> clm ts c" 
-    using UnE insertI1 nat_int.el.rep_eq by auto
+    using UnE insertI1 nat_int.el.rep_eq el_dict by auto
   thus "nat_int.consec (clm ts c) (res ts c) \<or> nat_int.consec (res ts c) (clm ts c)"
   proof
     assume n_in_res: "n \<^bold>\<in> res ts c"
-    hence suc_n_in_clm:"n+1 \<^bold>\<in> clm ts c" 
+    hence suc_n_in_clm:"n+1 \<^bold>\<in> clm ts c" using el_dict
       by (metis (no_types) UnE assm disj inf.absorb_iff2 inf_sup_absorb insert_subset less_eq_nat_int.rep_eq n_def n_in_res nat_int.el.rep_eq sup.cobounded2 sup_bot.right_neutral)
     have "Rep_nat_int (res ts c) \<noteq> {n, n + 1}" 
       by (metis assm disj n_def inf_absorb1 inf_commute less_eq_nat_int.rep_eq sup.cobounded2)
     then have suc_n_not_in_res:"n+1 \<^bold>\<notin> res ts c" 
-      using n_def n_in_res nat_int.el.rep_eq nat_int.not_in.rep_eq by auto
+      using n_def n_in_res nat_int.el.rep_eq nat_int.not_in.rep_eq not_in_dict el_dict by auto
     have n_not_in_clm:"n \<^bold>\<notin> clm ts c" 
     proof (rule ccontr)
       assume "\<not>n \<^bold>\<notin> clm ts c" 
-      then have n_in_clm:"n \<in> Rep_nat_int (clm ts c)" using nat_int.el.rep_eq nat_int.not_in.rep_eq by auto
-      have "n \<in> Rep_nat_int (res ts c)" using n_in_res by (simp add: nat_int.el_def)
+      then have n_in_clm:"n \<in> Rep_nat_int (clm ts c)" using nat_int.el.rep_eq nat_int.not_in.rep_eq not_in_dict el_dict by auto
+      have "n \<in> Rep_nat_int (res ts c)" using n_in_res by (simp add: nat_int.el_def el_dict)
       then have "n \<in> Rep_nat_int (res ts c) \<inter> Rep_nat_int (clm ts c)" using n_in_clm by blast
       then have "n \<^bold>\<in> (res ts c \<sqinter> clm ts c)" 
-        using Abs_nat_int_inverse Rep_nat_int nat_int.el_def  nat_int.inter_result inf_nat_int.rep_eq nat_int.el.rep_eq by auto
-      then show False using disj using nat_int.non_empty_elem_in by blast
+        using Abs_nat_int_inverse Rep_nat_int nat_int.el_def  nat_int.inter_result inf_nat_int.rep_eq nat_int.el.rep_eq el_dict by auto
+      then show False using disj using nat_int.non_empty_elem_in el_dict not_in_dict by auto
     qed 
     have max:"nat_int.maximum (res ts c) = n" using n_in_res suc_n_not_in_res nat_int.el.rep_eq nat_int.not_in.rep_eq 
-      using n_def nat_int.maximum_in nat_int.non_empty_elem_in by fastforce 
+      using n_def nat_int.maximum_in nat_int.non_empty_elem_in el_dict not_in_dict 
+      using inf_sup_aci(4) by fastforce 
     have min:"nat_int.minimum (clm ts c) = n+1" using suc_n_in_clm n_not_in_clm nat_int.el.rep_eq nat_int.not_in.rep_eq
-      using n_def nat_int.minimum_in nat_int.non_empty_elem_in by fastforce         
-    have "nat_int.consec (res ts c) (clm ts c)" using n_in_res suc_n_in_clm disj nat_int.consec_def max min
-      by (metis (no_types, lifting) assm atLeastOneRes nat_int.card_empty_zero not_one_le_zero)
+      using n_def nat_int.minimum_in nat_int.non_empty_elem_in  using inf_sup_aci(4)  
+      using el_dict not_in.rep_eq by fastforce
+    have "nat_int.consec (res ts c) (clm ts c)" using n_in_res suc_n_in_clm disj nat_int.consec_def max min el_dict not_in_dict 
+      using nat_int.non_empty_elem_in by auto
     thus ?thesis by blast
   next
     assume n_in_clm: "n \<^bold>\<in> clm ts c"
     have suc_n_not_in_clm:"n+1 \<^bold>\<notin> clm ts c" 
     proof (rule ccontr)
       assume "\<not> n+1 \<^bold>\<notin> (clm ts c)"      
-      then have "n+1 \<in> Rep_nat_int (clm ts c)" using nat_int.el.rep_eq nat_int.not_in.rep_eq by blast
+      then have "n+1 \<in> Rep_nat_int (clm ts c)" using nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
       then have "|clm ts c| > 1" 
-        by (metis (no_types, lifting) Rep_nat_int_inverse add_eq_self_zero assm nat_int.card_non_empty_geq_one le_neq_implies_less n_in_clm nat_int.in_singleton nat_int.singleton one_neq_zero singletonD) 
+        using assm card_non_empty_geq_one el_dict n_in_clm singleton by fastforce
       then show False using atMostOneClm not_less by blast
     qed
     have n_not_in_res:"n \<^bold>\<notin> res ts c" 
     proof (rule ccontr)
       assume "\<not>n \<^bold>\<notin> res ts c" 
-      then have n_in_res:"n \<in> Rep_nat_int (res ts c)"  
+      then have n_in_res:"n \<in> Rep_nat_int (res ts c)"  using el_dict not_in_dict
         by (simp )
-      have "n \<in> Rep_nat_int (clm ts c)" using n_in_clm by (simp )
+      have "n \<in> Rep_nat_int (clm ts c)" using n_in_clm el_dict by (simp )
       then have "n \<in> Rep_nat_int (res ts c) \<inter> Rep_nat_int (clm ts c)" using n_in_res by blast
       then have "n \<^bold>\<in> (res ts c \<sqinter> clm ts c)" 
         using Abs_nat_int_inverse Rep_nat_int nat_int.el_def  nat_int.inter_result 
-        by (simp add: inf_nat_int.rep_eq )
-      then show False using disj using nat_int.non_empty_elem_in by blast
+        by (simp add: inf_nat_int.rep_eq el_dict)
+      then show False using disj using nat_int.non_empty_elem_in el_dict  by auto
     qed
     have suc_n_in_res:"n+1 \<^bold>\<in> res ts c" 
     proof (rule ccontr)
       assume "\<not>n+1 \<^bold>\<in> res ts c"
       then have "n \<^bold>\<in> res ts c " 
-        using n_def nat_int.el.rep_eq suc_n_not_in_clm nat_int.not_in.rep_eq by auto 
+        using n_def nat_int.el.rep_eq suc_n_not_in_clm nat_int.not_in.rep_eq el_dict not_in_dict by auto 
       then show False using n_not_in_res 
-        using nat_int.el.rep_eq nat_int.not_in.rep_eq by blast
+        using nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
     qed          
 
-    have max:"nat_int.maximum (clm ts c) = n" using n_in_clm suc_n_not_in_clm  
+    have max:"nat_int.maximum (clm ts c) = n" using n_in_clm suc_n_not_in_clm el_dict not_in_dict  
       by (smt Int_insert_right Max_singleton Un_commute assm inf_sup_absorb insert_absorb2 insert_commute nat_int.maximum_def n_def nat_int.el.rep_eq nat_int.not_in.rep_eq singleton_insert_inj_eq' subset_insert sup.cobounded2)
-    have min:"nat_int.minimum (res ts c) = n+1" using suc_n_in_res n_not_in_res
+    have min:"nat_int.minimum (res ts c) = n+1" using suc_n_in_res n_not_in_res el_dict not_in_dict card'_dict
       by (metis (no_types, lifting) Int_insert_right Min_singleton atLeastOneRes nat_int.card_empty_zero inf_bot_right inf_sup_absorb nat_int.minimum_def n_def nat_int.el.rep_eq nat_int.not_in.rep_eq not_one_le_zero)
-    have "nat_int.consec (clm ts c) (res ts c)" using n_in_clm suc_n_in_res disj nat_int.consec_def max min
+    have "nat_int.consec (clm ts c) (res ts c)" using n_in_clm suc_n_in_res disj nat_int.consec_def max min card'_dict
       by (metis (no_types, lifting) assm atLeastOneRes nat_int.card_empty_zero not_one_le_zero)
     thus ?thesis by blast
   qed
@@ -287,7 +289,7 @@ proof
   assume assm:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')"
   hence "res ts' c = res ts c \<squnion> clm ts c" using create_reservation_def
     using fun_upd_apply by auto
-  thus "res ts c \<sqsubseteq> res ts' c" 
+  thus "res ts c \<sqsubseteq> res ts' c" using union_dict
     by (metis (no_types, lifting) Un_commute clm_consec_res disjoint nat_int.un_subset2 nat_int.union_def nat_int.chop_subset1 nat_int.nchop_def)
 qed
 lemma create_res_subseteq2:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<longrightarrow> clm ts c \<sqsubseteq> res ts' c "
@@ -295,7 +297,7 @@ proof
   assume assm:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')"
   hence "res ts' c = res ts c \<squnion> clm ts c" using create_reservation_def
     using fun_upd_apply by auto
-  thus "clm ts c \<sqsubseteq> res ts' c" 
+  thus "clm ts c \<sqsubseteq> res ts' c" using union_dict
     by (metis Un_commute clm_consec_res disjoint inf_le1 nat_int.un_subset1 nat_int.un_subset2 nat_int.union_def)
 qed
 
@@ -322,7 +324,7 @@ proof
     case True
     obtain ts' where ts'_def:"ts' = ts" by simp
     hence "ts  \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts'" 
-      using create_reservation_def True fun_upd_triv nat_int.un_empty_absorb1 by auto
+      using create_reservation_def True fun_upd_triv nat_int.un_empty_absorb1 union_dict by auto
     thus ?thesis ..
   next
     case False
@@ -332,12 +334,12 @@ proof
                                 (dyn ts), (physical_size ts), (braking_distance ts))" 
       by blast
     have disj:"\<forall>c .(((fst (snd ts'))) c \<sqinter> ((fst (snd (snd ts')))) c = \<emptyset>)" by (simp add: disjoint nat_int.inter_empty1 ts'_def)
-    have re_geq_one:"\<forall>c. |fst (snd ts') c| \<ge> 1" 
+    have re_geq_one:"\<forall>c. |fst (snd ts') c| \<ge> 1" using card'_dict union_dict 
       by (smt One_nat_def Suc_leI Un_commute add_is_0 atLeastOneRes nat_int.card_un_add clm_consec_res fst_conv fun_upd_apply nat_int.union_def neq0_conv False snd_conv ts'_def)
-    have re_leq_two:"\<forall>c. |(fst (snd ts')) c| \<le> 2" 
+    have re_leq_two:"\<forall>c. |(fst (snd ts')) c| \<le> 2" using card'_dict union_dict
       by (metis (no_types, lifting) Un_commute add.commute atMostTwoLanes atMostTwoRes nat_int.card_un_add clm_consec_res fun_upd_apply nat_int.union_def False prod.sel(1) prod.sel(2) ts'_def)
-    have cl_leq_one:"\<forall>c. |(fst (snd (snd ts'))) c| \<le> 1" using atMostOneClm nat_int.card_empty_zero ts'_def by auto
-    have add_leq_two:"\<forall>c . |(fst (snd ts')) c| + |(fst (snd (snd ts'))) c| \<le> 2"  
+    have cl_leq_one:"\<forall>c. |(fst (snd (snd ts'))) c| \<le> 1" using atMostOneClm nat_int.card_empty_zero ts'_def card'_dict union_dict by auto
+    have add_leq_two:"\<forall>c . |(fst (snd ts')) c| + |(fst (snd (snd ts'))) c| \<le> 2" using card'_dict union_dict 
       by (metis (no_types, lifting) add.right_neutral atMostTwoLanes nat_int.card_empty_zero fun_upd_apply prod.sel(1) prod.sel(2) re_leq_two ts'_def)
     have  clNextRe : "\<forall>c. (((fst (snd (snd ts'))) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((fst (snd ts')) c) \<union> Rep_nat_int (fst (snd (snd ts')) c) = {n, n+1}))"
       using clmNextRes ts'_def by auto
@@ -354,22 +356,22 @@ proof
       next
         assume eq:"c=d"
         hence def_ts'_res:"(fst (snd ts')) d = (res ts c)\<squnion> (clm ts c) " by (simp add:ts'_def)
-        from False have at_least_one_clm:"|clm ts c| \<ge> 1" using nat_int.card_non_empty_geq_one by blast
-        from False have n1:"\<exists>n1. n1 \<^bold>\<in> clm ts c" by (simp add: nat_int.non_empty_elem_in)
-        have n2:"\<exists>n2. n2 \<^bold>\<in> res ts c" 
+        from False have at_least_one_clm:"|clm ts c| \<ge> 1" using nat_int.card_non_empty_geq_one card'_dict union_dict by auto
+        from False have n1:"\<exists>n1. n1 \<^bold>\<in> clm ts c" by (simp add: nat_int.non_empty_elem_in el_dict )
+        have n2:"\<exists>n2. n2 \<^bold>\<in> res ts c" using el_dict
           by (metis (no_types, lifting) clm_consec_res disjoint nat_int.consec_def nat_int.el.rep_eq inf_absorb1 less_eq_nat_int.rep_eq False subsetI)
         obtain n1 and n2 where n1_def:"n1 \<^bold>\<in> clm ts c" and n2_def:"n2 \<^bold>\<in> res ts c" using n1 n2 by blast
-        have rep_clm:"Rep_nat_int (clm ts c) = {n1}" using n1_def atMostOneClm at_least_one_clm 
-          using le_antisym nat_int.el.rep_eq nat_int.singleton singletonD by fastforce
-        have rep_res:"Rep_nat_int (res ts c) = {n2}" using n2_def atMostTwoLanes atLeastOneRes 
-          by (metis (no_types, lifting) One_nat_def Suc_leI add.right_neutral add_Suc_right add_eq_self_zero atMostOneClm atMostTwoRes at_least_one_clm le_add1 le_antisym nat_int.el.rep_eq nat_int.singleton one_add_one order_le_less singletonD)
+        have rep_clm:"Rep_nat_int (clm ts c) = {n1}" using n1_def atMostOneClm at_least_one_clm el_dict 
+          using antisym singleton by fastforce 
+        have rep_res:"Rep_nat_int (res ts c) = {n2}" using n2_def atMostTwoLanes atLeastOneRes  
+          by (metis Rep_nat_int_inverse add.right_neutral add_diff_cancel_left' add_le_imp_le_right atLeastAtMost_singleton card_seq el.rep_eq el_dict empty_iff le_antisym nat_int.in_singleton one_add_one rep_clm singleton2)
         have consec:"\<exists> n. Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n, n+1}" 
           using clmNextRes False by auto
         have n1_n2_un:"Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n1, n2}" using
             rep_clm rep_res by simp
         have "n1 = n2+1 \<or> n2 = n1+1" using consec n1_n2_un 
           by (metis doubleton_eq_iff)
-        thus ?thesis using Abs_nat_int_inverse 
+        thus ?thesis using Abs_nat_int_inverse union_dict
           by (smt Abs_nat_int_inverse Un_commute atLeastAtMost_singleton_iff def_ts'_res insert_commute mem_Collect_eq n1_n2_un nat_int.un_consec_seq nat_int.union_def order_refl rep_clm rep_res)
       qed
     qed
@@ -425,7 +427,7 @@ lemma withdraw_clm_eq_res:"(ts \<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow> ts
 
 lemma withdraw_res_subseteq:"(ts \<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow> ts') \<longrightarrow> res ts' c \<sqsubseteq> res ts c "
   using withdraw_reservation_def order_refl less_eq_nat_int.rep_eq nat_int.el.rep_eq 
-    nat_int.in_refl nat_int.in_singleton  fun_upd_apply subset_eq by fastforce
+    nat_int.in_refl nat_int.in_singleton  fun_upd_apply subset_eq el_dict by fastforce
 
 end
 end

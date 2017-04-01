@@ -10,10 +10,32 @@ section\<open> HMLSL for perfect sensors\<close>
 theory HMLSL_p
   imports "Perfect_Sensors"
 begin
-context perfect_sensors 
+      
+(*context hmlsl
+begin
+  interpretation sensors : sensors "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
+proof unfold_locales
+  fix e ts c
+  show " 0 < perfect e ts c" 
+    by (metis less_add_same_cancel2 less_trans perfect_def traffic.psGeZero traffic.sdGeZero)
+∎*)
+(*sublocale hmlsl<perfect_sensors .*)
+
+locale hmlsl_perfect = perfect_sensors + restriction
   begin
+    print_abbrevs
+  interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
+  proof unfold_locales 
   
-  abbreviation mtrue  :: "\<sigma>" ("\<^bold>\<top>")
+  fix e ts c
+  show " 0 < perfect e ts c" 
+    by (metis less_add_same_cancel2 less_trans perfect_def traffic.psGeZero traffic.sdGeZero) 
+qed
+print_facts 
+
+    
+
+(*  abbreviation mtrue  :: "\<sigma>" ("\<^bold>\<top>")
   where "\<^bold>\<top> \<equiv> \<lambda> ts w. True" 
 abbreviation mfalse :: "\<sigma>" ("\<^bold>\<bottom>") 
   where "\<^bold>\<bottom> \<equiv> \<lambda> ts w. False"   
@@ -99,20 +121,19 @@ where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>V. \<phi>(ts)(V)"
 
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
 where "ts, v \<Turnstile> \<phi> == \<phi>(ts)(v)"
+*)
+      declare[[show_consts]]
+notation hmlsl.space ("space")
+notation hmlsl.re ("re'(_')")
+  notation hmlsl.cl("cl'(_')")
+  notation hmlsl.len ("len")
 
-  
-  lemma at_res1:"\<Turnstile>re(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d re(c))"
-by (metis (no_types, lifting)  all_own_ext_eq_len_eq view.switch_def restriction.switch_restrict_stable)
 
-lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)"
-proof (rule allI|rule impI)+
-  fix ts v
-  assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. @d re(c))"
-  obtain v' where v'_def:"(v=(own v)> v') " using view.switch_refl by auto
-  with assm have v':"ts,v' \<Turnstile> re(c)" by blast
-  have "v = v'" using v'_def view.switch_refl view.switch_unique by blast
-  with v' show "ts,v \<Turnstile>re(c)" by blast
-qed
+lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d re(c))" 
+  by (metis (no_types, lifting) perfect_sensors.arbitrary_switch_length_stable restriction.switch_restrict_stable view.switch_def)
+   
+lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)" 
+  using view.switch_refl by blast
 
 lemma at_res:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d re(c))"
 using at_res1 at_res2 by blast
@@ -168,7 +189,8 @@ proof
   proof
     assume restr_res_nonempty:"restrict v (res ts) c \<noteq> \<emptyset>"
     hence restrict_one:"|restrict v (res ts) c | = 1" 
-      using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_res assm by fastforce
+      using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_res assm 
+      using card'_dict by fastforce
     have "restrict v (res ts ) c \<sqsubseteq> lan v" using restr_subs_res assm by auto
     hence "restrict v (res ts)c = lan v" using restriction.restrict_eq_lan_subs using restrict_one assm by auto
     thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
@@ -179,15 +201,15 @@ proof
     proof
       assume clm_non_empty:"restrict v (clm ts) c \<noteq> \<emptyset>"
       hence restrict_one:"|restrict v (clm ts) c | = 1" 
-        using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_clm assm by fastforce
+        using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_clm assm using card'_dict by fastforce
       have "restrict v (clm ts ) c \<sqsubseteq> lan v" using restr_subs_clm assm by auto
       hence "restrict v (clm ts)c = lan v" using restriction.restrict_eq_lan_subs using restrict_one assm by auto
       thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
     next
       assume clm_empty:"restrict v (clm ts) c = \<emptyset>"
-      hence "restrict v (clm ts) c \<squnion> restrict v (res ts) c = \<emptyset>" using nat_int.chop_empty nat_int.nchop_def restr_res_empty by auto                  
+      hence "restrict v (clm ts) c \<squnion> restrict v (res ts) c = \<emptyset>" using nat_int.chop_empty nat_int.nchop_def restr_res_empty union_dict by auto                  
       hence "restrict v (res ts') c \<noteq> restrict v (clm ts) c \<squnion> restrict v (res ts) c"  using assm traffic.create_reservation_def 
-        using nat_int.card_empty_zero assm by auto
+        using nat_int.card_empty_zero assm card'_dict by auto
       hence False using restriction.create_reservation_restrict_union assm clm_empty restr_res_empty 
         by metis
       thus ?thesis by simp

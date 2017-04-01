@@ -12,10 +12,9 @@ theory Sensors
 begin 
   
 locale sensors = traffic + view +
-  fixes sensors::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-  assumes sensors_ge:"sensors e ts c > 0"
+  fixes sensors::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real" 
+  assumes sensors_ge:"(sensors e ts c) > 0"
 begin
-  print_theorems
     
 definition space ::" traffic \<Rightarrow> view \<Rightarrow> cars \<Rightarrow> real_int"
   where "space ts v c \<equiv> Abs_real_int (pos ts c, pos ts c + sensors (own v) ts c)"

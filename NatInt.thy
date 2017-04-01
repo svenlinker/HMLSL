@@ -23,7 +23,7 @@ typedef nat_int = "{S . (\<exists> (m::nat) n . {m..n }=S) }"
 setup_lifting type_definition_nat_int
   
   
-locale nat_int 
+class nat_int 
 begin
   
 lemma un_consec_seq: "(m::nat)\<le> n \<and> n+1 \<le> l \<longrightarrow> {m..n} \<union> {n+1..l} = {m..l}" 

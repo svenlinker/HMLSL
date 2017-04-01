@@ -10,8 +10,21 @@ theory Safety_p
   imports HMLSL_p
 begin
   
-context perfect_sensors
+context hmlsl_perfect
 begin
+print_locale!hmlsl_perfect
+    interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
+  proof unfold_locales 
+  
+  fix e ts c
+  show " 0 < perfect e ts c" 
+    by (metis less_add_same_cancel2 less_trans perfect_def traffic.psGeZero traffic.sdGeZero) 
+qed
+notation hmlsl.space ("space")
+notation hmlsl.re ("re'(_')")
+  notation hmlsl.cl("cl'(_')")
+  notation hmlsl.len ("len")
+
   
 abbreviation safe::"cars\<Rightarrow>\<sigma>" 
   where "safe e \<equiv> \<^bold>\<forall> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<rightarrow> \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>" 
@@ -63,7 +76,7 @@ proof (rule allI|rule impI)+
     have local_LC: "ts',move ts ts' v \<Turnstile>( \<^bold>\<forall>d.( \<^bold>\<exists> c. pcc c d) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>)  " 
       using LC "cr_res.hyps" by blast
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using traffic.move_stability_res "cr_res.hyps" traffic.move_trans 
-        using perfect_sensors.move_stability_clm by auto
+        using move_stability_clm by auto
     hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps cr_res.hyps(1) cr_res.hyps(3) traffic.move_trans)
     show ?case 
     proof (rule)
