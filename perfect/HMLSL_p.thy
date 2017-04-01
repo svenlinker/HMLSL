@@ -25,7 +25,7 @@ qed
 
 notation hmlsl.re ("re'(_')")
   notation hmlsl.cl("cl'(_')")
-  notation hmlsl.len ("len") 
+  notation hmlsl.len ("len")
 
 
 lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d re(c))" 

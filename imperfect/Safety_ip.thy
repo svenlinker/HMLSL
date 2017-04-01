@@ -11,7 +11,7 @@ section\<open>Safety for Cars with Imperfect Sensors\<close>
 theory Safety_ip
   imports HMLSL_rp
 begin
-context hmlsl_regular
+context hmlsl_regular 
 begin
 
       interpretation hmlsl : hmlsl "regular :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
