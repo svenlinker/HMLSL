@@ -1012,6 +1012,119 @@ proof
   qed
 qed
 
+  lemma len_stable_down:"(v=v1--v2) \<longrightarrow> len v ( ts) c = len v1 ( ts) c"
+proof
+  assume assm:"v=v1--v2"
+  then have ext_eq1:"ext v = ext v1" using vchop_def by blast
+  show "len v ( ts) c = len v1 ( ts) c" 
+  proof (cases " left ((space ts v) c) \<le> right (ext v)")
+    assume outside_right:" \<not> left ((space ts v) c) \<le> right (ext v)"
+    show "len v ( ts) c = len v1 ( ts) c" 
+      using  ext_eq1 len_def outside_right vchop_def assm space_def by auto
+  next
+    assume inside_right:"left ((space ts v) c) \<le> right (ext v)"
+    show "len v ( ts) c = len v1 ( ts) c" 
+    proof (cases " right ((space ts v) c) \<ge> left (ext v)")
+      assume outside_left:"\<not>right ((space ts v) c) \<ge> left (ext v)"
+      show "len v ( ts) c = len v1 ( ts) c" 
+        using  ext_eq1 len_def outside_left vchop_def assm space_def by auto 
+    next
+      assume inside_left :" right ((space ts v) c) \<ge> left (ext v)"
+      show "len v ( ts) c = len v1 ( ts) c" 
+        using  ext_eq1 inside_left inside_right len_def vchop_def assm space_def by auto
+    qed
+  qed
+qed
+  
+lemma len_stable_up:"(v=v1--v2) \<longrightarrow> len v ( ts) c = len v2 ( ts) c"
+proof
+  assume assm:"v=v1--v2"
+  then have ext_eq1:"ext v = ext v2" using vchop_def by blast
+  show "len v ( ts) c = len v2 ( ts) c" 
+  proof (cases " left ((space ts v) c) \<le> right (ext v)")
+    assume outside_right:" \<not> left ((space ts v) c) \<le> right (ext v)"
+    show "len v ( ts) c = len v2 ( ts) c" 
+      using  ext_eq1 len_def outside_right vchop_def assm space_def by auto
+  next
+    assume inside_right:"left ((space ts v) c) \<le> right (ext v)"
+    show "len v ( ts) c = len v2 ( ts) c" 
+    proof (cases " right ((space ts v) c) \<ge> left (ext v)")
+      assume outside_left:"\<not>right ((space ts v) c) \<ge> left (ext v)"
+      show "len v ( ts) c = len v2 ( ts) c" 
+        using  ext_eq1 len_def outside_left vchop_def assm space_def by auto 
+    next
+      assume inside_left :" right ((space ts v) c) \<ge> left (ext v)"
+      show "len v ( ts) c = len v2 ( ts) c" 
+        using  ext_eq1 inside_left inside_right len_def vchop_def assm space_def by auto
+    qed
+  qed
+qed
+
+  
+lemma len_empty_subview:"\<parallel>len v ts c\<parallel> = 0 \<and> (v' \<le> v) \<longrightarrow> \<parallel>len v' ts c\<parallel> = 0"
+proof
+  assume assm:"\<parallel>len v ts c\<parallel> = 0 \<and> (v' \<le> v)"
+  hence "\<exists>v1 v2 v3 vl vr vu vd. (v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v'--vu)" using
+      somewhere_leq by blast
+  from this obtain v1 v2 v3 vl vr vu vd where views:"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v'--vu)" by blast
+  have "\<parallel>len v1 ts c\<parallel> = 0" using views assm len_empty_on_subview2 by blast
+  hence "\<parallel>len v2 ts c\<parallel> = 0" using views len_empty_on_subview1 by blast
+  hence "\<parallel>len v3 ts c \<parallel> = 0" using views len_stable_up by auto
+  thus "\<parallel>len v' ts c \<parallel> = 0" using views len_stable_down by auto
+qed
+
+  lemma view_leq_len_leq:"(ext v \<le> ext v') \<and> (own v = own v') \<and> \<parallel>len v ts c\<parallel> > 0 \<longrightarrow> len v ts c \<le> len v' ts c"
+proof
+  assume assm:"(ext v \<le> ext v') \<and> (own v = own v') \<and> \<parallel>len v ts c\<parallel> > 0"
+  hence sp:"space ts v c = space ts v' c" by (simp add: sensors_def space_def)
+  have left_eq:"left (ext v) \<ge> left (ext v')" using assm less_eq_real_int_def by simp
+  have right_eq:"right (ext v) \<le> right (ext v')" using assm less_eq_real_int_def by simp
+  show "len v ( ts) c \<le> len v' ( ts) c"   
+  proof (cases "left ((space ts v') c) > right (ext v')")
+    assume outside_right:"left ((space ts v') c) > right (ext v')"
+    hence outside_right':"left ((space ts v') c) > right (ext v)" using right_eq by simp
+    have False using  assm  real_int.length_def  len_non_empty_inside outside_right' space_def by fastforce
+    thus ?thesis by best
+  next
+    assume inside_right:"\<not> left ((space ts v') c) > right (ext v')"
+    have inside_right':"\<not> left ((space ts v') c) > right (ext v)"
+    proof (rule ccontr)
+      assume "\<not>\<not> left ((space ts v') c) > right (ext v)"
+      hence " left ((space ts v') c) > right (ext v)" by blast
+      thus False using assm real_int.length_def len_non_empty_inside space_def by fastforce
+    qed
+    show "len v ( ts) c \<le> len v' ( ts) c"
+    proof (cases " left (ext v') > right ((space ts v') c) ")
+      assume outside_left:" left (ext v') > right ((space ts v') c) "
+      hence outside_left':"left (ext v) > right ((space ts v') c)" using left_eq by simp
+      have False using assm real_int.length_def len_non_empty_inside outside_left' space_def by fastforce
+      thus ?thesis by best
+    next
+      assume inside_left:"\<not>left (ext v') > right ((space ts v') c) "
+      have inside_left':"\<not>left (ext v) > right ((space ts v')c )"
+      proof (rule ccontr)
+        assume "\<not>\<not>left (ext v) > right ((space ts v')c )" 
+        hence "left (ext v) > right ((space ts v')c )" by blast
+        thus False using assm real_int.length_def len_non_empty_inside space_def by fastforce
+      qed    
+      have max:"max (left (ext v)) (left ((space ts v ) c)) \<ge> max (left (ext v')) (left ((space ts v ) c))"
+        using inside_left inside_right inside_left' inside_right' left_eq right_eq len_def sp by fastforce
+      have min:"min (right (ext v)) (right ((space ts v ) c)) \<le> min (right (ext v')) (right ((space ts v ) c))"
+        using inside_left inside_right inside_left' inside_right' left_eq right_eq len_def sp by fastforce
+      have "max (left (ext v)) (left ((space ts v' ) c))\<le> min (right (ext v)) (right ((space ts v' ) c))"
+        using assm inside_left' inside_right' space_nonempty sp  real_int.left_leq_right by auto
+      hence len_v_in_type:"(max (left (ext v)) (left ((space ts v' ) c)), min (right (ext v)) (right ((space ts v' ) c)))
+          \<in> {r::(real*real) . fst r \<le> snd r}" by auto
+      have len_v'_in_type:"(max (left (ext v')) (left ((space ts v' ) c)), min (right (ext v')) (right ((space ts v' ) c)))
+          \<in> {r::(real*real) . fst r \<le> snd r}" using max min real_int.left_leq_right inside_left inside_right 
+        by auto
+      show ?thesis using min max inside_left inside_left' inside_right inside_right' len_def sp 
+          real_int.left_leq_right len_v_in_type Abs_real_int_inverse  len_v'_in_type less_eq_real_int_def
+        by auto
+    qed
+  qed
+qed
+
   
 (* These guys should be dependend on the sensor implementation! 
   However, they are valid for both perfect and imperfect information 

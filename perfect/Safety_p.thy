@@ -12,7 +12,6 @@ begin
   
 context hmlsl_perfect
 begin
-print_locale!hmlsl_perfect
     interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
   proof unfold_locales 
   
@@ -24,6 +23,7 @@ notation hmlsl.space ("space")
 notation hmlsl.re ("re'(_')")
   notation hmlsl.cl("cl'(_')")
   notation hmlsl.len ("len")
+print_locale!hmlsl_perfect
 
   
 abbreviation safe::"cars\<Rightarrow>\<sigma>" 
