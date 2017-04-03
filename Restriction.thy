@@ -10,7 +10,7 @@ theory Restriction
   imports Traffic Views
 begin
   
-locale restriction = view+traffic
+class restriction = view+traffic
 begin
   
   
@@ -289,7 +289,7 @@ proof
     by metis
 qed
   
-lemma restrict_eq_lan_subs:"|restrict v f c| = |lan v| \<and> (restrict v f c \<sqsubseteq> lan v) \<longrightarrow> restrict v f c = lan v"
+lemma restrict_eq_lan_subs:"|restrict v f c| = |lan v| \<and> (restrict v f c \<sqsubseteq> lan v) \<longrightarrow> restrict v f c = lan v" 
 proof
   assume assm:"|restrict v f c| = |lan v| \<and> (restrict v f c \<sqsubseteq> lan v)" 
   have "|restrict v f c| = 0 \<or> |restrict v f c| \<noteq> 0" by auto
@@ -304,22 +304,11 @@ proof
     show "restrict v f c = lan v"
     proof (rule ccontr)
       assume non_eq:"restrict v f c \<noteq> lan v"
-      with assm have n_outside_res:"\<exists>n. n \<^bold>\<in> lan v \<and> n \<^bold>\<notin> restrict v f c" using el_dict not_in_dict card'_dict 
-          using Rep_nat_int_inject dual_order.antisym nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq subsetI   sorry
-(*        by (meson Rep_nat_int_inject dual_order.antisym nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq subsetI)*)
-      obtain n where n_def:"n \<^bold>\<in> lan v \<and> n \<^bold>\<notin> restrict v f c" using n_outside_res by blast
-      from assm have "\<forall>n. n \<^bold>\<in> restrict v f c \<longrightarrow> n \<^bold>\<in> lan v" using nat_int.el.rep_eq less_eq_nat_int.rep_eq subsetCE el_dict by auto
-      from assm have "|restrict v f c| \<le> |lan v|" by (simp add: nat_int.card_subset_le)
-      from assm and n_outside_res have "Rep_nat_int (restrict v f c) \<union>  {n} \<subseteq> Rep_nat_int (lan v)" 
-        using Un_insert_right insert_subset n_def nat_int.el.rep_eq less_eq_nat_int.rep_eq sup_bot.right_neutral el_dict by auto
-      have "card ((Rep_nat_int (restrict v f c)) \<union> {n}) > card (Rep_nat_int (restrict v f c))" using n_def el_dict union_dict card'_dict 
-        by (metis False Un_upper1 assm card'.rep_eq card.infinite card.insert dual_order.antisym finite.intros(1) finite_Un insert_absorb less_eq_nat_int.rep_eq nat.simps(3) non_eq psubsetI psubset_card_mono) 
-(*        by (metis Un_empty_right Un_insert_right card.infinite card.insert lessI nat_int.card'.rep_eq nat_int.not_in.rep_eq False)*)
-      with assm and n_outside_res have "|lan v| \<ge> card ((Rep_nat_int (restrict v f c)) \<union> {n})"  using card'_dict
-        by (metis Rep_nat_int_inject card.infinite card_seteq less_le nat_int.card'.rep_eq less_eq_nat_int.rep_eq non_eq False not_less)
-      hence "|lan v| > card (Rep_nat_int (restrict v f c))" 
-        using \<open>card (Rep_nat_int (restrict v f c)) < card (Rep_nat_int (restrict v f c) \<union> {n})\<close> less_le_trans by blast
-      thus False using assm card'_dict by (simp add: nat_int.card'_def not_less_iff_gr_or_eq)
+       then have "restrict v f c < lan v" 
+         by (simp add: assm less_le)
+       then have "|restrict v f c| < |lan v|" 
+         using card_subset_less by blast
+       then show False using assm by simp
     qed
   qed
 qed

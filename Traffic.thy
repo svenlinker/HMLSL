@@ -79,7 +79,7 @@ proof -
   thus ?thesis by blast
 qed 
 
-locale traffic   
+class traffic   
 begin   
 
 

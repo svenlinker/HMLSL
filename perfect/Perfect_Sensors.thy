@@ -5,7 +5,7 @@ theory Perfect_Sensors
   definition perfect::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
   where "perfect e ts c \<equiv> traffic.physical_size ts c + traffic.braking_distance ts c " 
 
-locale perfect_sensors = traffic+view
+class perfect_sensors = traffic+view
   begin
 interpretation sensors : sensors "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
 proof unfold_locales
@@ -33,14 +33,14 @@ lemma "pos ts = pos ts' \<and> braking_distance ts = braking_distance ts' \<and>
         \<longrightarrow> space ts v c = space ts' v c"  
 proof
   assume assm:"pos ts = pos ts' \<and> braking_distance ts = braking_distance ts' \<and> physical_size ts= physical_size ts'"  
-  then have left:"left (space ts v c) = left (space ts' v c)" using local.sensors.space_nonempty Abs_real_int_inverse 
-    by (smt CollectI fst_conv left.rep_eq local.sensors.sensors_ge snd_conv local.sensors.space_def)
-  from assm have "\<forall>e. perfect e ts c = perfect e ts' c" using perfect_def 
-    by simp
+  then have left:"left (space ts v c) = left (space ts' v c)" using local.sensors.space_nonempty Abs_real_int_inverse braking_distance_dict physical_size_dict perfect_def
+      by (simp add: local.sensors.space_def pos_dict)
+  from assm have "\<forall>e. perfect e ts c = perfect e ts' c" using perfect_def pos_def braking_distance_def physical_size_def 
+    by (simp add: braking_distance_dict physical_size_dict)
   hence " perfect (own v) ts c = perfect (own v) ts' c" by simp
   then have "pos ts c  + perfect (own v) ts c = pos ts' c + perfect (own v) ts' c" using assm by simp
   with assm have right:"right (space ts v c) = right (space ts' v c)" using Abs_real_int_inverse fst_conv snd_conv local.sensors.space_def  right.rep_eq
-  by simp
+      by (simp add: local.sensors.space_def pos_dict)
   from left and right show "space ts v c = space ts' v c" 
     by (simp add: dual_order.antisym less_eq_real_int_def)
 qed
@@ -49,8 +49,8 @@ lemma create_reservation_length_stable:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<righ
 proof
   assume assm:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
-    using traffic.create_reservation_def local.sensors.space_def braking_distance_def physical_size_def perfect_def 
-      by simp
+    using traffic.create_reservation_def local.sensors.space_def braking_distance_def physical_size_def perfect_def pos_def 
+    by (simp add: create_reservation_dict pos_dict)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -79,8 +79,8 @@ lemma create_claim_length_stable:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarr
 proof
   assume assm:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
-    using traffic.create_claim_def sensors.space_def perfect_def 
-    by (simp )
+    using traffic.create_claim_def sensors.space_def braking_distance_def physical_size_def perfect_def pos_def 
+     by (simp add: create_claim_dict pos_dict)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -110,7 +110,7 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
     using traffic.withdraw_reservation_def sensors.space_def perfect_def 
-    by (simp)
+    by (simp add:withdraw_reservation_dict pos_dict)
 
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
@@ -141,7 +141,8 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
         using traffic.withdraw_claim_def sensors.space_def perfect_def 
-    by simp
+     by (simp add:withdraw_claim_dict pos_dict)
+
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -198,11 +199,12 @@ proof
 qed
   (* switch lemmas *)
 lemma switch_length_stable:"(v=c>v') \<longrightarrow> len v ts c = len v' ts c"
-  using all_own_ext_eq_len_eq view.switch_def by blast
+  using all_own_ext_eq_len_eq view.switch_def switch_dict 
+  by metis
      
 
 lemma arbitrary_switch_length_stable:"(v=d>v') \<longrightarrow> len v ts c = len v' ts c"
-  using all_own_ext_eq_len_eq view.switch_def by blast
+  using all_own_ext_eq_len_eq view.switch_def switch_dict by metis
   
 end
   end

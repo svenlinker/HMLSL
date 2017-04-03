@@ -10,9 +10,8 @@ section\<open> Sensors for Cars\<close>
 theory Sensors
   imports "Traffic" "Views"
 begin 
-  
 locale sensors = traffic + view +
-  fixes sensors::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real" 
+  fixes sensors::"(cars) \<Rightarrow> traffic \<Rightarrow> (cars) \<Rightarrow> real" 
   assumes sensors_ge:"(sensors e ts c) > 0"
 begin
     

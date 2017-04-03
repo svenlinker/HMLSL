@@ -589,6 +589,17 @@ proof -
     by (metis (no_types) card_mono finite_atLeastAtMost card'.rep_eq less_eq_nat_int.rep_eq)
 qed
   
+lemma card_subset_less:"(i::nat_int) < i' \<longrightarrow> |i|<|i'|"  
+proof -
+  have "\<exists>n na. {n..na} = Rep_nat_int i'"
+    using Rep_nat_int by fastforce
+  then obtain nn :: "nat set \<Rightarrow> nat" and nna :: "nat set \<Rightarrow> nat" where
+    "{nn (Rep_nat_int i')..nna (Rep_nat_int i')} = Rep_nat_int i'"
+    by meson
+  then show ?thesis 
+    by (metis finite_atLeastAtMost less_nat_int.rep_eq nat_int.card'.rep_eq psubset_card_mono)
+qed
+  
 lemma card_empty_zero:"|\<emptyset>| = 0"  
   using Abs_nat_int_inverse empty_type card'.rep_eq bot_nat_int.rep_eq by auto
     

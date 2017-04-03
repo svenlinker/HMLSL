@@ -33,8 +33,8 @@ lemma create_reservation_length_stable:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<righ
 proof
   assume assm:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
-    using traffic.create_reservation_def sensors.space_def regular_def 
-    by (simp add: regular_sensors.sensors_axioms)
+    using traffic.create_reservation_def sensors.space_def regular_def  create_reservation_dict 
+    by (simp add: pos_dict regular_sensors.sensors_axioms)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -63,7 +63,7 @@ lemma create_claim_length_stable:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarr
 proof
   assume assm:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
-    using traffic.create_claim_def sensors.space_def regular_def 
+    using traffic.create_claim_def sensors.space_def regular_def pos_dict create_claim_dict
     by (simp add: regular_sensors.sensors_axioms)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
@@ -93,7 +93,7 @@ lemma withdraw_reservation_length_stable:"(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>
 proof
   assume assm:"(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
-    using traffic.withdraw_reservation_def sensors.space_def regular_def 
+    using traffic.withdraw_reservation_def sensors.space_def regular_def pos_dict withdraw_reservation_dict 
     by (simp add: regular_sensors.sensors_axioms)
 
   show "len v ( ts) c = len v ( ts') c"   
@@ -124,7 +124,7 @@ lemma withdraw_claim_length_stable:"(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<righta
 proof
   assume assm:"(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
-        using traffic.withdraw_claim_def sensors.space_def regular_def 
+        using traffic.withdraw_claim_def sensors.space_def regular_def pos_dict withdraw_claim_dict
     by (simp add: regular_sensors.sensors_axioms)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
@@ -189,7 +189,7 @@ lemma space_eq: "own v = own v' \<longrightarrow> space ts v c = space ts v' c" 
 lemma switch_space_le:"(own v) \<noteq> c \<and> (v=c>v') \<longrightarrow> space ts v c < space ts v' c" 
 proof
   assume assm:"(own v) \<noteq> c \<and> (v=c>v')"
-  hence sens:"regular (own v) ts c < regular (own v') ts c" using sensors_le view.switch_def by auto
+  hence sens:"regular (own v) ts c < regular (own v') ts c" using sensors_le view.switch_def switch_dict by auto
   then have le:"pos ts c + regular (own v) ts c < pos ts c + regular (own v') ts c" by auto     
   have left_eq:"left (space ts v c) = left (space ts v' c)" using left_space by auto 
   have r1:"right (space ts v c ) = pos ts c + regular (own v) ts c" 
@@ -205,7 +205,7 @@ proof
     using left_eq by auto    
 qed
 
-lemma switch_space_leq:"(v=c>v') \<longrightarrow> space ts v c \<le> space ts v' c"
+lemma switch_space_leq:"(v=c>v') \<longrightarrow> space ts v c \<le> space ts v' c" using switch_dict
 by (metis less_imp_le order_refl switch_space_le view.switch_refl view.switch_unique)
 
   
