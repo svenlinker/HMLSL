@@ -6,7 +6,7 @@ definition regular::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow>
   where "regular e ts c \<equiv> if (e = c) then traffic.physical_size ts c + traffic.braking_distance ts c 
                                     else traffic.physical_size ts c "  
 
-locale regular_sensors = traffic + view
+class regular_sensors = traffic + view
 begin
   
   
@@ -164,8 +164,8 @@ proof -
     using Abs_real_int_inverse by force
   have "pos ts c < pos ts c + regular (own v) ts c" 
     using regular_sensors.sensors_ge by auto
-  then show ?thesis 
-    by (metis (no_types) cond add.right_neutral add_less_cancel_left  left.rep_eq fst_conv  regular_sensors.space_def order.asym )
+  then show ?thesis using pos_dict 
+    by (simp add: Abs_real_int_inverse regular_sensors.sensors_axioms sensors.space_def)
 qed
 
 lemma right_space:"right (space ts v c) =  pos ts c + regular (own v) ts c"  
@@ -179,7 +179,7 @@ proof -
     have "Rep_real_int (Abs_real_int (pos ts c, pos ts c + regular (own v) ts c)) = (pos ts c, pos ts c + regular (own v) ts c)"
       using non_e cond by fastforce
     then show ?thesis
-      by (simp add: regular_sensors.space_def)
+    by (simp add: Abs_real_int_inverse regular_sensors.sensors_axioms pos_dict sensors.space_def )
   qed
 qed
   

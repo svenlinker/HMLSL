@@ -39,13 +39,13 @@ notation nat_int.consec ("consec _ _")
 notation nat_int.el (infix " \<^bold>\<in> " 40)
 notation nat_int.not_in (infix "\<^bold>\<notin>" 40) *)
   
-notation RealInt.real_int.shift (" shift _ _")
+(*notation RealInt.real_int.shift (" shift _ _") *)
   
 (*notation nat_int.card' ("|_|" 70)*)
-notation RealInt.real_int.length ("\<parallel>_\<parallel>" 70)
+(*notation RealInt.real_int.length ("\<parallel>_\<parallel>" 70) *)
   
 (*notation NatInt.nat_int.N_Chop ("N'_Chop'(_,_,_')")*)
-notation RealInt.real_int.R_Chop ("R'_Chop'(_,_,_')")  
+(*notation RealInt.real_int.R_Chop ("R'_Chop'(_,_,_')")  *)
 
   
   

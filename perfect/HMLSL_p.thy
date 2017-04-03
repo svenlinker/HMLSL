@@ -10,34 +10,34 @@ section\<open> HMLSL for perfect sensors\<close>
 theory HMLSL_p
   imports "Perfect_Sensors"
 begin
-      
-
+  
+  
 class hmlsl_perfect = perfect_sensors + restriction
-  begin
-    
-  interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-  proof unfold_locales 
+begin
+  
+interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
+proof unfold_locales 
   
   fix e ts c
   show " 0 < perfect e ts c" 
     by (metis less_add_same_cancel2 less_trans perfect_def traffic.psGeZero traffic.sdGeZero) 
 qed
-
-
+  
+  
 notation hmlsl.re ("re'(_')")
-  notation hmlsl.cl("cl'(_')")
-  notation hmlsl.len ("len")
-
-
+notation hmlsl.cl("cl'(_')")
+notation hmlsl.len ("len")
+  
+  
 lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d re(c))" 
   by (metis (no_types, lifting) perfect_sensors.arbitrary_switch_length_stable restriction.switch_restrict_stable view.switch_def)
-   
+    
 lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)" 
   using view.switch_refl by blast
-
+    
 lemma at_res:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d re(c))"
-using at_res1 at_res2 by blast
-
+  using at_res1 at_res2 by blast
+    
 lemma at_res_inst:"\<Turnstile> (@d re(c)) \<^bold>\<rightarrow>re(c)"
 proof (rule allI|rule impI)+
   fix ts v
@@ -47,11 +47,11 @@ proof (rule allI|rule impI)+
   with v' show "ts,v \<Turnstile>re(c)" using restriction.switch_restrict_stable perfect_sensors.switch_length_stable v'_def view.switch_def 
     by (metis (no_types, lifting) all_own_ext_eq_len_eq)
 qed
-
-
+  
+  
 lemma at_clm1:"\<Turnstile>cl(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d cl(c))"
-by (metis (no_types, lifting)  all_own_ext_eq_len_eq view.switch_def restriction.switch_restrict_stable)
-
+  by (metis (no_types, lifting)  all_own_ext_eq_len_eq view.switch_def restriction.switch_restrict_stable)
+    
 lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. @d cl(c)) \<^bold>\<rightarrow> cl(c)"
 proof (rule allI|rule impI)+
   fix ts v
@@ -61,10 +61,10 @@ proof (rule allI|rule impI)+
   have "v = v'" using v'_def view.switch_refl view.switch_unique by blast
   with v' show "ts,v \<Turnstile>cl(c)" by blast
 qed
-
+  
 lemma at_clm:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d cl(c))"
-using at_clm1 at_clm2 by blast
-
+  using at_clm1 at_clm2 by blast
+    
 lemma at_clm_inst:"\<Turnstile> (@d cl(c)) \<^bold>\<rightarrow>cl(c)"
 proof (rule allI|rule impI)+
   fix ts v
@@ -74,9 +74,9 @@ proof (rule allI|rule impI)+
   with v' show "ts,v \<Turnstile>cl(c)" using restriction.switch_restrict_stable switch_length_stable v'_def view.switch_def 
     by (metis (no_types, lifting) all_own_ext_eq_len_eq)
 qed
-
-
-  lemma backwards_res_act:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))"
+  
+  
+lemma backwards_res_act:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))"
 proof
   assume assm:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c))"
   from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
@@ -116,7 +116,7 @@ proof
     qed
   qed
 qed
-
+  
 lemma backwards_res_stab:"(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
 proof
   assume assm:"(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c))"
@@ -124,19 +124,19 @@ proof
   have "res ts c = res ts' c" using assm traffic.create_res_subseteq1_neq by blast
   thus " ts,v \<Turnstile> (re(c))" using assm len_eq restriction.restrict_def by auto
 qed
-
+  
 lemma backwards_c_res_stab:"(ts \<^bold>\<midarrow>c(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
-using create_claim_length_stable traffic.create_clm_eq_res 
-by (metis (mono_tags, lifting) traffic.create_claim_def) 
-
+  using create_claim_length_stable traffic.create_clm_eq_res 
+  by (metis (mono_tags, lifting) traffic.create_claim_def) 
+    
 lemma backwards_wdc_res_stab:"(ts \<^bold>\<midarrow>wdc(d) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
-using withdraw_claim_length_stable traffic.withdraw_clm_eq_res 
-by (metis (mono_tags, lifting) traffic.withdraw_claim_def) 
-
+  using withdraw_claim_length_stable traffic.withdraw_clm_eq_res 
+  by (metis (mono_tags, lifting) traffic.withdraw_claim_def) 
+    
 lemma backwards_wdr_res_stab:"(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
-using withdraw_reservation_length_stable traffic.withdraw_res_subseteq
-by (smt inf_absorb2 order_trans restriction.restrict_def restriction.restrict_res) 
-
+  using withdraw_reservation_length_stable traffic.withdraw_res_subseteq
+  by (smt inf_absorb2 order_trans restriction.restrict_def restriction.restrict_res) 
+    
 lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)"
 proof (rule allI| rule impI)+ 
   fix ts v ts'
@@ -160,16 +160,16 @@ proof (rule allI| rule impI)+
       using  restriction.restrict_def by (simp add: inf_absorb1 inf_commute)
   qed
 qed
-
+  
 lemma reservation2: "(\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c)))" 
   using backwards_res_act traffic.always_create_res by blast
-
+    
 lemma reservation:"\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<leftrightarrow> (re(c) \<^bold>\<or> cl(c))"
-using reservation1 reservation2 by blast
-
+  using reservation1 reservation2 by blast
+    
 lemma backwards_res_act_somewhere:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle>) \<longrightarrow> (ts,v \<Turnstile>\<^bold>\<langle> re(c) \<^bold>\<or> cl(c)\<^bold>\<rangle> )"
-using backwards_res_act by blast 
-
+  using backwards_res_act by blast 
+    
 end
   
 end

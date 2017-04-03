@@ -36,8 +36,8 @@ proof
   hence "move ts' ts'' (move ts ts' v) = 
  \<lparr> ext = shift (ext (move ts ts' v)) (pos ts'' (own v) - pos ts' (own  v)),
   lan = lan  v, own = own  v \<rparr> " using move_def by simp
-  then show "move ts' ts'' (move ts ts' v) = move ts ts'' v" using real_int.shift_additivity 
-    by (smt  move_def select_convs(1))
+  then show "move ts' ts'' (move ts ts' v) = move ts ts'' v" using real_int.shift_additivity move_dict shift_dict 
+    by (smt  move_def  select_convs(1))
 qed
   
 lemma move_stability_res:"(ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<longrightarrow> move ts ts' v = v" 

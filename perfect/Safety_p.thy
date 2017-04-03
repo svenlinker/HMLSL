@@ -240,6 +240,6 @@ proof (rule allI|rule impI)+
     then show False using assm nequals by blast
   qed
 qed
-  
+   
 end
 end

@@ -261,13 +261,13 @@ using hchop_def horizontal_chop1 hchop_dict
 by force 
 
 lemma length_geq_zero:"\<Turnstile> (\<^bold>\<l> \<ge> 0)"
-by (metis order.not_eq_order_implies_strict real_int.length_ge_zero)
+by (metis order.not_eq_order_implies_strict real_int.length_ge_zero length_dict)
 
 lemma length_split: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
 using horizontal_chop_non_empty hchop_dict by fastforce
 
 lemma length_meld: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0))"
-using hchop_def real_int.chop_add_length_ge_0 hchop_dict by metis
+using hchop_def real_int.chop_add_length_ge_0 hchop_dict length_dict by metis
 
 lemma length_dense:"\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<leftrightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
 using length_meld length_split by blast
@@ -385,7 +385,7 @@ proof (rule allI|rule notI)+
     assume "\<not> p \<^bold>\<in> lan v1"
     then have "p \<^bold>\<notin> lan v1" using el_dict not_in_dict by (simp )
     hence "p \<^bold>\<notin> restrict v1 (res ts) c" by (simp add: chop)
-    then have "p+1 \<^bold>\<in> restrict v1 (res ts) c" using p_def res_two_lanes el_dict not_in_dict consec_dict using res_dict restrict_dict card'_dict vchop_dict hchop_dict
+    then have "p+1 \<^bold>\<in> restrict v1 (res ts) c" using p_def res_two_lanes el_dict not_in_dict consec_dict using res_dict restrict_dict card'_dict vchop_dict hchop_dict el_dict not_in_dict 
       by (metis (no_types, lifting) chop consec_v1_v' equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
     hence suc_p:"p+1 \<^bold>\<in> lan v1"  by (simp add: chop)
     hence "p+1 \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq not_in_dict el_dict by auto
@@ -591,7 +591,7 @@ proof (rule allI|rule impI)+
     hence contra:"\<not>(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
       using ge_0 one_lane by blast
     hence ex_car:"\<exists>c. \<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" 
-      using real_int.length_ge_zero using dual_order.antisym not_le by blast
+      using real_int.length_ge_zero using dual_order.antisym not_le  length_dict by metis
     obtain c where c_def:"\<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)"       
       using ex_car by blast
     hence "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" by best
@@ -673,7 +673,7 @@ proof (rule allI | rule impI)+
     from this obtain c and v1 and v' and v2 and vc where 
       vc_def:"(v=v1\<parallel>v') \<and> (v'=vc\<parallel>v2) \<and> (ts,vc \<Turnstile> cl(c) \<^bold>\<or> re(c))" by blast
     hence len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" 
-      by (smt len_empty_on_subview1 len_empty_on_subview2 real_int.length_ge_zero)
+      by (smt len_empty_on_subview1 len_empty_on_subview2 real_int.length_ge_zero length_dict )
     from vc_def have vc_ex_car:"restrict vc (clm ts) c \<noteq> \<emptyset> \<or> restrict vc (res ts) c \<noteq>\<emptyset>" 
       using nat_int.card_empty_zero one_neq_zero card'_dict by auto
     have eq_lan:"lan v = lan vc" using vc_def using hchop_def using restrict_dict vchop_dict clm_dict hchop_dict by auto

@@ -2,7 +2,7 @@ theory HMLSL_rp
   imports Regular_Sensors
 begin
   
-  locale hmlsl_regular = regular_sensors + restriction
+  class hmlsl_regular = regular_sensors + restriction
   begin
   interpretation hmlsl : hmlsl "regular :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
   proof unfold_locales 
@@ -203,7 +203,7 @@ proof (rule allI| rule impI)+
     assume cl:"ts,v \<Turnstile>cl(c)"
     have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
     have "(clm ts) c \<sqsubseteq> res ts' c" using res_dict clm_dict 
-      using traffic_class.create_res_subseteq2 ts'_def by blast    
+      using traffic_class.create_res_subseteq2 ts'_def create_reservation_dict by auto    
     then have restrict:"restrict v (clm ts ) c \<sqsubseteq> restrict v (res ts' ) c" using traffic.create_res_subseteq2 ts'_def  less_eq_nat_int.rep_eq restrict_dict res_dict clm_dict
       using eq_iff by (metis (no_types) cl inf.orderE inf_commute order_trans restriction.restrict_clm restriction.restrict_def)
     show  re':"ts',v \<Turnstile> re(c)" using len_eq cl restrict restrict_dict

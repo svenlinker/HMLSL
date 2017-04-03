@@ -63,10 +63,10 @@ lemma h_chop_middle2:"(v=u\<parallel>w) \<longrightarrow> right (ext v) \<ge> le
     
 lemma horizontal_chop1: " \<exists> u w. (v=u\<parallel>w)" 
 proof -
-  have real_chop:"\<exists>x1 x2.  R_Chop(ext v, x1,x2)" using real_int.chop_singleton_left by blast
-  obtain x1 and x2 where x1_x2_def:" R_Chop(ext v, x1,x2)" using real_chop by blast
+  have real_chop:"\<exists>x1 x2.  R_Chop(ext v, x1,x2)" using real_int.chop_singleton_left  by force
+  obtain x1 and x2 where x1_x2_def:" R_Chop(ext v, x1,x2)" using real_chop by force
   obtain V1 and V2 where v1:"V1 = \<lparr> ext = x1, lan = lan v, own = own v\<rparr>" and v2:"V2 = \<lparr> ext = x2,lan= lan v, own = own v\<rparr> "  by blast 
-  from v1 and v2 have "v=V1\<parallel>V2" using hchop_def by (simp add: x1_x2_def)
+  from v1 and v2 have "v=V1\<parallel>V2" using hchop_def x1_x2_def by (simp)
   thus ?thesis by blast
 qed
   
@@ -82,11 +82,11 @@ lemma horizontal_chop_non_empty:"\<parallel>ext v\<parallel> > 0 \<longrightarro
 proof
   assume "\<parallel>ext v\<parallel> > 0" 
   then obtain l1 and l2 where chop:" R_Chop(ext v, l1,l2) \<and> \<parallel>l1\<parallel> > 0 \<and> \<parallel>l2\<parallel> > 0" 
-    using real_int.chop_dense by blast
+    using real_int.chop_dense by force
   obtain V1 where v1_def:"V1 = \<lparr> ext = l1, lan = lan v, own = own v \<rparr>" by simp
   obtain V2 where v2_def:"V2 = \<lparr> ext = l2,lan = lan v, own = own v \<rparr>" by simp
   then have  " (v=V1\<parallel>V2) \<and> \<parallel>ext V1\<parallel> > 0 \<and> \<parallel>ext V2\<parallel>>0" 
-    by (simp add: chop hchop_def v1_def)
+   using  chop hchop_def v1_def by (simp)
   then show " (\<exists>V1 V2. (v=V1\<parallel>V2) \<and> \<parallel>ext V1\<parallel> > 0 \<and> \<parallel>ext V2\<parallel>>0)" by blast
 qed
   

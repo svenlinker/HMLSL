@@ -13,9 +13,9 @@ theory Safety_ip
 begin
 context hmlsl_regular 
 begin
-
-      interpretation hmlsl : hmlsl "regular :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-  proof unfold_locales 
+  
+interpretation hmlsl : hmlsl "regular :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
+proof unfold_locales 
   
   fix e ts c
   show " 0 < regular e ts c" 
@@ -23,12 +23,12 @@ begin
 qed
   
 print_facts
-  print_locale!hmlsl_regular
+print_locale!hmlsl_regular
 notation hmlsl.space ("space")
 notation hmlsl.re ("re'(_')")
-  notation hmlsl.cl("cl'(_')")
-  notation hmlsl.len ("len")
-
+notation hmlsl.cl("cl'(_')")
+notation hmlsl.len ("len")
+  
   
 abbreviation safe::"cars\<Rightarrow>\<sigma>" 
   where "safe e \<equiv> \<^bold>\<forall> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<rightarrow> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>" 
@@ -43,7 +43,8 @@ abbreviation LC::"\<sigma>"
   where "LC \<equiv> \<^bold>G ( \<^bold>\<forall>d.( \<^bold>\<exists> c. pcc c d) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>)  "
     
     
-    
+lemmas[simp] = move_dict create_reservation_dict pos_dict clm_dict restrict_dict 
+  
 theorem safety_flawed:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)"
 proof (rule allI|rule impI)+  
   fix ts v ts' 
@@ -54,10 +55,10 @@ proof (rule allI|rule impI)+
   from assm have init:"ts,v \<Turnstile> ( \<^bold>\<forall>e. safe e )" by simp
   from assm have DC :"ts,v \<Turnstile> DC" by simp
   from assm have LC: "ts,v \<Turnstile> LC" by simp
-  show "ts',move ts ts' v \<Turnstile> \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using abs
-  proof (induct ts\<equiv>"ts" ts'\<equiv>ts' arbitrary:ts'  rule:abstract.induct )
+  show "ts',move ts ts' v \<Turnstile> \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using abs 
+  proof (induction ts\<equiv>"ts" ts'\<equiv>ts' arbitrary:ts'   )
     case (refl ) 
-    have "move ts ts v = v" using move_nothing by simp
+    have "move ts ts v = v" using move_nothing  by simp
     thus ?case using init move_nothing neg by simp
   next
     case (evolve ts' ts'' )
@@ -66,14 +67,15 @@ proof (rule allI|rule impI)+
     show ?case 
     proof (rule )
       assume e_def: " (ts'',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
-(*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
+        (*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
       hence unsafe:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',move ts ts'' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast *)
       from evolve.hyps  and e_def and neg have 
         ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using local_DC by blast
       have move_eq:"move ts' ts'' (move ts ts' v) = move ts ts'' v" using "evolve.hyps" 
-          abstract.evolve abstract.refl move_trans by blast
+          abstract.evolve abstract.refl move_trans 
+        by (meson traffic_class.abstract.evolve traffic_class.abstract.refl traffic_class.move_trans)
       from no_coll_after_evol and evolve.hyps have "ts'',move ts' ts'' (move ts ts' v) \<Turnstile>  \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"  
         by blast
       thus False using e_def using  move_eq by fastforce
@@ -84,15 +86,16 @@ proof (rule allI|rule impI)+
       using LC cr_res.hyps by blast
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using move_stability_res cr_res.hyps move_trans 
       by auto
-    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis abstract.simps cr_res.hyps(1) cr_res.hyps(3) move_trans)
+    hence move_stab: "move ts ts' v = move ts ts'' v" 
+      using cr_res.hyps(3) local.create_reservation_def local.move_def by auto 
     show ?case 
     proof (rule)
       assume e_def:" (ts'',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
-(*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
+        (*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
       hence unsafe:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',move ts ts'' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast *)
       obtain d where d_def: "ts' \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts''" using cr_res.hyps by blast
-(*      have c_neq_e:"c \<noteq>e" 
+          (*      have c_neq_e:"c \<noteq>e" 
       proof (rule ccontr)
         assume "\<not> c \<noteq> e"
         hence "c = e" by blast
@@ -187,7 +190,7 @@ proof (rule allI|rule impI)+
     show ?case 
     proof (rule)
       assume e_def: "(ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
-  (*    then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
+        (*    then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
       hence unsafe:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',move ts ts'' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       hence c_neq_e:"ts',move ts ts'' v \<Turnstile>\<^bold>\<not>(c \<^bold>= e)" by blast *)
@@ -209,7 +212,7 @@ proof (rule allI|rule impI)+
     show ?case
     proof (rule)
       assume e_def:" (ts'',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
-(*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
+        (*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
       hence unsafe:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',move ts ts'' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       hence c_neq_e:"ts',move ts ts'' v \<Turnstile>\<^bold>\<not>(c \<^bold>= e)" by blast *)
@@ -231,7 +234,7 @@ proof (rule allI|rule impI)+
     show ?case
     proof (rule)
       assume e_def: " (ts'',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
-(*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
+        (*      then have e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not> safe(e)" by blast
       hence unsafe:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',move ts ts'' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       hence c_neq_e:"ts',v \<Turnstile>\<^bold>\<not>(c \<^bold>= e)" by blast  *)
@@ -246,7 +249,7 @@ proof (rule allI|rule impI)+
     qed 
   qed
 qed
-
+  
 declare[[show_consts]]
 declare[[show_types]]  
 lemma safety_not_invariant_switch:" \<exists>ts v. (ts,v \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and> ( \<^bold>\<exists> c. @c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
@@ -305,7 +308,7 @@ proof -
       have position:"pos ts e = 5" using e_def ts_def ts_rep_def ts_in_type ts_def Abs_traffic_inverse pos_def 
           fun_upd_apply pos'_def traffic.pos_def by auto
       have "regular (own v) ts e = 1" using e_def v_def sensors_def ps_def ts_def size regular_def by auto
-      then have space:"space ts v e = Abs_real_int (5,6)" using e_def pos_def position hmlsl.space_def by auto
+      then have space:"space ts v e = Abs_real_int (5,6)" using e_def pos_def position hmlsl.space_def pos_dict by auto
       have "left (space ts v e) > right (ext v)" using space v_def Abs_real_int_inverse by auto
       thus "\<parallel> len v ts e\<parallel> = 0" using hmlsl.len_def real_int.length_def Abs_real_int_inverse by auto
     qed
@@ -371,7 +374,7 @@ proof -
     proof (rule allI|rule impI)+
       fix y
       assume x_neg_y: "ts,v \<Turnstile>  \<^bold>\<not>(y \<^bold>= x)"
-  (*    assume "ts,v\<Turnstile> \<^bold>\<not>(y \<^bold>= x) \<^bold>\<rightarrow> \<^bold>\<not> \<^bold>\<langle>re(y) \<^bold>\<and> re(x) \<^bold>\<rangle>"
+        (*    assume "ts,v\<Turnstile> \<^bold>\<not>(y \<^bold>= x) \<^bold>\<rightarrow> \<^bold>\<not> \<^bold>\<langle>re(y) \<^bold>\<and> re(x) \<^bold>\<rangle>"
       from this obtain y where y_def:" ts,v \<Turnstile> \<^bold>\<not>(y \<^bold>= x) \<^bold>\<and> \<^bold>\<langle>re(x) \<^bold>\<and> re(y) \<^bold>\<rangle>"  by (metis (full_types) )*)
       show "ts,v \<Turnstile>\<^bold>\<not>\<^bold>\<langle>re(y) \<^bold>\<and> re(x)\<^bold>\<rangle>"
       proof (cases "y \<noteq>c \<and> y \<noteq>d")
@@ -700,7 +703,6 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     qed
   qed
 qed               
-  
   
 end
 end

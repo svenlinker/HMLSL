@@ -105,7 +105,7 @@ proof
                     from  x_prop have upper_x:"Max x = xb" 
                       by (metis Sup_nat_def cSup_atLeastAtMost)
                     from y_prop have lower_y:"Min y = ya" 
-                      by (metis Min_in Min_le antisym atLeastAtMost_iff eq_imp_le finite_atLeastAtMost pre)
+                      by (metis Inf_fin.coboundedI Inf_fin_Min Min_in add.right_neutral finite_atLeastAtMost le_add1 ord_class.atLeastAtMost_iff order_class.antisym pre)
                     from upper_x and lower_y and pre have upper_eq_lower: "xb+1 = ya" 
                       by blast
                     hence "y= {xb+1 .. yb}" using y_prop by blast
@@ -138,7 +138,8 @@ lemma finite:" \<forall>i \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) } . (fi
     
 lemma not_empty_means_seq:"\<forall>i \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) } . i \<noteq> {} \<longrightarrow> 
  ( \<exists>m n . m \<le> n \<and> {m..n} = i)" 
-  using atLeastatMost_empty_iff by blast
+  using atLeastatMost_empty_iff 
+  by force
     
 end
   
@@ -223,15 +224,17 @@ definition N_Chop :: "nat_int \<Rightarrow> nat_int \<Rightarrow> nat_int \<Righ
   where nchop_def :
     "N_Chop(i,j,k) \<equiv> (i =  j \<squnion> k  \<and> j \<sqinter> k = \<emptyset> \<and> (j = \<emptyset> \<or>  k = \<emptyset> \<or> consec j k))"
     
+
     
-lift_definition el::"nat \<Rightarrow> nat_int \<Rightarrow> bool" is Set.member .    
-notation el (infix " \<^bold>\<in> " 40)
+
+lift_definition el::"nat \<Rightarrow> nat_int \<Rightarrow> bool" (infix "\<^bold>\<in>" 50) is "Set.member" .
+(*notation el (infix " \<^bold>\<in> " 40) *)
   
-lift_definition not_in ::"nat \<Rightarrow> nat_int \<Rightarrow> bool" is Set.not_member .
-notation not_in (infix "\<^bold>\<notin>" 40)   
+lift_definition not_in ::"nat \<Rightarrow> nat_int \<Rightarrow> bool" (infix "\<^bold>\<notin>" 40)  is Set.not_member .
+
   
-lift_definition card' ::"nat_int \<Rightarrow> nat" is card .
-notation card' ( "|_|" 70)
+lift_definition card' ::"nat_int \<Rightarrow> nat"  ( "|_|" 70) is card .
+
 end
   
 lemmas[simp] = nat_int.el.rep_eq nat_int.not_in.rep_eq nat_int.card'.rep_eq
@@ -615,8 +618,20 @@ next
     using card_empty_zero by auto
 qed
   
-lemma card_un_add: " consec i i' \<longrightarrow> |i \<squnion> i'| = |i| + |i'|" 
-proof
+lemma card_un_add: " consec i i' \<longrightarrow> |i \<squnion> i'| = |i| + |i'|"  
+proof -
+  have f1: "Rep_nat_int i = {} \<or> Rep_nat_int i' = {} \<or> Max (Rep_nat_int i) + 1 \<noteq> Min (Rep_nat_int i') \<or> Rep_nat_int i \<union> Rep_nat_int i' \<in> {N. \<exists>n na. {n..na} = N}"
+    using Rep_nat_int nat_int.union_result by force
+  { assume "Rep_nat_int i \<union> Rep_nat_int i' \<noteq> Rep_nat_int (i \<squnion> i')"
+    then have "i = \<emptyset> \<or> i' = \<emptyset> \<or> maximum i + 1 \<noteq> minimum i'"
+      using f1 by (metis (no_types) Abs_nat_int_inverse Rep_nat_int_inject bot_nat_int_def local.empty_type local.union_def nat_int.maximum_def nat_int.minimum_def)
+    then have "\<not> consec i i'"
+      using local.consec_def by presburger }
+  then show ?thesis
+    by (metis (no_types) Abs_nat_int_inverse Rep_nat_int add.right_neutral bot_nat_int_def card.empty card_Un_Int consec_inter_empty inf_nat_int.rep_eq local.card'.rep_eq local.empty_type local.finite)
+qed
+(*  by (smt Abs_nat_int_inverse Rep_nat_int add.right_neutral bot_nat_int.rep_eq card.empty card.infinite card_Un_Int card_non_empty_geq_one consec_inter_empty inf_nat_int.rep_eq local.card'.rep_eq local.consec_def local.union_def nat_int.maximum_def nat_int.minimum_def nat_int.union_result) *)
+(*proof
   assume "consec i i'"
   then have "i \<sqinter> i' = \<emptyset>" 
     by (simp add: consec_inter_empty)
@@ -655,7 +670,7 @@ proof
   qed 
   thus "|i \<squnion> i'| = |i| + |i'|" by (rule)
 qed
-  
+*)  
 lemma singleton:"|i| = 1 \<longrightarrow> (\<exists>n. Rep_nat_int i = {n})"
   using card_1_singletonE card'.rep_eq by fastforce
     

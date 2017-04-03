@@ -499,13 +499,13 @@ proof
           have f4: "R_Chop(ext v,ext v1,ext v2)"
             using assm hchop_def hchop_dict by auto
           then have f5: "left (ext v) = left (ext v1)"
-            using real_int.rchop_def by blast
+            using real_int.rchop_def by simp
           have f6: "right (ext v) = right (ext v2)"
             using f4 real_int.rchop_def by auto
           have f7: "left (ext v2) = right (ext v1)"
             using f4 by (simp add: real_int.rchop_def)
           have f8: "\<And>r. (left r, left r) = Rep_real_int (rr r)" 
-            by (metis f1 left.rep_eq prod.collapse real_int.rchop_def right.rep_eq)
+            by (metis f1 left.rep_eq prod.collapse rchop_def right.rep_eq)
               
           have "left (ext v1) \<le> left (ext v2)" 
             using f7 real_int.left_leq_right by auto
@@ -562,7 +562,7 @@ proof
       using assm hchop_def sensors.space_def sensors_axioms hchop_dict by auto
     then have "len v2 ts c = Abs_real_int(right (ext v2), right (ext v2))" using len_def by simp
     then have "ext v2 = Abs_real_int(right (ext v2), right (ext v2))" using assm by simp
-    then have "\<parallel>ext v2\<parallel> = 0" using real_int.length_def Abs_real_int_inverse 
+    then have "\<parallel>ext v2\<parallel> = 0" using real_int.length_def Abs_real_int_inverse length_dict
       by (metis Rep_real_int_inverse fst_conv left.rep_eq real_int.chop_singleton_right real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq snd_conv surj_pair)
     then have "ext v = ext v1" using assm hchop_def real_int.rchop_def real_int.chop_empty2 hchop_dict by simp
     then show ?thesis 
@@ -579,7 +579,7 @@ proof
       then have "len v1 ts c = Abs_real_int(left (ext v1), left (ext v1))" using len_def in_left 
         by (meson le_less_trans less_trans not_le real_int.left_leq_right)   
       then have "ext v1 = Abs_real_int (left (ext v1), left (ext v1))" using assm by simp
-      then have "\<parallel>ext v1\<parallel> = 0" using real_int.length_def Abs_real_int_inverse
+      then have "\<parallel>ext v1\<parallel> = 0" using real_int.length_def Abs_real_int_inverse length_dict
         by (metis add.right_neutral real_int.chop_singleton_left real_int.length_zero_iff_borders_eq real_int.rchop_def real_int.shift_def real_int.shift_zero)
       then have "ext v = ext v2" using assm hchop_def real_int.rchop_def real_int.chop_empty1 hchop_dict by auto
       then show ?thesis 
@@ -597,15 +597,15 @@ proof
                       min (right (ext v)) (right (space ts v c)))" using len_def in_left in_right by simp
       have len1:"len v1 ts c = Abs_real_int(max (left (ext v1)) (left (space ts v1 c)), 
                       min (right (ext v1)) (right (space ts v1 c)))" using len_def in_left in_right assm f2 f1 chop 
-        by (metis assm in_left in_right len_def len_space_left not_le real_int.rchop_def space_def)
+        by (metis assm in_left in_right len_def len_space_left not_le real_int.rchop_def space_def R_Chop_dict)
       then have "max (left (ext v1)) (left (space ts v1 c)) = left (len v1 ts c)" 
-        by (metis assm chop f1 f2 in_left len_space_left max.orderE real_int.rchop_def space_def)
+        by (metis assm chop f1 f2 in_left len_space_left max.orderE real_int.rchop_def space_def R_Chop_dict)
       then have left_border:"max (left (ext v1)) (left (space ts v1 c)) = left (ext v1)" using left_v1 by simp
       have len2:"len v2 ts c = Abs_real_int(max (left (ext v2)) (left (space ts v2 c)), 
                       min (right (ext v2)) (right (space ts v2 c)))" using len_def in_left in_right assm f2 f1 chop 
-        by (metis len_space_right not_le real_int.rchop_def space_def)
+        by (metis len_space_right not_le real_int.rchop_def space_def R_Chop_dict)
       then have "min (right (ext v2)) (right (space ts v2 c)) = right (len v2 ts c)" 
-        by (metis assm chop f1 f2 in_right len_space_right min.absorb_iff1 real_int.rchop_def space_def)
+        by (metis assm chop f1 f2 in_right len_space_right min.absorb_iff1 real_int.rchop_def space_def R_Chop_dict)
       then have right_border:"min (right (ext v2)) (right (space ts v2 c)) = right (ext v2)" using right_v2 by simp
       have "left (space ts v c) = left (space ts v1 c)" 
         using assm hchop_def sensors.space_def sensors_axioms hchop_dict by auto
@@ -616,7 +616,7 @@ proof
       then have min:"min (right (ext v)) (right (space ts v c)) = min (right (ext v2)) (right (space ts v2 c))" 
         using assm hchop_def real_int.rchop_def hchop_dict by auto
       show ?thesis using min max left_border right_border assm  
-        by (metis False add.right_neutral chop in_left len_def not_le real_int.rchop_def real_int.shift_def real_int.shift_zero)
+        by (metis False add.right_neutral chop in_left len_def not_le real_int.rchop_def real_int.shift_def real_int.shift_zero R_Chop_dict)
     qed
   qed
 qed
@@ -760,7 +760,7 @@ proof
       by (simp add: Abs_real_int_inverse  len_def real_int.length_zero_iff_borders_eq snd_eqD)
     with chop have "\<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel> = 0" 
       by (smt len_empty_on_subview1 len_empty_on_subview2)
-    thus ?thesis by (simp add: len_zero)
+    thus ?thesis using len_zero by (simp )
   next 
     assume inside_right:"\<not>left ((space ts v) c) > right (ext v)"   
     show "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>"
@@ -770,7 +770,7 @@ proof
         by (simp add: Abs_real_int_inverse  len_def real_int.length_zero_iff_borders_eq snd_eqD)
       with chop have "\<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel> = 0" 
         by (smt len_empty_on_subview1 len_empty_on_subview2)
-      thus ?thesis by (simp add: len_zero)
+      thus ?thesis using len_zero by (simp )
     next 
       assume inside_left:" \<not>left (ext v) > right ((space ts v) c) "
       hence len_def_v:"len v ( ts) c = 
@@ -800,7 +800,7 @@ proof
         hence "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel>" using inside_v1 inside_left hchop_dict
           by (smt chop h_chop_middle2 hchop_def len_def_v outside_v2 real_int.rchop_def)
         thus "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>" 
-          by (simp add: len_v2_0)
+         using len_v2_0 by (simp )
       next
         assume r_inside_v2:"\<not> right (len v ( ts) c) < right (ext v1)"
         show "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>"
@@ -824,7 +824,7 @@ proof
           hence "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v2 ( ts) c\<parallel>" using inside_v2 inside_left hchop_dict   
             by (smt chop h_chop_middle1 hchop_def len_def_v outside_v1 real_int.rchop_def)       
           thus "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>" 
-            by (simp add: len_v1_0)
+            using len_v1_0 by (simp add: )
         next
           assume l_inside_v1: "\<not>left (len v ( ts) c) > left (ext v2)"
           have inside_left_v1:"  \<not>left (ext v1) > right ((space ts v) c) " 
@@ -870,7 +870,7 @@ proof
           have "right (len v1 ( ts) c) = left (len v2 ( ts) c)" 
             using Abs_real_int_inverse chop hchop_def len1_def len1_in_type len2_def len2_in_type real_int.rchop_def hchop_dict by auto
           thus "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>" 
-            using left_len_v1_v real_int.consec_add right_len_v2_v by blast 
+            using left_len_v1_v real_int.consec_add right_len_v2_v  by simp 
         qed
       qed
     qed
@@ -959,7 +959,7 @@ proof
       by (simp add: Rep_real_int_inverse  v')
     then have left':"right ((space ts v) c) \<ge> left (ext v')" using len_non_empty_inside 
       by (metis inside len_space_right less_imp_le order_trans real_int.left_leq_right)      
-    have inside': "left ((space ts v) c) < right (ext v') \<and> right ((space ts v) c) > left (ext v')"
+    have inside': "left ((space ts v) c) < right (ext v') \<and> right ((space ts v) c) > left (ext v')" using length_dict
       by (metis (no_types) left' right' antisym_conv assm inside left len_space_left len_space_right less_imp_le not_le real_int.left_leq_right real_int.length_zero_iff_borders_eq right)
     have inside'': "left ((space ts v') c) < right (ext v') \<and> right ((space ts v') c) > left (ext v')" 
       using "1" hchop_def inside' sensors.space_def sensors_axioms hchop_dict by auto
