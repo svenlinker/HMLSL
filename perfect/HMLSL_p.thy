@@ -1,6 +1,6 @@
 (*  Title:     Sensors.thy
     Author:     Sven Linker
-FIXME
+
 Defines perfect sensors for cars. Cars can perceive both
 the physical size and braking distance of all other cars.
 *)
@@ -12,8 +12,9 @@ theory HMLSL_p
 begin
       
 
-locale hmlsl_perfect = perfect_sensors + restriction
+class hmlsl_perfect = perfect_sensors + restriction
   begin
+    
   interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
   proof unfold_locales 
   
