@@ -41,7 +41,8 @@ end
   
 class view
 begin
-  
+
+lemmas[simp] = R_Chop_dict   
   
 definition       hchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow> bool" ("_=_\<parallel>_")
   where "(v=u\<parallel>w) == real_int.R_Chop(ext v)(ext u)(ext w) \<and> lan v=lan u \<and> lan v=lan w \<and> own v = own u \<and> own v = own w \<and> more v = more w  "
@@ -428,4 +429,6 @@ qed
   
   
 end
+  
+  lemmas[simp] = switch_dict hchop_dict vchop_dict
 end

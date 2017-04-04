@@ -13,6 +13,8 @@ begin
   
 context traffic 
 begin  
+lemmas[simp] = shift_dict
+  
 definition move::"traffic \<Rightarrow> traffic \<Rightarrow> view \<Rightarrow> view"
   where "move ts ts' v = \<lparr> ext = shift (ext v) ((pos ts' (own v)) - pos ts (own v)), lan = lan v, own =own v \<rparr>"
     
@@ -49,5 +51,7 @@ lemma move_stability_res:"(ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<
   by (auto)+
 
 end
+  
+lemmas[simp] = move_dict
   
 end

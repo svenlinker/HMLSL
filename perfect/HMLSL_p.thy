@@ -22,7 +22,8 @@ proof unfold_locales
   show " 0 < perfect e ts c" 
     by (metis less_add_same_cancel2 less_trans perfect_def traffic.psGeZero traffic.sdGeZero) 
 qed
-  
+print_simpset
+  print_claset
   
 notation hmlsl.re ("re'(_')")
 notation hmlsl.cl("cl'(_')")

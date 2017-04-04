@@ -280,9 +280,6 @@ where refl: "(ts \<^bold>\<Rightarrow> ts)" |
   cr_res:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c.  (ts' \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" |
   wd_res:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c. \<exists> n.  (ts' \<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" 
 
-print_theorems
-print_statement abstract.refl
-print_statement evolve 
 
 lemma create_res_subseteq1:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<longrightarrow> res ts c \<sqsubseteq> res ts' c "
 proof
@@ -430,4 +427,20 @@ lemma withdraw_res_subseteq:"(ts \<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow
     nat_int.in_refl nat_int.in_singleton  fun_upd_apply subset_eq el_dict by fastforce
 
 end
+  
+lemmas[simp] =  
+  create_reservation_dict 
+  create_claim_dict 
+  withdraw_reservation_dict 
+  withdraw_claim_dict 
+  drive_dict 
+  change_dyn_dict
+  evolve_dict 
+  abstract_dict
+  pos_dict 
+  res_dict 
+  clm_dict 
+  dyn_dict 
+  physical_size_dict 
+  braking_distance_dict 
 end

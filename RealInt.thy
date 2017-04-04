@@ -33,13 +33,13 @@ begin
   
 definition length :: "real_int \<Rightarrow> real" ("\<parallel>_\<parallel>" 70)
   where "\<parallel>r\<parallel> \<equiv> right r - left r"
-    
+print_theorems    
 definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift _ _")
   where "(shift r x) = Abs_real_int(left r +x, right r +x)"
-    
+print_theorems     
 definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop'(_,_,_')" 51)
   where rchop_def :" R_Chop(r,s,t) ==  left r  = left s \<and> right s = left t \<and> right r =  right t"
-    
+ print_theorems    
     
     
 end
@@ -219,6 +219,6 @@ lemma chop_empty2:"R_Chop(r,s,t) \<and> \<parallel>t\<parallel> = 0 \<longrighta
   by (metis (no_types, hide_lams) Rep_real_int_inject left.rep_eq prod.collapse real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq)
     
 end
-lemmas[simp] = length_dict R_Chop_dict shift_dict
+lemmas[simp] = length_dict 
   
 end
