@@ -158,31 +158,6 @@ lemma sensors_leq:" regular e ts c \<le> regular c ts c"
 using regular_def using sensors_le traffic.sdGeZero traffic.psGeZero 
 by smt
 
-lemma left_space:"left (space ts v c) =  pos ts c"  
-proof -
-  have cond:"\<And>l r. Rep_real_int (Abs_real_int (l, r)) = (l, r) \<or> r < l"
-    using Abs_real_int_inverse by force
-  have "pos ts c < pos ts c + regular (own v) ts c" 
-    using regular_sensors.sensors_ge by auto
-  then show ?thesis using pos_dict 
-    by (simp add: Abs_real_int_inverse regular_sensors.sensors_axioms sensors.space_def)
-qed
-
-lemma right_space:"right (space ts v c) =  pos ts c + regular (own v) ts c"  
-proof -
-  have cond:"\<And>l r. Rep_real_int (Abs_real_int (l, r)) = (l, r) \<or> r < l"
-    using Abs_real_int_inverse by force
-  have non_e:"pos ts c < pos ts c + regular (own v) ts c" 
-    using regular_sensors.sensors_ge by auto
-  then show ?thesis using non_e cond regular_sensors.space_def 
-  proof -
-    have "Rep_real_int (Abs_real_int (pos ts c, pos ts c + regular (own v) ts c)) = (pos ts c, pos ts c + regular (own v) ts c)"
-      using non_e cond by fastforce
-    then show ?thesis
-    by (simp add: Abs_real_int_inverse regular_sensors.sensors_axioms pos_dict sensors.space_def )
-  qed
-qed
-  
   
 lemma space_eq: "own v = own v' \<longrightarrow> space ts v c = space ts v' c" using regular_sensors.space_def sensors_def by auto
   
@@ -191,11 +166,11 @@ proof
   assume assm:"(own v) \<noteq> c \<and> (v=c>v')"
   hence sens:"regular (own v) ts c < regular (own v') ts c" using sensors_le view.switch_def switch_dict by auto
   then have le:"pos ts c + regular (own v) ts c < pos ts c + regular (own v') ts c" by auto     
-  have left_eq:"left (space ts v c) = left (space ts v' c)" using left_space by auto 
+  have left_eq:"left (space ts v c) = left (space ts v' c)" using regular_sensors.left_space by auto 
   have r1:"right (space ts v c ) = pos ts c + regular (own v) ts c" 
-    using regular_sensors.right_space by auto      
+    using regular_sensors.right_space pos_dict by auto      
   have r2:"right (space ts v' c ) = pos ts c + regular (own v') ts c" 
-    using regular_sensors.right_space by auto      
+    using regular_sensors.right_space pos_dict by auto      
   then have "right (space ts v c) < right( space ts v' c)" using r1 r2 le by auto 
       
   then have "((left (space ts v' c)) \<ge> left (space ts v c) ) \<and> ((right (space ts v c) \<le> right( space ts v' c))) 

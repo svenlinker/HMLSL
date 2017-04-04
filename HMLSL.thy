@@ -22,7 +22,6 @@ end
 sublocale hmlsl<sensors 
     by (simp add: sensors.intro sensors_ge)
 
-      print_locale!hmlsl
 context hmlsl
   begin
     
@@ -325,7 +324,7 @@ by (metis one_add_one width_add1)
 
 lemma res_at_most_two:"\<Turnstile>\<^bold>\<not> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
 using atMostTwoRes  restriction_add_res vchop_def 
-  restriction_res_leq_two vchop_dict restrict_dict 
+  restriction_res_leq_two vchop_dict restrict_dict res_dict 
   by (smt add_le_same_cancel2 not_one_le_zero one_add_one res_dict)
 
 lemma res_at_most_two2:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>(re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) ) \<^bold>\<rangle>"
@@ -481,8 +480,8 @@ lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^
 proof (rule ccontr)
   assume "\<not> (\<Turnstile> \<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c)))"
   then obtain ts and v where assm:"ts,v \<Turnstile> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))" by blast
-  then have clm_subs:"restrict v (clm ts) c \<sqsubseteq> restrict v (res ts) c" using restriction_stable using restrict_dict vchop_dict clm_dict hchop_dict 
-    by (metis (no_types, lifting) hchop_def restrict_def restrict_view)      
+  then have clm_subs:"restrict v (clm ts) c = restrict v (res ts) c" using restriction_stable using restrict_dict vchop_dict clm_dict hchop_dict 
+    by (metis (no_types, lifting) hchop_def restrict_def)      
   have "restrict v (clm ts )c \<noteq> \<emptyset>" using assm 
     using nat_int.card_non_empty_geq_one restriction_stable1 card'_dict using restrict_dict vchop_dict clm_dict hchop_dict by auto
   then have res_in_neq:"restrict v (clm ts) c \<sqinter> restrict v (res ts) c \<noteq>\<emptyset>" 
