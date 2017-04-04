@@ -1,4 +1,4 @@
-(*  Title:      perfect/Safety_p.thy
+(*  Title:      perfect/Safety_Perfect.thy
     Author:     Sven Linker
 
 Distance and Lane change controller for cars with perfect sensors.
@@ -6,8 +6,8 @@ Safety theorem and invariance with respect to switching views.
 *)
 
 section\<open>Safety for Cars with Perfect Sensors\<close>
-theory Safety_p
-  imports HMLSL_p
+theory Safety_Perfect
+  imports HMLSL_Perfect
 begin
   
 context hmlsl_perfect

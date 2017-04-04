@@ -1,4 +1,4 @@
-(*  Title:     Sensors.thy
+(*  Title:     HMLSL_Perfect.thy
     Author:     Sven Linker
 
 Defines perfect sensors for cars. Cars can perceive both
@@ -7,7 +7,7 @@ the physical size and braking distance of all other cars.
 
 section\<open> HMLSL for perfect sensors\<close>
   
-theory HMLSL_p
+theory HMLSL_Perfect
   imports "Perfect_Sensors"
 begin
   

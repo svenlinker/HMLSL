@@ -1,15 +1,15 @@
-(*  Title:      imperfect/Safety_ip.thy
+(*  Title:      imperfect/Safety_Regular.thy
     Author:     Sven Linker
 
-Distance and Lane change controller for cars with imperfect sensors.
+Distance and Lane change controller for cars with regular sensors.
 Flawed safety theorem and proof of flawedness.
 Controller definitions that take knowledge of other cars
 into account and correct safety theorem.
 *)
 
 section\<open>Safety for Cars with Regular Sensors\<close>
-theory Safety_ip
-  imports HMLSL_rp
+theory Safety_Regular
+  imports HMLSL_Regular
 begin
 context hmlsl_regular 
 begin
@@ -21,7 +21,6 @@ proof unfold_locales
   show " 0 < regular e ts c" 
     by (metis less_add_same_cancel2 less_trans regular_def traffic.psGeZero traffic.sdGeZero) 
 qed
-  print_facts
 notation hmlsl.space ("space")
 notation hmlsl.re ("re'(_')")
 notation hmlsl.cl("cl'(_')")
