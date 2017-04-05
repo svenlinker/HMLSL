@@ -4,14 +4,14 @@ Proof of motorway safety with an extension of Multi-Lane Spatial Logic as an sem
 # Code Structure
 The main directory contains definitions that are shared between the
 different sensor implementations: intervals (real-valued and discrete),
-cars, views, traffic snapshots, moving views, and restricting
-functions to views.
+cars, views, traffic snapshots, moving views, restricting
+functions to views, basic properties of sensors and visible lengths, common
+properties and theorems of HMLSL.
 
-The folders "perfect" and "imperfect" contain the theories
+The folders "perfect" and "regular" contain the theories
 specific to the corresponding sensor implementation. In particular,
-they contain the definition the sensors, the visible length,
-HMLSL and the safety proofs.
-
+they contain the definition the sensors, the HMLSL theorems unique to
+this type of sensors and the  corresponding safety proofs.
 
 # Abbreviations
 The operators for HMLSL can be written using
