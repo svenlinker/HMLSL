@@ -576,7 +576,7 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
       obtain d where d_def: "(ts' \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts'')" using cr_res.hyps by blast
       assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
       then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
-      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using switch_always_exists switch_unique by fastforce
+      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using switch_always_exists switch_unique by fast
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
@@ -598,7 +598,7 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
           using  v'_def by blast
         hence "ts',ve \<Turnstile>\<^bold>\<langle> re(c) \<^bold>\<and> (re(e) \<^bold>\<or> cl(e)) \<^bold>\<rangle>" using somewhere_leq by meson
         hence "ts',ve \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> re(c) \<^bold>\<and> cl(e)\<^bold>\<rangle> " 
-          using hmlsl.somewhere_and_or_distr by blast 
+          using hmlsl.somewhere_and_or_distr by metis  
         thus False 
         proof
           assume assm':"ts',ve \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
