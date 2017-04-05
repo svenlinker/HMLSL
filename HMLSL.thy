@@ -132,7 +132,7 @@ by blast
 lemma hchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>)\<^bold>\<frown>\<phi>) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<frown> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<frown> \<phi>)))" 
 by blast
 
-lemma hchop_assoc:"\<Turnstile>\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<frown> \<chi>) \<^bold>\<leftrightarrow> (\<phi> \<^bold>\<frown> \<psi>) \<^bold>\<frown> \<chi>"
+lemma hchop_assoc[iff]:"\<Turnstile>\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<frown> \<chi>) \<^bold>\<leftrightarrow> (\<phi> \<^bold>\<frown> \<psi>) \<^bold>\<frown> \<chi>"
 using horizontal_chop_assoc1 horizontal_chop_assoc2 hchop_dict by fastforce
 
 lemma v_chop_weaken1:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<smile> \<^bold>\<top>))" 
@@ -141,7 +141,7 @@ using vertical_chop_empty_down vchop_dict by fastforce
 lemma v_chop_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<smile> \<phi>))" 
 using vertical_chop_empty_up vchop_dict by fastforce
 
-lemma v_chop_assoc:"\<Turnstile>(\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<smile> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>) \<^bold>\<smile> \<chi>)"
+lemma v_chop_assoc[iff]:"\<Turnstile>(\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<smile> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>) \<^bold>\<smile> \<chi>)"
 using vertical_chop_assoc1 vertical_chop_assoc2 vchop_dict by fastforce
 
 lemma vchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<smile> \<chi>)))" 
@@ -160,10 +160,10 @@ proof (rule allI|rule impI)+
 qed
 
 
-lemma at_conj_distr:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))"
+lemma at_conj_distr[iff]:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))"
 using switch_unique by blast
 
-lemma at_disj_dist:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
+lemma at_disj_dist[iff]:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
 using switch_unique switch_dict by fastforce
 
 lemma at_hchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"
@@ -181,7 +181,7 @@ qed
 lemma at_hchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
 using switch_unique switch_hchop1 switch_def switch_dict hchop_dict by metis
 
-lemma at_hchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
+lemma at_hchop_dist[iff]:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
 using at_hchop_dist1 at_hchop_dist2 by blast
 
 lemma at_vchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
@@ -199,10 +199,10 @@ qed
 lemma at_vchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
 using switch_unique switch_vchop1 switch_def switch_dict vchop_dict by metis
 
-lemma at_vchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
+lemma at_vchop_dist[iff]:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
 using at_vchop_dist1 at_vchop_dist2 by blast
 
-lemma at_eq:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
+lemma at_eq[iff]:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
   using switch_always_exists switch_dict by (metis )
   
 lemma at_neg1:"\<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
@@ -214,7 +214,7 @@ using switch_unique switch_dict by fastforce
 
 lemma at_neg [iff]:"\<Turnstile>(\<^bold>@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
 using at_neg1 at_neg2 by metis
-
+lemma test:"\<And>ts v.(\<^bold>\<not> (\<^bold>@c ( \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>@c \<^bold>\<not> \<phi>))(ts)(v)" using at_neg by metis
   
 lemma at_neg_neg1:"\<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
 using switch_unique switch_def switch_refl switch_dict
@@ -224,10 +224,10 @@ lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) 
 using switch_unique switch_def switch_refl switch_dict 
 by metis
 
-lemma at_neg_neg:"\<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)" 
+lemma at_neg_neg[iff]:"\<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)" 
 using at_neg_neg1 at_neg_neg2 by metis
 
-lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
+lemma globally_all_iff[iff]:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
     
 lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
   using traffic.abstract.refl traffic_class.move_nothing abstract_dict by fastforce
@@ -241,13 +241,13 @@ using spatial_weaken horizontal_chop_empty_left horizontal_chop_empty_right
 vertical_chop_empty_down vertical_chop_empty_up by blast 
 
 
-lemma somewhere_distr: "\<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle>" 
+lemma somewhere_distr[iff]: "\<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle>" 
 by blast
 
-lemma somewhere_and:"\<Turnstile> \<^bold>\<langle>\<phi> \<^bold>\<and> \<psi>\<^bold>\<rangle> \<^bold>\<rightarrow>  \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<and> \<^bold>\<langle>\<psi>\<^bold>\<rangle>"
+lemma somewhere_and[iff]:"\<Turnstile> \<^bold>\<langle>\<phi> \<^bold>\<and> \<psi>\<^bold>\<rangle> \<^bold>\<rightarrow>  \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<and> \<^bold>\<langle>\<psi>\<^bold>\<rangle>"
 by blast
 
-lemma somewhere_and_or_distr :"\<Turnstile>(\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>)" 
+lemma somewhere_and_or_distr[iff] :"\<Turnstile>(\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>)" 
 by blast
 
 lemma width_add1:"\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y) \<^bold>\<rightarrow> \<^bold>\<omega> = x+y)"
@@ -468,7 +468,7 @@ lemma res_compose: "\<Turnstile>(re(c) \<^bold>\<frown> re(c)  \<^bold>\<rightar
 using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def
 by (metis (no_types, lifting))
 
-lemma res_dense:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> re(c) \<^bold>\<frown> re(c)"
+lemma res_dense[iff]:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> re(c) \<^bold>\<frown> re(c)"
 using res_decompose res_compose by blast
 
 lemma res_continuous :"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown> ( \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))" using restrict_dict vchop_dict clm_dict hchop_dict
@@ -519,7 +519,7 @@ lemma clm_compose: "\<Turnstile>(cl(c) \<^bold>\<frown> cl(c)  \<^bold>\<rightar
 using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def using restrict_dict vchop_dict clm_dict hchop_dict
 by (metis (no_types, lifting))
 
-lemma clm_dense:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> cl(c) \<^bold>\<frown> cl(c)"
+lemma clm_dense[iff]:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> cl(c) \<^bold>\<frown> cl(c)"
 using clm_decompose clm_compose by blast
 
 lemma clm_continuous :"\<Turnstile>(cl(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))" using restrict_dict vchop_dict clm_dict hchop_dict
@@ -571,7 +571,7 @@ proof (rule allI|rule impI)+
 qed
 
 
-lemma free_dense:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<frown> free)"
+lemma free_dense[iff]:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<frown> free)"
 using free_decompose free_compose by blast
 
 lemma free_dense2:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
@@ -685,7 +685,7 @@ proof (rule allI | rule impI)+
     by blast
 qed
 
-lemma free_eq_no_cars:"\<Turnstile>free \<^bold>\<leftrightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
+lemma free_eq_no_cars[iff]:"\<Turnstile>free \<^bold>\<leftrightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
 using no_cars_means_free free_means_no_cars by blast
 
 lemma free_nowhere_res:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown> (re(c)) \<^bold>\<frown> \<^bold>\<top>)"
