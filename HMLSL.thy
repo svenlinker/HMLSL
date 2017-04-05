@@ -35,7 +35,7 @@ abbreviation mnegpred :: "(cars\<Rightarrow>\<sigma>)\<Rightarrow>(cars\<Rightar
   where "\<^sup>\<not>\<Phi> \<equiv> \<lambda>x.\<lambda> ts w. \<not>\<Phi>(x)(ts)(w)"   
 abbreviation mand   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<and>"51)
   where "\<phi>\<^bold>\<and>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<and>\<psi>(ts)(w)"   
-abbreviation mor    :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<or>"50)
+abbreviation mor    :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infix "\<^bold>\<or>"50 )
   where "\<phi>\<^bold>\<or>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<or>\<psi>(ts)(w)"   
 abbreviation mimp   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<rightarrow>"49) 
   where "\<phi>\<^bold>\<rightarrow>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<longrightarrow>\<psi>(ts)(w)"  
@@ -75,8 +75,8 @@ abbreviation time_box::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>\<^bold
 where "\<^bold>\<box>\<^bold>\<tau> \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts\<^bold>\<leadsto>ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)" 
 abbreviation globally::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>G _" 55)
 where "\<^bold>G \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts \<^bold>\<Rightarrow> ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)"
-abbreviation at :: "cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma> " ("@ _ _" 50)
-where "@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
+abbreviation at :: "cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma> " ("\<^bold>@ _ _" 56)
+where "\<^bold>@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
 
 abbreviation re:: "cars \<Rightarrow> \<sigma>" ("re'(_')" 70)
 where "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and>  restrict v (res ts) c = lan v \<and>  |lan v|=1" 
@@ -150,81 +150,81 @@ by blast
 lemma vchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>) \<^bold>\<smile> \<phi> ) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<smile> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<smile> \<phi>)))" 
 by blast
 
-lemma at_exists :"\<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. @c \<phi>)"
+lemma at_exists :"\<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>\<phi>"
   obtain d where d_def:"d=own v" by blast
-  then have "ts,v \<Turnstile> @d \<phi>" using assm switch_refl switch_unique switch_dict by fastforce
-  thus "ts,v \<Turnstile> (\<^bold>\<exists> c. @c \<phi>)" ..
+  then have "ts,v \<Turnstile> \<^bold>@d \<phi>" using assm switch_refl switch_unique switch_dict by fastforce
+  thus "ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)" ..
 qed
 
 
-lemma at_conj_distr:"\<Turnstile>(@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((@c \<phi>) \<^bold>\<and> (@c \<psi>))"
+lemma at_conj_distr:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))"
 using switch_unique by blast
 
-lemma at_disj_dist:"\<Turnstile>(@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((@c \<phi>) \<^bold>\<or> (@c \<psi>))"
+lemma at_disj_dist:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
 using switch_unique switch_dict by fastforce
 
-lemma at_hchop_dist1:"\<Turnstile>(@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<frown> (@c \<psi>))"
+lemma at_hchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"
 proof (rule allI|rule impI)+
   fix ts v
-  assume assm:"ts, v \<Turnstile>(@c (\<phi> \<^bold>\<frown> \<psi>))"
+  assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))"
   obtain v' where v':"v=c>v'" using switch_always_exists switch_dict by fastforce
   with assm obtain v1' and v2' where chop:"(v'=v1'\<parallel>v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
     by blast
   from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1\<parallel>v2)" using switch_hchop2 hchop_dict switch_dict by fastforce
-  hence v1:"ts,v1 \<Turnstile> (@c \<phi>)" and v2:"ts,v2 \<Turnstile> (@c \<psi>)" using switch_unique chop switch_dict by fastforce+   
-  from v1 and v2 and origin show "ts,v \<Turnstile> (@c \<phi>) \<^bold>\<frown> (@c \<psi>)" by blast
+  hence v1:"ts,v1 \<Turnstile> (\<^bold>@c \<phi>)" and v2:"ts,v2 \<Turnstile> (\<^bold>@c \<psi>)" using switch_unique chop switch_dict by fastforce+   
+  from v1 and v2 and origin show "ts,v \<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)" by blast
 qed
 
-lemma at_hchop_dist2:"\<Turnstile>( (@c \<phi>) \<^bold>\<frown> (@c \<psi>)) \<^bold>\<rightarrow> (@c (\<phi> \<^bold>\<frown> \<psi>))  "
+lemma at_hchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
 using switch_unique switch_hchop1 switch_def switch_dict hchop_dict by metis
 
-lemma at_hchop_dist:"\<Turnstile>( (@c \<phi>) \<^bold>\<frown>  (@c \<psi>)) \<^bold>\<leftrightarrow> (@c (\<phi> \<^bold>\<frown> \<psi>))  "
+lemma at_hchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
 using at_hchop_dist1 at_hchop_dist2 by blast
 
-lemma at_vchop_dist1:"\<Turnstile>(@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (@c \<phi>) \<^bold>\<smile> (@c \<psi>))"
+lemma at_vchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
 proof (rule allI|rule impI)+
   fix ts v
-  assume assm:"ts, v \<Turnstile>(@c (\<phi> \<^bold>\<smile> \<psi>))"
+  assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))"
   obtain v' where v':"v=c>v'" using switch_always_exists switch_dict by fastforce
   with assm obtain v1' and v2' where chop:"(v'=v1'--v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
     by blast
   from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1--v2)" using switch_vchop2 switch_dict vchop_dict by fastforce
-  hence v1:"ts,v1 \<Turnstile> (@c \<phi>)" and v2:"ts,v2 \<Turnstile> (@c \<psi>)" using switch_unique chop switch_dict by fastforce+      
-  from v1 and v2 and origin show "ts,v \<Turnstile> (@c \<phi>) \<^bold>\<smile> (@c \<psi>)" by blast
+  hence v1:"ts,v1 \<Turnstile> (\<^bold>@c \<phi>)" and v2:"ts,v2 \<Turnstile> (\<^bold>@c \<psi>)" using switch_unique chop switch_dict by fastforce+      
+  from v1 and v2 and origin show "ts,v \<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)" by blast
 qed
 
-lemma at_vchop_dist2:"\<Turnstile>( (@c \<phi>) \<^bold>\<smile> (@c \<psi>)) \<^bold>\<rightarrow> (@c (\<phi> \<^bold>\<smile> \<psi>))  "
+lemma at_vchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
 using switch_unique switch_vchop1 switch_def switch_dict vchop_dict by metis
 
-lemma at_vchop_dist:"\<Turnstile>( (@c \<phi>) \<^bold>\<smile> (@c \<psi>)) \<^bold>\<leftrightarrow> (@c (\<phi> \<^bold>\<smile> \<psi>))  "
+lemma at_vchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
 using at_vchop_dist1 at_vchop_dist2 by blast
 
-lemma at_eq:"\<Turnstile>(@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
+lemma at_eq:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
   using switch_always_exists switch_dict by (metis )
   
-lemma at_neg1:"\<Turnstile>(@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (@c \<phi>)"
+lemma at_neg1:"\<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
 using switch_unique switch_dict
 by (metis select_convs switch_def)
 
-lemma at_neg2:"\<Turnstile>\<^bold>\<not> (@c \<phi> ) \<^bold>\<rightarrow> ( (@c \<^bold>\<not> \<phi>))"
+lemma at_neg2:"\<Turnstile>\<^bold>\<not> (\<^bold>@c \<phi> ) \<^bold>\<rightarrow> ( (\<^bold>@c \<^bold>\<not> \<phi>))"
 using switch_unique switch_dict by fastforce
 
-lemma at_neg [iff]:"\<Turnstile>(@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (@c \<phi>)"
+lemma at_neg [iff]:"\<Turnstile>(\<^bold>@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
 using at_neg1 at_neg2 by metis
 
   
-lemma at_neg_neg1:"\<Turnstile>(@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(@c \<^bold>\<not> \<phi>)"
+lemma at_neg_neg1:"\<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
 using switch_unique switch_def switch_refl switch_dict
 by (metis select_convs switch_def)
 
-lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> (@c  \<phi>)"
+lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> (\<^bold>@c  \<phi>)"
 using switch_unique switch_def switch_refl switch_dict 
 by metis
 
-lemma at_neg_neg:"\<Turnstile> (@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(@c \<^bold>\<not> \<phi>)" 
+lemma at_neg_neg:"\<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)" 
 using at_neg_neg1 at_neg_neg2 by metis
 
 lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp

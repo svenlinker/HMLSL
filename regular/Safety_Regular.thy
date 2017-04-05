@@ -221,7 +221,7 @@ proof (rule allI|rule impI)+
   qed
 qed
   
-lemma safety_not_invariant_switch:" \<exists>ts v. (ts,v \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and> ( \<^bold>\<exists> c. @c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
+lemma safety_not_invariant_switch:" \<exists>ts v. (ts,v \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and> ( \<^bold>\<exists> c. \<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
 proof -
   obtain d c ::cars where assumption:"d \<noteq>c" using at_least_two_cars_exists by best  
   obtain pos' where  pos'_def:"\<forall>(c::cars). (pos' c) = (5::real)" by best
@@ -384,9 +384,9 @@ proof -
     qed
   qed
     
-  have unsafe:"ts,v \<Turnstile> (\<^bold>\<exists> c. (@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
+  have unsafe:"ts,v \<Turnstile> (\<^bold>\<exists> c. (\<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
   proof -
-    have "ts,v \<Turnstile> (@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e)))"
+    have "ts,v \<Turnstile> (\<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e)))"
     proof (rule allI|rule impI|rule notI)+
       fix vc
       assume sw:"( v=c>vc)"
@@ -436,59 +436,59 @@ proof -
     qed
     thus ?thesis by blast
   qed
-  from safe and unsafe have "ts,v  \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and>  (\<^bold>\<exists> c. (@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))" by blast
+  from safe and unsafe have "ts,v  \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and>  (\<^bold>\<exists> c. (\<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))" by blast
   thus ?thesis by blast
 qed
   
 abbreviation DC'::"\<sigma>"
-  where "DC' \<equiv> \<^bold>G ( \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow> ( @d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> ) \<^bold>\<rightarrow>   \<^bold>\<box>\<^bold>\<tau> @d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>)"
+  where "DC' \<equiv> \<^bold>G ( \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow> ( \<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> ) \<^bold>\<rightarrow>   \<^bold>\<box>\<^bold>\<tau> \<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>)"
     
     
 abbreviation LC'::"\<sigma>"
-  where "LC' \<equiv> \<^bold>G ( \<^bold>\<forall>d. (\<^bold>\<exists> c.  (@c (pcc c d)) \<^bold>\<or> (@d (pcc c d))) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom> ) "
+  where "LC' \<equiv> \<^bold>G ( \<^bold>\<forall>d. (\<^bold>\<exists> c.  (\<^bold>@c (pcc c d)) \<^bold>\<or> (\<^bold>@d (pcc c d))) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom> ) "
     
     
-theorem safety:"\<Turnstile> (\<^bold>\<forall>e. @e ( safe e ) ) \<^bold>\<and> DC' \<^bold>\<and> LC' \<^bold>\<rightarrow>  \<^bold>G(\<^bold>\<forall> e.  @ e (safe e))"
+theorem safety:"\<Turnstile> (\<^bold>\<forall>e. \<^bold>@e ( safe e ) ) \<^bold>\<and> DC' \<^bold>\<and> LC' \<^bold>\<rightarrow>  \<^bold>G(\<^bold>\<forall> e.  \<^bold>@ e (safe e))"
 proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
   fix ts v ts' e
-  assume assm:"ts,v \<Turnstile> ( \<^bold>\<forall>e. @e (safe e) ) \<^bold>\<and> DC' \<^bold>\<and> LC'"
+  assume assm:"ts,v \<Turnstile> ( \<^bold>\<forall>e. \<^bold>@e (safe e) ) \<^bold>\<and> DC' \<^bold>\<and> LC'"
   assume abs:"(ts \<^bold>\<Rightarrow> ts')"
-  from assm have init:"ts,v \<Turnstile> ( \<^bold>\<forall>e. @e (safe e) )" by simp
+  from assm have init:"ts,v \<Turnstile> ( \<^bold>\<forall>e. \<^bold>@e (safe e) )" by simp
   from assm have DC :"ts,v \<Turnstile> DC'" by simp
   from assm have LC: "ts,v \<Turnstile> LC'" by simp
-  show "ts',move ts ts' v \<Turnstile> ( @e (safe e))" using abs
+  show "ts',move ts ts' v \<Turnstile> ( \<^bold>@e (safe e))" using abs
   proof (induction ts\<equiv>"ts" ts'\<equiv>ts' arbitrary:ts')
     case (refl ) 
     have "move ts ts v = v" using move_nothing by blast
     thus ?case using    move_nothing init  by simp  
   next
     case (evolve ts' ts'' )
-    have local_DC:"ts',move ts ts' v \<Turnstile> \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow> (@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> ) \<^bold>\<rightarrow> ( \<^bold>\<box>\<^bold>\<tau> @d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>)"
+    have local_DC:"ts',move ts ts' v \<Turnstile> \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow> (\<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> ) \<^bold>\<rightarrow> ( \<^bold>\<box>\<^bold>\<tau> \<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>)"
       using evolve.hyps DC by simp
     show ?case 
     proof (rule ccontr)
-      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( @e (safe e)))"
-      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(@e (safe e))" by best
-      hence "ts'',move ts ts'' v \<Turnstile> @e (\<^bold>\<not> safe e)" using switch_always_exists switch_unique by fastforce
+      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
+      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
+      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using switch_always_exists switch_unique by fastforce
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',ve \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from evolve.hyps  and c_def have 
-        ts'_safe:"ts',move ts ts' v \<Turnstile> @e (\<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" by blast
-      hence not_eq:"ts',move ts ts' v \<Turnstile>@e (\<^bold>\<not>(c \<^bold>= e))" and safe':"ts',move ts ts' v \<Turnstile> @e ( \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" 
+        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>@e (\<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" by blast
+      hence not_eq:"ts',move ts ts' v \<Turnstile>\<^bold>@e (\<^bold>\<not>(c \<^bold>= e))" and safe':"ts',move ts ts' v \<Turnstile> \<^bold>@e ( \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" 
         using hmlsl.at_conj_distr by simp+
       from not_eq have not_eq_v:"ts',move ts ts' v \<Turnstile>\<^bold>\<not>(c \<^bold>=e)" using hmlsl.at_eq switch_always_exists by auto   
-      have "ts',move ts ts' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<rightarrow> (@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> ) \<^bold>\<rightarrow> (\<^bold>\<box>\<^bold>\<tau> @e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" 
+      have "ts',move ts ts' v \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<rightarrow> (\<^bold>@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> ) \<^bold>\<rightarrow> (\<^bold>\<box>\<^bold>\<tau> \<^bold>@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" 
         using local_DC by simp
-      hence dc:"ts',move ts ts' v \<Turnstile>  (@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> ) \<^bold>\<rightarrow> ( \<^bold>\<box>\<^bold>\<tau> @e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" using not_eq_v
+      hence dc:"ts',move ts ts' v \<Turnstile>  (\<^bold>@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> ) \<^bold>\<rightarrow> ( \<^bold>\<box>\<^bold>\<tau> \<^bold>@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" using not_eq_v
         by simp
-      hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> ( \<^bold>\<box>\<^bold>\<tau> @e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" using safe' 
+      hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> ( \<^bold>\<box>\<^bold>\<tau> \<^bold>@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" using safe' 
         by simp
-      hence 1:"ts'',move ts' ts'' (move ts ts' v) \<Turnstile> @e \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using evolve.hyps by simp
+      hence 1:"ts'',move ts' ts'' (move ts ts' v) \<Turnstile> \<^bold>@e \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using evolve.hyps by simp
       have move_eq:"move ts' ts'' (move ts ts' v) = move ts ts'' v" using "evolve.hyps" 
           abstract.evolve abstract.refl move_trans by blast
-      from 1 have "ts'', move ts ts'' v \<Turnstile> @e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using move_eq by fastforce
+      from 1 have "ts'', move ts ts'' v \<Turnstile> \<^bold>@e \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using move_eq by fastforce
       hence "ts'',ve \<Turnstile>  \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using ve_def by blast
       thus False using c_def by blast
     qed
@@ -499,9 +499,9 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     hence move_stab: "move ts ts' v = move ts ts'' v" by (metis abstract.simps cr_clm.hyps(1) cr_clm.hyps(3) move_trans)
     show ?case 
     proof (rule ccontr)
-      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( @e (safe e)))"
-      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(@e (safe e))" by best
-      hence "ts'',move ts ts'' v \<Turnstile> @e (\<^bold>\<not> safe e)" using  switch_always_exists switch_unique by fastforce
+      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
+      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
+      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using  switch_always_exists switch_unique by fastforce
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
@@ -523,9 +523,9 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     hence move_stab: "move ts ts' v = move ts ts'' v" by (metis abstract.simps wd_res.hyps(1) wd_res.hyps(3) move_trans)
     show ?case 
     proof (rule ccontr)
-      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( @e (safe e)))"
-      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(@e (safe e))" by best
-      hence "ts'',move ts ts'' v \<Turnstile> @e (\<^bold>\<not> safe e)" using hmlsl.at_neg2 by fastforce
+      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
+      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
+      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using hmlsl.at_neg2 by fastforce
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
@@ -548,8 +548,8 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     hence move_stab: "move ts ts' v = move ts ts'' v" by (metis abstract.simps wd_clm.hyps(1) wd_clm.hyps(3) move_trans)
     show ?case 
     proof (rule ccontr)
-      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( @e (safe e)))"
-      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(@e (safe e))" by best
+      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
+      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
@@ -566,7 +566,7 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     qed
   next
     case (cr_res ts' ts'')
-    have local_LC: "ts',(move ts ts' v) \<Turnstile> \<^bold>\<forall>d.( \<^bold>\<exists> c. ( (@c (pcc c d)) \<^bold>\<or> (@d (pcc c d)))) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>  " 
+    have local_LC: "ts',(move ts ts' v) \<Turnstile> \<^bold>\<forall>d.( \<^bold>\<exists> c. ( (\<^bold>@c (pcc c d)) \<^bold>\<or> (\<^bold>@d (pcc c d)))) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>  " 
       using LC cr_res.hyps(1)   by blast
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using move_stability_res cr_res.hyps move_trans 
       by auto
@@ -574,9 +574,9 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     show ?case 
     proof (rule ccontr)
       obtain d where d_def: "(ts' \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts'')" using cr_res.hyps by blast
-      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( @e (safe e)))"
-      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(@e (safe e))" by best
-      hence "ts'',move ts ts'' v \<Turnstile> @e (\<^bold>\<not> safe e)" using hmlsl.at_neg2 by fastforce
+      assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
+      then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
+      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using hmlsl.at_neg2 by fastforce
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
@@ -609,9 +609,9 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
           hence "ts',ve \<Turnstile> \<^bold>\<not> (c \<^bold>=e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> cl(e)\<^bold>\<rangle>" using c_def by force
           hence "ts',ve \<Turnstile>\<^bold>\<not> (c \<^bold>=e) \<^bold>\<and> \<^bold>\<langle> cl(e) \<^bold>\<and> (re(c) \<^bold>\<or> cl(c)) \<^bold>\<rangle>" by blast
           hence "ts',ve \<Turnstile> pcc c e" by blast
-          hence "ts',move ts ts' v \<Turnstile> @e (pcc c e)" using ve_def move_stab switch_unique by fastforce
-          hence pcc:"ts',move ts ts' v \<Turnstile> (@c (pcc c e)) \<^bold>\<or> (@e (pcc c e))" by blast
-          have "ts',move ts ts' v \<Turnstile>( \<^bold>\<exists> c.( (@c (pcc c e)) \<^bold>\<or> (@e (pcc c e)))) \<^bold>\<rightarrow> \<^bold>\<box>r(e) \<^bold>\<bottom>  " 
+          hence "ts',move ts ts' v \<Turnstile> \<^bold>@e (pcc c e)" using ve_def move_stab switch_unique by fastforce
+          hence pcc:"ts',move ts ts' v \<Turnstile> (\<^bold>@c (pcc c e)) \<^bold>\<or> (\<^bold>@e (pcc c e))" by blast
+          have "ts',move ts ts' v \<Turnstile>( \<^bold>\<exists> c.( (\<^bold>@c (pcc c e)) \<^bold>\<or> (\<^bold>@e (pcc c e)))) \<^bold>\<rightarrow> \<^bold>\<box>r(e) \<^bold>\<bottom>  " 
             using local_LC e_def by blast
           hence "ts',move ts ts' v \<Turnstile> \<^bold>\<box>r(e) \<^bold>\<bottom>" using pcc by blast
           thus "ts'',move ts ts'' v \<Turnstile> \<^bold>\<bottom>" using e_trans by blast
@@ -630,7 +630,7 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
             using c_def  backwards_res_stab c_neq_e neq2 by (metis (no_types, lifting) d_def neq)
           hence unsafe2:"ts',ve \<Turnstile>\<^bold>\<not> safe(e)" 
             using  c_neq_e somewhere_leq v'_def by blast
-          from cr_res.hyps have "ts',move ts ts'' v \<Turnstile> @e (safe(e))" using move_stab by force
+          from cr_res.hyps have "ts',move ts ts'' v \<Turnstile> \<^bold>@e (safe(e))" using move_stab by force
           thus False using unsafe2 ve_def by best
         next
           assume eq2:"c = d"
@@ -657,9 +657,9 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
             hence "ts',ve \<Turnstile> \<^bold>\<not> (c \<^bold>=e) \<^bold>\<and> \<^bold>\<langle> cl(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using c_def by blast
             hence "ts',ve \<Turnstile>\<^bold>\<not> (c \<^bold>=e) \<^bold>\<and> \<^bold>\<langle> cl(c) \<^bold>\<and> (re(e) \<^bold>\<or> cl(e)) \<^bold>\<rangle>" by blast
             hence "ts',ve \<Turnstile> pcc e c" by blast
-            hence "ts',move ts ts' v \<Turnstile> @e (pcc e c)" using ve_def move_stab  switch_unique by fastforce
-            hence pcc:"ts', move ts ts' v \<Turnstile> (@e (pcc e c)) \<^bold>\<or> (@c (pcc e c))" by blast
-            have "ts',move ts ts' v \<Turnstile>( \<^bold>\<exists> d. (@d (pcc d c)) \<^bold>\<or> (@c (pcc d c))) \<^bold>\<rightarrow> \<^bold>\<box>r(c) \<^bold>\<bottom>  " 
+            hence "ts',move ts ts' v \<Turnstile> \<^bold>@e (pcc e c)" using ve_def move_stab  switch_unique by fastforce
+            hence pcc:"ts', move ts ts' v \<Turnstile> (\<^bold>@e (pcc e c)) \<^bold>\<or> (\<^bold>@c (pcc e c))" by blast
+            have "ts',move ts ts' v \<Turnstile>( \<^bold>\<exists> d. (\<^bold>@d (pcc d c)) \<^bold>\<or> (\<^bold>@c (pcc d c))) \<^bold>\<rightarrow> \<^bold>\<box>r(c) \<^bold>\<bottom>  " 
               using local_LC move_stab c_def e_def by blast
             hence "ts',move ts ts' v \<Turnstile> \<^bold>\<box>r(c) \<^bold>\<bottom>" using pcc by blast
             thus "ts'',move ts ts'' v \<Turnstile> \<^bold>\<bottom>" using e_trans by blast

@@ -218,7 +218,7 @@ proof (rule allI|rule impI)+
   qed
 qed
   
-lemma safety_switch_invariant:"\<Turnstile>(\<^bold>\<forall>e. safe(e)) \<^bold>\<rightarrow>  @c (\<^bold>\<forall>e. safe(e))"
+lemma safety_switch_invariant:"\<Turnstile>(\<^bold>\<forall>e. safe(e)) \<^bold>\<rightarrow>  \<^bold>@c (\<^bold>\<forall>e. safe(e))"
 proof (rule allI|rule impI)+
   fix ts v v' 
   fix e d :: cars
@@ -231,9 +231,9 @@ proof (rule allI|rule impI)+
     have "own v' = c" using v'_def view.switch_def by auto
     hence "own v'sub = c" using v'sub_def less_eq_view_ext_def by auto
     obtain vsub where vsub:"(vsub =c> v'sub) \<and> (vsub \<le> v)" using v'_def v'sub_def view.switch_leq by blast
-    from v'sub_def and vsub have "ts,vsub \<Turnstile> @c re(d)" by (metis view.switch_unique)
+    from v'sub_def and vsub have "ts,vsub \<Turnstile> \<^bold>@c re(d)" by (metis view.switch_unique)
     hence vsub_re_d:"ts,vsub \<Turnstile> re(d)" using at_res_inst by blast
-    from v'sub_def and vsub have "ts,vsub \<Turnstile> @c re(e)" by (metis view.switch_unique)
+    from v'sub_def and vsub have "ts,vsub \<Turnstile> \<^bold>@c re(e)" by (metis view.switch_unique)
     hence vsub_re_e:"ts,vsub \<Turnstile> re(e)" using at_res_inst by blast
     hence "ts,vsub\<Turnstile>re(d) \<^bold>\<and> re(e)" using vsub_re_e vsub_re_d by blast
     hence "ts,v \<Turnstile>\<^bold>\<langle> re(d) \<^bold>\<and> re(e) \<^bold>\<rangle>" using vsub view.somewhere_leq by fastforce

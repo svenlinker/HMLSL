@@ -30,19 +30,19 @@ notation hmlsl.cl("cl'(_')")
 notation hmlsl.len ("len")
   
   
-lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d re(c))" 
+lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. \<^bold>@d re(c))" 
   by (metis (no_types, lifting) perfect_sensors.arbitrary_switch_length_stable restriction.switch_restrict_stable view.switch_def)
     
-lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. @d re(c)) \<^bold>\<rightarrow> re(c)" 
+lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d re(c)) \<^bold>\<rightarrow> re(c)" 
   using view.switch_refl by blast
     
-lemma at_res:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d re(c))"
+lemma at_res:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. \<^bold>@d re(c))"
   using at_res1 at_res2 by blast
     
-lemma at_res_inst:"\<Turnstile> (@d re(c)) \<^bold>\<rightarrow>re(c)"
+lemma at_res_inst:"\<Turnstile> (\<^bold>@d re(c)) \<^bold>\<rightarrow>re(c)"
 proof (rule allI|rule impI)+
   fix ts v
-  assume assm:"ts,v \<Turnstile>( @d re(c))"
+  assume assm:"ts,v \<Turnstile>( \<^bold>@d re(c))"
   obtain v' where v'_def:"(v=(d)> v') " using view.switch_always_exists by blast
   with assm have v':"ts,v' \<Turnstile> re(c)" by blast
   with v' show "ts,v \<Turnstile>re(c)" using restriction.switch_restrict_stable perfect_sensors.switch_length_stable v'_def view.switch_def 
@@ -50,26 +50,26 @@ proof (rule allI|rule impI)+
 qed
   
   
-lemma at_clm1:"\<Turnstile>cl(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. @d cl(c))"
+lemma at_clm1:"\<Turnstile>cl(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. \<^bold>@d cl(c))"
   by (metis (no_types, lifting)  all_own_ext_eq_len_eq view.switch_def restriction.switch_restrict_stable)
     
-lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. @d cl(c)) \<^bold>\<rightarrow> cl(c)"
+lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c)) \<^bold>\<rightarrow> cl(c)"
 proof (rule allI|rule impI)+
   fix ts v
-  assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. @d cl(c))"
+  assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c))"
   obtain v' where v'_def:"(v=(own v)> v') " using view.switch_refl by auto
   with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
   have "v = v'" using v'_def view.switch_refl view.switch_unique by blast
   with v' show "ts,v \<Turnstile>cl(c)" by blast
 qed
   
-lemma at_clm:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. @d cl(c))"
+lemma at_clm:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. \<^bold>@d cl(c))"
   using at_clm1 at_clm2 by blast
     
-lemma at_clm_inst:"\<Turnstile> (@d cl(c)) \<^bold>\<rightarrow>cl(c)"
+lemma at_clm_inst:"\<Turnstile> (\<^bold>@d cl(c)) \<^bold>\<rightarrow>cl(c)"
 proof (rule allI|rule impI)+
   fix ts v
-  assume assm:"ts,v \<Turnstile>( @d cl(c))"
+  assume assm:"ts,v \<Turnstile>( \<^bold>@d cl(c))"
   obtain v' where v'_def:"(v=(d)> v') " using view.switch_always_exists by blast
   with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
   with v' show "ts,v \<Turnstile>cl(c)" using restriction.switch_restrict_stable switch_length_stable v'_def view.switch_def 
