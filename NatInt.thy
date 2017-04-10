@@ -1,5 +1,5 @@
 (*  Title:      NatInt.thy
-    Author:     Sven Linker
+    Author:     Sven Linker, University of Liverpool
 
 Intervals based on natural numbers. Defines a 
 bottom element (empty set), infimum (set intersection),
@@ -43,80 +43,68 @@ lemma inter_result: "\<forall>x \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }
 lemma union_result: "\<forall>x \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }. 
          \<forall>y \<in> {S . (\<exists> (m::nat) n .  {m..n }=S)  }. 
            x \<noteq> {} \<and> y \<noteq> {} \<and> Max x +1 = Min y \<longrightarrow> x \<union> y \<in>{S . (\<exists> (m::nat) n . {m..n }=S)  }"  
-proof 
-  fix x
-  assume "x\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }"
-  then show " \<forall>y\<in>{S. (\<exists>m n.  {m..n} = S) }.
-           x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.  {m..n} = S) }"
-  proof
-    assume " (\<exists>m n.  {m..n} = x) "
-    show  " \<forall>y\<in>{S. (\<exists>m n.  {m..n} = S) }.
-           x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.  {m..n} = S) }"
-    proof (cases "{} = x")
-      assume "{} = x"
-      then show " \<forall>y\<in>{S. (\<exists>m n. {m..n} = S)}.
-           x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.{m..n} = S)}"
-        by blast
-    next
-      assume "{} \<noteq> x"
-      then have x_int:"\<exists>m n. m \<le> n \<and> {m..n} = x" 
-        using \<open>\<exists>m n. {m..n} = x\<close> by force
-      show " \<forall>y\<in>{S. (\<exists>m n.  {m..n} = S)}.
-           x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.  {m..n} = S) }"
-      proof
-        fix y
-        assume "y\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }"
-        then have "\<exists>m n. {m..n} = y" by blast
-        then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+proof (rule ballI)+
+  fix x y
+  assume x_def:"x\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }" and  y_def:"y\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }"
+  from x_def have "(\<exists>m n.  {m..n} = x) " by blast 
+  from y_def have "(\<exists>m n.  {m..n} = y) " by blast    
+  show   " x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.  {m..n} = S) }"
+  proof (cases "{} = x")
+    assume "{} = x"
+    then show "     x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.{m..n} = S)}"
+      by blast
+  next
+    assume "{} \<noteq> x"
+    then have x_int:"\<exists>m n. m \<le> n \<and> {m..n} = x" 
+      using \<open>\<exists>m n. {m..n} = x\<close> by force
+    then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
          x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"
-        proof (cases "y = {}")
-          assume "y = {}"  
-          then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+    proof (cases "y = {}")
+      assume "y = {}"  
+      then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
              x \<union> y \<in> {S.(\<exists>m n. {m..n} = S) }" by blast
-        next
-          assume "y \<noteq>{}"
-          then have y_int:"(\<exists>m n. m \<le> n \<and> {m..n} = y)" 
-            using \<open>\<exists>m n. {m..n} = y\<close> by force
-              
-          then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+    next
+      assume "y \<noteq>{}"
+      then have y_int:"(\<exists>m n. m \<le> n \<and> {m..n} = y)" 
+        using \<open>\<exists>m n. {m..n} = y\<close> by force
+          
+      then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
               x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S)}" 
-          proof (rule exE )     
-            fix ya
-            assume "\<exists>n\<ge>ya. {ya..n} = y"
-            then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+      proof (rule exE )     
+        fix ya
+        assume "\<exists>n\<ge>ya. {ya..n} = y"
+        then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
               x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }" 
-            proof
-              fix yb
-              assume y_prop:"ya \<le> yb \<and> {ya..yb} = y"
-              from x_int show  "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+        proof
+          fix yb
+          assume y_prop:"ya \<le> yb \<and> {ya..yb} = y"
+          from x_int show  "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
                   x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }" 
-              proof 
-                fix xa
-                assume "\<exists>n\<ge>xa. {xa..n} = x "
-                then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+          proof 
+            fix xa
+            assume "\<exists>n\<ge>xa. {xa..n} = x "
+            then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
                   x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"  
-                proof
-                  fix xb
-                  assume x_prop:"xa \<le> xb \<and> {xa..xb} = x"          
-                  show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
+            proof
+              fix xb
+              assume x_prop:"xa \<le> xb \<and> {xa..xb} = x"          
+              show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
                       x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }" 
-                  proof (rule)
-                    assume pre:"x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y"
-                    from  x_prop have upper_x:"Max x = xb" 
-                      by (metis Sup_nat_def cSup_atLeastAtMost)
-                    from y_prop have lower_y:"Min y = ya" 
-                      by (metis Inf_fin.coboundedI Inf_fin_Min Min_in add.right_neutral finite_atLeastAtMost le_add1 ord_class.atLeastAtMost_iff order_class.antisym pre)
-                    from upper_x and lower_y and pre have upper_eq_lower: "xb+1 = ya" 
-                      by blast
-                    hence "y= {xb+1 .. yb}" using y_prop by blast
-                    hence "x \<union> y = {xa..yb}" 
-                      using un_consec_seq upper_eq_lower x_prop y_prop by blast
-                    thus " x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"
-                      by auto
-                  qed
-                qed 
+              proof (rule)
+                assume pre:"x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y"
+                from  x_prop have upper_x:"Max x = xb" 
+                  by (metis Sup_nat_def cSup_atLeastAtMost)
+                from y_prop have lower_y:"Min y = ya" 
+                  by (metis Inf_fin.coboundedI Inf_fin_Min Min_in add.right_neutral finite_atLeastAtMost le_add1 ord_class.atLeastAtMost_iff order_class.antisym pre)
+                from upper_x and lower_y and pre have upper_eq_lower: "xb+1 = ya" 
+                  by blast
+                hence "y= {xb+1 .. yb}" using y_prop by blast
+                hence "x \<union> y = {xa..yb}" 
+                  using un_consec_seq upper_eq_lower x_prop y_prop by blast
+                thus " x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"
+                  by auto
               qed
-            qed
+            qed 
           qed
         qed
       qed
