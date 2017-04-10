@@ -1,5 +1,5 @@
 (*  Title:      Views.thy
-    Author:     Sven Linker
+    Author:     Sven Linker, University of Liverpool
 
 Defines a type for views on traffic. Consists of closed real valued interval
 denoting "extension" (length on the road visible", the visible interval of lanes,
