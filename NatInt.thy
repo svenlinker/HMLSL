@@ -45,70 +45,32 @@ lemma union_result: "\<forall>x \<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }
            x \<noteq> {} \<and> y \<noteq> {} \<and> Max x +1 = Min y \<longrightarrow> x \<union> y \<in>{S . (\<exists> (m::nat) n . {m..n }=S)  }"  
 proof (rule ballI)+
   fix x y
-  assume x_def:"x\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }" and  y_def:"y\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }"
-  from x_def have "(\<exists>m n.  {m..n} = x) " by blast 
-  from y_def have "(\<exists>m n.  {m..n} = y) " by blast    
+  assume "x\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }" and "y\<in> {S . (\<exists> (m::nat) n .  {m..n }=S) }"
+  then have x_def:"(\<exists>m n.  {m..n} = x) "  
+    and y_def:"(\<exists>m n.  {m..n} = y) " by blast+    
   show   " x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.  {m..n} = S) }"
-  proof (cases "{} = x")
-    assume "{} = x"
-    then show "     x \<noteq> {} \<and> y \<noteq> {} \<and>   Max x+1 = Min y \<longrightarrow> x \<union>  y \<in> {S. (\<exists>m n.{m..n} = S)}"
-      by blast
-  next
-    assume "{} \<noteq> x"
-    then have x_int:"\<exists>m n. m \<le> n \<and> {m..n} = x" 
-      using \<open>\<exists>m n. {m..n} = x\<close> by force
-    then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-         x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"
-    proof (cases "y = {}")
-      assume "y = {}"  
-      then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-             x \<union> y \<in> {S.(\<exists>m n. {m..n} = S) }" by blast
-    next
-      assume "y \<noteq>{}"
-      then have y_int:"(\<exists>m n. m \<le> n \<and> {m..n} = y)" 
-        using \<open>\<exists>m n. {m..n} = y\<close> by force
-          
-      then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-              x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S)}" 
-      proof (rule exE )     
-        fix ya
-        assume "\<exists>n\<ge>ya. {ya..n} = y"
-        then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-              x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }" 
-        proof
-          fix yb
-          assume y_prop:"ya \<le> yb \<and> {ya..yb} = y"
-          from x_int show  "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-                  x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }" 
-          proof 
-            fix xa
-            assume "\<exists>n\<ge>xa. {xa..n} = x "
-            then show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-                  x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"  
-            proof
-              fix xb
-              assume x_prop:"xa \<le> xb \<and> {xa..xb} = x"          
-              show "x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y \<longrightarrow>
-                      x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }" 
-              proof (rule)
-                assume pre:"x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y"
-                from  x_prop have upper_x:"Max x = xb" 
-                  by (metis Sup_nat_def cSup_atLeastAtMost)
-                from y_prop have lower_y:"Min y = ya" 
-                  by (metis Inf_fin.coboundedI Inf_fin_Min Min_in add.right_neutral finite_atLeastAtMost le_add1 ord_class.atLeastAtMost_iff order_class.antisym pre)
-                from upper_x and lower_y and pre have upper_eq_lower: "xb+1 = ya" 
-                  by blast
-                hence "y= {xb+1 .. yb}" using y_prop by blast
-                hence "x \<union> y = {xa..yb}" 
-                  using un_consec_seq upper_eq_lower x_prop y_prop by blast
-                thus " x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"
-                  by auto
-              qed
-            qed 
-          qed
-        qed
-      qed
-    qed
+  proof
+    assume pre:"x \<noteq> {} \<and> y \<noteq> {} \<and> Max x + 1 = Min y"
+    then have x_int:"\<exists>m n. m \<le> n \<and> {m..n} = x" and y_int:"(\<exists>m n. m \<le> n \<and> {m..n} = y)"
+      using  x_def y_def by force+      
+    {
+      fix ya yb xa xb
+      assume y_prop:"ya \<le> yb \<and> {ya..yb} = y"
+      assume x_prop:"xa \<le> xb \<and> {xa..xb} = x"          
+      from  x_prop have upper_x:"Max x = xb" 
+        by (metis Sup_nat_def cSup_atLeastAtMost)
+      from y_prop have lower_y:"Min y = ya" 
+        by (metis Inf_fin.coboundedI Inf_fin_Min Min_in add.right_neutral finite_atLeastAtMost le_add1 ord_class.atLeastAtMost_iff order_class.antisym pre)
+      from upper_x and lower_y and pre have upper_eq_lower: "xb+1 = ya" 
+        by blast
+      hence "y= {xb+1 .. yb}" using y_prop by blast
+      hence "x \<union> y = {xa..yb}" 
+        using un_consec_seq upper_eq_lower x_prop y_prop by blast
+      then have " x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S) }"
+        by auto
+    }      
+    then show "x \<union> y \<in> {S.(\<exists>m n.  {m..n} = S)}" 
+      using x_int y_int by blast
   qed
 qed
   
@@ -344,7 +306,7 @@ proof
       using Rep_nat_int_inverse union_def by presburger
     have "i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> maximum i + 1 = minimum j"
       using assm consec_def by auto
-    then have "\<exists>n na. {n..na} = Rep_nat_int i \<union> Rep_nat_int j"
+    then have "\<exists>n na. {n..na} = Rep_nat_int i \<union> Rep_nat_int j" 
       by (metis (no_types) leq_max_sup leq_min_inf maximum_def minimum_def rep_non_empty_means_seq un_consec_seq)
     then show ?thesis
       using f1 Abs_nat_int_inject Rep_nat_int not_in.rep_eq assm by auto
@@ -427,15 +389,13 @@ proof (rule allI|rule impI)+
   assume cons:" consec i j \<and> consec j k"
   fix n and m
   assume assump:"n \<^bold>\<in> i \<and> m \<^bold>\<in> k "
-  have "\<forall>k . k \<^bold>\<in> j \<longrightarrow> n < k" using consec_lesser assump cons by blast
-  hence n_less: " n < minimum j" using cons minimum_in consec_def by blast
   have "\<forall>k . k \<^bold>\<in> j \<longrightarrow> k < m" using consec_lesser assump cons by blast
   hence m_greater:"maximum j < m" using cons maximum_in consec_def by blast
   then show "n < m" 
     by (metis assump cons consec_def dual_order.strict_trans nat_int.consec_lesser nat_int.maximum_in)      
 qed
   
-lemma consec_inter_empty:"consec i j \<Longrightarrow> i \<sqinter> j = \<emptyset>" 
+lemma consec_inter_empty:"consec i j \<Longrightarrow> i \<sqinter> j = \<emptyset>"  
 proof -
   assume "consec i j"
   then have "i \<noteq> bot \<and> j \<noteq> bot \<and> maximum i + 1 = minimum j"
@@ -618,47 +578,7 @@ proof -
   then show ?thesis
     by (metis (no_types) Abs_nat_int_inverse Rep_nat_int add.right_neutral bot_nat_int_def card.empty card_Un_Int consec_inter_empty inf_nat_int.rep_eq local.card'.rep_eq local.empty_type local.finite)
 qed
-(*  by (smt Abs_nat_int_inverse Rep_nat_int add.right_neutral bot_nat_int.rep_eq card.empty card.infinite card_Un_Int card_non_empty_geq_one consec_inter_empty inf_nat_int.rep_eq local.card'.rep_eq local.consec_def local.union_def nat_int.maximum_def nat_int.minimum_def nat_int.union_result) *)
-(*proof
-  assume "consec i i'"
-  then have "i \<sqinter> i' = \<emptyset>" 
-    by (simp add: consec_inter_empty)
-  then have rep_empty:"Rep_nat_int i \<inter> Rep_nat_int i' = {}" 
-    by (metis inf_nat_int.rep_eq bot_nat_int.rep_eq )
-  have add:"|i| + |i'| = card (Rep_nat_int i \<union> Rep_nat_int i') + card (Rep_nat_int i \<inter> Rep_nat_int i')"  
-    by (metis \<open>consec i i'\<close> card_Un_Int card_infinite nat_int.card'.rep_eq nat_int.card_non_empty_geq_one nat_int.consec_def not_one_le_zero)
-  from rep_empty have "card(Rep_nat_int i \<inter> Rep_nat_int i') = 0"   by (simp)
-  with add have "|i| + |i'| = card (Rep_nat_int i \<union> Rep_nat_int i') " 
-    by (simp add: add_0_iff) 
-  hence " |i| + |i'|= |i \<squnion> i'| " using  card'_def union_def 
-  proof -
-    have "\<forall>N. N \<notin> {N. (\<exists>n na. (n::nat) \<le> na \<and> {n..na} = N) } \<or> (\<forall>Na. (Na \<notin> {N. (\<exists>n na. n \<le> na \<and> {n..na} = N)} \<or> N = {} \<or> Na = {} \<or> Max N + 1 \<noteq> Min Na) \<or> N \<union> Na \<in> {N. (\<exists>n na. n \<le> na \<and> {n..na} = N) })"
-      using union_result nat_int.not_empty_means_seq by auto
-    then have f1: "Rep_nat_int i = {} \<or> Rep_nat_int i' = {} \<or> Max (Rep_nat_int i) + 1 \<noteq> Min (Rep_nat_int i') \<or> Rep_nat_int i \<union> Rep_nat_int i' \<in> {N. (\<exists>n na. n \<le> na \<and> {n..na} = N) \<or> N = {}}"
-      using Rep_nat_int 
-      by (smt atLeastatMost_empty_iff2 mem_Collect_eq)
-    have f2: "\<forall>n. n = \<emptyset> \<or> (\<exists>na nb. na \<le> nb \<and> {na..nb} = Rep_nat_int n)"
-      using rep_non_empty_means_seq by satx
-    have f3: "i \<noteq> \<emptyset> \<and> i' \<noteq> \<emptyset> \<and> maximum i + 1 = minimum i'"
-      using \<open>consec (i::nat_int) (i'::nat_int)\<close> consec_def by force
-    then have f4: "Rep_nat_int i \<noteq> {}"
-      using f2 by (metis (no_types) atLeastatMost_empty_iff2)
-    have "Rep_nat_int i' \<noteq> {}"
-      using f3 f2 by (metis (no_types) atLeastatMost_empty_iff2)
-    then show ?thesis
-      using f4 f3 f1 Abs_nat_int_inverse \<open>|i::nat_int| + |i'::nat_int| = card (Rep_nat_int i \<union> Rep_nat_int i')\<close> maximum_def minimum_def card'_def union_def
-    proof -
-      have "Max (Rep_nat_int i) + 1 = Min (Rep_nat_int i')"
-        using \<open>\<And>m. m \<noteq> \<emptyset> \<Longrightarrow> maximum m = Max (Rep_nat_int m)\<close> \<open>\<And>m. m \<noteq> \<emptyset> \<Longrightarrow> minimum m = Min (Rep_nat_int m)\<close> f3 by force
-      then have "\<exists>n na. {n..na} = Rep_nat_int i \<union> Rep_nat_int i'"
-        using \<open>Rep_nat_int i' \<noteq> {}\<close> f1 f4 by blast
-      then show ?thesis
-        using Abs_nat_int_inverse card'.rep_eq \<open>\<And>y x. x \<squnion> y = Abs_nat_int (Rep_nat_int x \<union> Rep_nat_int y)\<close> \<open>|i| + |i'| = card (Rep_nat_int i \<union> Rep_nat_int i')\<close> by auto
-    qed
-  qed 
-  thus "|i \<squnion> i'| = |i| + |i'|" by (rule)
-qed
-*)  
+
 lemma singleton:"|i| = 1 \<longrightarrow> (\<exists>n. Rep_nat_int i = {n})"
   using card_1_singletonE card'.rep_eq by fastforce
     
