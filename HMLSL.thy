@@ -232,6 +232,15 @@ lemma globally_all_iff[iff]:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)
 lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
   using traffic.abstract.refl traffic_class.move_nothing abstract_dict by fastforce
 
+lemma globally_4: "\<Turnstile> (\<^bold>G  \<phi>) \<^bold>\<rightarrow> \<^bold>G \<^bold>G \<phi>"
+proof (rule allI|rule impI)+
+  fix ts v ts' ts'' 
+  assume 1:"ts \<^bold>\<Rightarrow> ts'" and 2:"ts' \<^bold>\<Rightarrow> ts''" and 3:"ts,v \<Turnstile> \<^bold>G \<phi>" 
+  from 2 and 1 have "ts \<^bold>\<Rightarrow> ts''" using traffic_class.abs_trans by blast  
+  moreover from 1 and 2 have "move ts' ts'' (move ts ts' v) = move ts ts'' v" using traffic_class.move_trans by blast
+  with 3 show "ts'', move ts' ts'' (move ts ts' v)  \<Turnstile>\<phi>" using calculation by simp
+qed
+    
   
 lemma spatial_weaken: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle>)" 
   using horizontal_chop_empty_left horizontal_chop_empty_right vertical_chop_empty_down vertical_chop_empty_up hchop_dict vchop_dict by fastforce
@@ -725,6 +734,7 @@ qed
 lemma one_lane_empty_or_car:"\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<rightarrow> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
 using one_lane_notfree by blast
 
+  
 end
 end
   

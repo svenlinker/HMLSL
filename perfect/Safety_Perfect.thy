@@ -50,8 +50,8 @@ proof (rule allI|rule impI)+
   from assm have init:"ts,v \<Turnstile> ( \<^bold>\<forall>e. safe e )" by simp
   from assm have DC :"ts,v \<Turnstile> DC" by simp
   from assm have LC: "ts,v \<Turnstile> LC" by simp
-  show "ts',move ts ts' v \<Turnstile>  \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> " using abs
-  proof (induction ts\<equiv>"ts" ts'\<equiv>ts' arbitrary:ts'   )
+  from abs show "ts',move ts ts' v \<Turnstile>  \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> " 
+   proof (induction     )
     case (refl  ) 
     have "move ts ts v = v" using traffic.move_nothing by simp
     thus ?case using init traffic.move_nothing nequals  by auto
@@ -62,8 +62,8 @@ proof (rule allI|rule impI)+
     show ?case 
     proof 
       assume e_def:" (ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>)"
-      from "evolve.hyps"  and nequals have 
-        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
+      from "evolve.IH"  and nequals have 
+        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by fastforce
       hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using local_DC by blast
       have move_eq:"move ts' ts'' (move ts ts' v) = move ts ts'' v" using "evolve.hyps" 
           traffic.abstract.evolve traffic.abstract.refl traffic.move_trans by blast
@@ -77,7 +77,7 @@ proof (rule allI|rule impI)+
       using LC "cr_res.hyps" by blast
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using traffic.move_stability_res "cr_res.hyps" traffic.move_trans 
         using move_stability_clm by auto
-    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps cr_res.hyps(1) cr_res.hyps(3) traffic.move_trans)
+    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps cr_res.hyps traffic.move_trans)
     show ?case 
     proof (rule)
       assume e_def:" (ts'',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>)"
@@ -103,7 +103,7 @@ proof (rule allI|rule impI)+
         proof
           assume assm':"ts',move ts ts'' v \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
           have "ts',move ts ts' v \<Turnstile> \<^bold>\<not> (c \<^bold>= e)" using nequals by blast
-          thus False using assm' cr_res.hyps e_def move_stab by force
+          thus False using assm' cr_res.IH e_def move_stab by force
         next
           assume assm':"ts',move ts ts'' v \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> cl(e)\<^bold>\<rangle>"
           hence "ts',move ts ts'' v \<Turnstile> \<^bold>\<not> (c \<^bold>=e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> cl(e)\<^bold>\<rangle>" using e_def and nequals by force
@@ -129,7 +129,7 @@ proof (rule allI|rule impI)+
             by (metis (no_types, lifting) d_def neq)
           hence unsafe2:"ts',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" 
             using  nequals view.somewhere_leq v'_def by blast
-          from cr_res.hyps have "ts',move ts ts'' v \<Turnstile> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using move_stab by force
+          from cr_res.IH have "ts',move ts ts'' v \<Turnstile> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using move_stab by force
           thus False using unsafe2 by best
         next
           assume eq2:"c = d"
@@ -149,7 +149,7 @@ proof (rule allI|rule impI)+
           proof
             assume assm':"ts',move ts ts'' v \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
             have "ts',move ts ts'' v \<Turnstile> \<^bold>\<not> (c \<^bold>= e)" using nequals by blast
-            thus False using assm' cr_res.hyps e_def move_stab by fastforce
+            thus False using assm' cr_res.IH e_def move_stab by fastforce
           next
             assume assm':"ts',move ts ts'' v \<Turnstile>  \<^bold>\<langle> cl(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
             hence "ts',move ts ts'' v \<Turnstile> \<^bold>\<not> (c \<^bold>=e) \<^bold>\<and> \<^bold>\<langle> cl(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using e_def nequals by blast
@@ -166,7 +166,7 @@ proof (rule allI|rule impI)+
     case (cr_clm ts' ts'')
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using traffic.move_stability_clm cr_clm.hyps traffic.move_trans 
       by auto
-    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps cr_clm.hyps(1) cr_clm.hyps(3) traffic.move_trans)
+    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps cr_clm.hyps traffic.move_trans)
     show ?case 
     proof (rule)
       assume e_def:"(ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
@@ -178,13 +178,13 @@ proof (rule allI|rule impI)+
       from this have " (ts',v' \<Turnstile> re(c) \<^bold>\<and> re(e))"
         using n_def backwards_c_res_stab by blast 
       then have "ts', move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using v'_def view.somewhere_leq by meson   
-      thus False using cr_clm.hyps move_stab e_def nequals by fastforce 
+      thus False using cr_clm.IH move_stab e_def nequals by fastforce 
     qed 
   next
     case (wd_res ts' ts'')
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using traffic.move_stability_wdr wd_res.hyps traffic.move_trans 
       by auto
-    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps wd_res.hyps(1) wd_res.hyps(3) traffic.move_trans)
+    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps wd_res.hyps traffic.move_trans)
     show ?case
     proof (rule )
       assume e_def: " (ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)"
@@ -196,13 +196,13 @@ proof (rule allI|rule impI)+
       from this have " (ts',v' \<Turnstile> re(c) \<^bold>\<and> re(e))"
         using n_def backwards_wdr_res_stab by blast 
       then have "  (ts',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>)" using v'_def view.somewhere_leq by meson          
-      thus False using wd_res.hyps move_stab by fastforce
+      thus False using wd_res.IH move_stab by fastforce
     qed 
   next
     case (wd_clm ts' ts'')
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using traffic.move_stability_wdc wd_clm.hyps traffic.move_trans 
       by auto
-    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps wd_clm.hyps(1) wd_clm.hyps(3) traffic.move_trans)
+    hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps wd_clm.hyps traffic.move_trans)
     show ?case
     proof (rule)
       assume e_def: " (ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>)"
@@ -213,7 +213,7 @@ proof (rule allI|rule impI)+
       from this have " (ts',v' \<Turnstile> re(c) \<^bold>\<and> re(e))"
         using d_def backwards_wdc_res_stab by blast 
       hence "ts',move ts ts'' v \<Turnstile> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using  v'_def view.somewhere_leq by meson
-      thus False using wd_clm.hyps move_stab by fastforce
+      thus False using wd_clm.IH move_stab by fastforce
     qed 
   qed
 qed

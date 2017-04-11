@@ -269,18 +269,61 @@ where "(ts \<^bold>\<midarrow>dyn(c, f )\<^bold>\<rightarrow> ts') == (pos ts' =
 
 inductive evolve::"traffic \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<leadsto> _")
 where refl : "ts \<^bold>\<leadsto> ts" |
- drive:  "ts \<^bold>\<leadsto> ts' \<Longrightarrow> \<exists>x. x \<ge> 0 \<and> ( ts' \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts'')  \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
- change: " ts \<^bold>\<leadsto> ts' \<Longrightarrow>  \<exists>c. \<exists>f. (ts' \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts'')  \<Longrightarrow> ts \<^bold>\<leadsto> ts''"
+ drive:  "\<exists>x. x \<ge> 0 \<and> ( ts \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts''    \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
+ change: "\<exists>c. \<exists>f. (ts \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts'' \<Longrightarrow> ts \<^bold>\<leadsto> ts''"
 
-inductive abstract::"traffic \<Rightarrow> traffic \<Rightarrow> bool"  ("_ \<^bold>\<Rightarrow> _")
+lemma evolve_trans:"(ts0 \<^bold>\<leadsto> ts1) \<Longrightarrow> (ts1 \<^bold>\<leadsto> ts2) \<Longrightarrow> (ts0 \<^bold>\<leadsto> ts2)"  
+proof (induction rule:evolve.induct)
+  case (refl ts)
+  then show ?case by simp
+next
+  case (drive ts ts' ts'')
+  then show ?case by (metis evolve.drive)
+next
+  case (change ts ts' ts'')
+  then show ?case by (metis evolve.change)
+qed
+ 
+ 
+inductive abstract::"traffic \<Rightarrow> traffic \<Rightarrow> bool"  ("_ \<^bold>\<Rightarrow> _") for ts
 where refl: "(ts \<^bold>\<Rightarrow> ts)" |
-  evolve:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> ts' \<^bold>\<leadsto> ts'' \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" |
-  cr_clm:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c. \<exists> n.  (ts' \<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow> ts'')  \<Longrightarrow> ts \<^bold>\<Rightarrow> ts''" |
+  evolve:"  ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> ts' \<^bold>\<leadsto> ts''   \<Longrightarrow> ts \<^bold>\<Rightarrow> ts''" |
+  cr_clm:" ts \<^bold>\<Rightarrow> ts' \<Longrightarrow>\<exists>c. \<exists> n.  (ts' \<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow> ts'')     \<Longrightarrow> ts \<^bold>\<Rightarrow> ts''" |
   wd_clm:"ts \<^bold>\<Rightarrow> ts'  \<Longrightarrow> \<exists>c.  (ts' \<^bold>\<midarrow>wdc(c)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" |
   cr_res:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c.  (ts' \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" |
   wd_res:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c. \<exists> n.  (ts' \<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" 
+print_theorems
+  
+  
+lemma abs_trans:" (ts1 \<^bold>\<Rightarrow> ts2) \<Longrightarrow>(ts0 \<^bold>\<Rightarrow> ts1) \<Longrightarrow> (ts0 \<^bold>\<Rightarrow> ts2)"  
+proof (induction  rule:abstract.induct    )
+  case refl
+  then show ?case by simp
+next
+  case (evolve ts' ts'')
+  then show ?case 
+    using traffic.evolve by blast  
+next
+  case (cr_clm ts' ts'')
+  then show ?case 
+    using traffic.cr_clm by blast 
+next
+  case (wd_clm ts' ts'')
+  then show ?case 
+    using traffic.wd_clm by blast 
+next
+  case (cr_res ts' ts'')
+  then show ?case
+    using traffic.cr_res by blast 
+next
+  case (wd_res ts' ts'')
+  then show ?case 
+    using traffic.wd_res by blast 
+qed
 
 
+  
+    
 lemma create_res_subseteq1:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<longrightarrow> res ts c \<sqsubseteq> res ts' c "
 proof
   assume assm:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')"
