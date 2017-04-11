@@ -582,10 +582,9 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       from this obtain c where c_def:"ts'',ve \<Turnstile>  \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
       hence c_neq_e:"ts'',ve \<Turnstile>\<^bold>\<not>(c \<^bold>= e)" by blast
-      have "d=e \<or> d \<noteq> e" by simp
-      thus False
-      proof
-        assume eq:"d = e"
+      show False
+      proof (cases "d=e")
+        case True
         hence e_trans:"ts' \<^bold>\<midarrow>r(e) \<^bold>\<rightarrow> ts''" using d_def by simp
         from c_def have "ts'',ve \<Turnstile> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by auto
         hence "\<exists>v'. (v' \<le> ve) \<and> (ts'',v' \<Turnstile> re(c) \<^bold>\<and> re(e))" using somewhere_leq   
@@ -593,13 +592,13 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
         from this obtain v' where v'_def:"(v' \<le> ve) \<and> (ts'',v' \<Turnstile> re(c) \<^bold>\<and> re(e))" by blast
         with backwards_res_act have "ts',v' \<Turnstile>   re(c) \<^bold>\<and> (re(e) \<^bold>\<or> cl(e))"
           using c_def  backwards_res_stab c_neq_e 
-          by (metis (no_types, lifting) d_def eq)
+          by (metis (no_types, lifting) d_def True)
         hence "\<exists>v'. (v' \<le> ve) \<and> (ts',v' \<Turnstile> re(c) \<^bold>\<and> (re(e) \<^bold>\<or> cl(e)))"  
           using  v'_def by blast
         hence "ts',ve \<Turnstile>\<^bold>\<langle> re(c) \<^bold>\<and> (re(e) \<^bold>\<or> cl(e)) \<^bold>\<rangle>" using somewhere_leq by meson
         hence "ts',ve \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> re(c) \<^bold>\<and> cl(e)\<^bold>\<rangle> " 
           using hmlsl.somewhere_and_or_distr by metis  
-        thus False 
+        then show False 
         proof
           assume assm':"ts',ve \<Turnstile>  \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
           have "ts',move ts ts' v \<Turnstile> \<^bold>\<not> (c \<^bold>= e)" using c_def by blast
@@ -615,7 +614,8 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
           thus "ts'',move ts ts'' v \<Turnstile> \<^bold>\<bottom>" using e_trans pcc by blast
         qed
       next
-        assume neq:"d \<noteq>e"
+        case False
+        then have neq:"d \<noteq>e" .
         show False 
         proof (cases "c=d")
           case False
