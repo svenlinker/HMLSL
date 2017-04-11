@@ -34,7 +34,7 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
     using traffic.create_reservation_def sensors.space_def regular_def  create_reservation_dict 
-    by (simp add: pos_dict regular_sensors.sensors_axioms)
+    by (simp add:  regular_sensors.sensors_axioms)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
