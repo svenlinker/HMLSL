@@ -501,7 +501,8 @@ proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
     proof (rule ccontr)
       assume "\<not> (ts'',move ts ts'' v \<Turnstile> ( \<^bold>@e (safe e)))"
       then have  e_def:"ts'',move ts ts'' v \<Turnstile> \<^bold>\<not>(\<^bold>@e (safe e))" by best
-      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using  switch_always_exists switch_unique by fastforce
+      thm hmlsl.at_neg' [of "move ts ts'' v" "e"  " (safe e)" "ts''"]
+      hence "ts'',move ts ts'' v \<Turnstile> \<^bold>@e (\<^bold>\<not> safe e)" using  hmlsl.at_neg'[of "move ts ts'' v" "e" "(safe e)"  ]  by (simp )
       from this obtain ve where ve_def:"((move ts ts'' v) =e> ve) \<and> (ts'',ve \<Turnstile> \<^bold>\<not> safe e)" 
         using switch_always_exists by fastforce
       hence unsafe:"ts'',ve \<Turnstile> \<^bold>\<exists> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<langle> re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by blast
