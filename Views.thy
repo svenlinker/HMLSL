@@ -39,7 +39,7 @@ qed
 end 
   
   
-class view
+locale view
 begin
 
 lemmas[simp] = R_Chop_dict   
@@ -430,5 +430,5 @@ qed
   
 end
   
-  lemmas[simp] = switch_dict hchop_dict vchop_dict
+(*  lemmas[simp] = switch_dict hchop_dict vchop_dict *)
 end

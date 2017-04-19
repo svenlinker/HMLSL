@@ -5,7 +5,7 @@ begin
 definition perfect::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
   where "perfect e ts c \<equiv> traffic.physical_size ts c + traffic.braking_distance ts c " 
     
-class perfect_sensors = traffic+view
+locale perfect_sensors = traffic+view
 begin
 interpretation perfect_sensors : sensors "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
 proof unfold_locales
@@ -21,14 +21,14 @@ lemma "pos ts = pos ts' \<and> braking_distance ts = braking_distance ts' \<and>
         \<longrightarrow> space ts v c = space ts' v c"  
 proof
   assume assm:"pos ts = pos ts' \<and> braking_distance ts = braking_distance ts' \<and> physical_size ts= physical_size ts'"  
-  then have left:"left (space ts v c) = left (space ts' v c)" using  perfect_sensors.space_nonempty Abs_real_int_inverse braking_distance_dict physical_size_dict perfect_def
-    by (simp add: perfect_sensors.space_def pos_dict)
+  then have left:"left (space ts v c) = left (space ts' v c)" using  perfect_sensors.space_nonempty Abs_real_int_inverse   perfect_def
+    by (simp add: perfect_sensors.space_def )
   from assm have "\<forall>e. perfect e ts c = perfect e ts' c" using perfect_def pos_def braking_distance_def physical_size_def 
-    by (simp add: braking_distance_dict physical_size_dict)
+    by (simp add:  )
   hence " perfect (own v) ts c = perfect (own v) ts' c" by simp
   then have "pos ts c  + perfect (own v) ts c = pos ts' c + perfect (own v) ts' c" using assm by simp
   with assm have right:"right (space ts v c) = right (space ts' v c)" using Abs_real_int_inverse fst_conv snd_conv perfect_sensors.space_def  right.rep_eq
-    by (simp add: perfect_sensors.space_def pos_dict)
+    by (simp add: perfect_sensors.space_def )
   from left and right show "space ts v c = space ts' v c" 
     by (simp add: dual_order.antisym less_eq_real_int_def)
 qed
@@ -38,7 +38,7 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
     using traffic.create_reservation_def perfect_sensors.space_def braking_distance_def physical_size_def perfect_def pos_def 
-    by (simp add: create_reservation_dict pos_dict)
+    by (simp add:  )
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -68,7 +68,7 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
     using traffic.create_claim_def perfect_sensors.space_def braking_distance_def physical_size_def perfect_def pos_def 
-    by (simp add: create_claim_dict pos_dict)
+    by (simp add:  )
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -98,7 +98,7 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
     using traffic.withdraw_reservation_def perfect_sensors.space_def perfect_def 
-    by (simp add:withdraw_reservation_dict pos_dict)
+    by (simp add:)
       
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
@@ -129,7 +129,7 @@ proof
   assume assm:"(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
     using traffic.withdraw_claim_def perfect_sensors.space_def perfect_def 
-    by (simp add:withdraw_claim_dict pos_dict)
+    by (simp add: )
       
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
@@ -187,12 +187,12 @@ proof
 qed
   (* switch lemmas *)
 lemma switch_length_stable:"(v=c>v') \<longrightarrow> len v ts c = len v' ts c"
-  using all_own_ext_eq_len_eq view.switch_def switch_dict 
+  using all_own_ext_eq_len_eq view.switch_def 
   by metis
     
     
 lemma arbitrary_switch_length_stable:"(v=d>v') \<longrightarrow> len v ts c = len v' ts c"
-  using all_own_ext_eq_len_eq view.switch_def switch_dict by metis
+  using all_own_ext_eq_len_eq view.switch_def  by metis
     
 end
 end

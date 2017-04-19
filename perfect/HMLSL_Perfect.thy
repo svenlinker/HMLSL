@@ -12,7 +12,7 @@ theory HMLSL_Perfect
 begin
   
   
-class hmlsl_perfect = perfect_sensors + restriction
+locale hmlsl_perfect = perfect_sensors + restriction
 begin
   
 interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"

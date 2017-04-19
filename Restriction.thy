@@ -10,7 +10,7 @@ theory Restriction
   imports Traffic Views
 begin
   
-class restriction = view+traffic
+locale restriction = view+traffic
 begin
   
   
@@ -350,6 +350,6 @@ qed
 lemma switch_restrict_stable:"(v=c>u) \<longrightarrow> restrict v f d = restrict u f d"
   using switch_def by (simp add: restrict_def) 
 end
-lemmas[simp] = 
-    restrict_dict
+(*lemmas[simp] = 
+    restrict_dict *)
 end

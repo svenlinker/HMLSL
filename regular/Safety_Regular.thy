@@ -68,7 +68,7 @@ proof (rule allI|rule impI)+
       hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" using local_DC by blast
       have move_eq:"move ts' ts'' (move ts ts' v) = move ts ts'' v" using "evolve.hyps" 
           abstract.evolve abstract.refl move_trans 
-        by (meson traffic_class.abstract.evolve traffic_class.abstract.refl traffic_class.move_trans)
+        by (meson traffic.abstract.evolve traffic.abstract.refl traffic.move_trans)
       from no_coll_after_evol and evolve.hyps have "ts'',move ts' ts'' (move ts ts' v) \<Turnstile>  \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"  
         by blast
       thus False using e_def using  move_eq by fastforce
@@ -277,7 +277,7 @@ proof -
       have position:"pos ts e = 5" using e_def ts_def ts_rep_def ts_in_type ts_def Abs_traffic_inverse pos_def 
           fun_upd_apply pos'_def traffic.pos_def by auto
       have "regular (own v) ts e = 1" using e_def v_def sensors_def ps_def ts_def size regular_def by auto
-      then have space:"space ts v e = Abs_real_int (5,6)" using e_def pos_def position hmlsl.space_def pos_dict by auto
+      then have space:"space ts v e = Abs_real_int (5,6)" using e_def pos_def position hmlsl.space_def  by auto
       have "left (space ts v e) > right (ext v)" using space v_def Abs_real_int_inverse by auto
       thus "\<parallel> len v ts e\<parallel> = 0" using hmlsl.len_def real_int.length_def Abs_real_int_inverse by auto
     qed

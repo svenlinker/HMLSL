@@ -79,7 +79,7 @@ proof -
   thus ?thesis by blast
 qed 
 
-class traffic   
+locale traffic   
 begin   
 
 
@@ -471,7 +471,7 @@ lemma withdraw_res_subseteq:"(ts \<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow
 
 end
   
-lemmas[simp] =  
+(*lemmas[simp] =  
   create_reservation_dict 
   create_claim_dict 
   withdraw_reservation_dict 
@@ -486,4 +486,5 @@ lemmas[simp] =
   dyn_dict 
   physical_size_dict 
   braking_distance_dict 
+*)
 end
