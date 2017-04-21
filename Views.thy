@@ -20,7 +20,6 @@ record view =
   lan ::lanes  
   own ::cars
   
-  
 instantiation  view_ext:: (order) order
 begin  
 definition "less_eq_view_ext (V:: 'a view_ext)  (V':: 'a view_ext)  \<equiv> 
@@ -53,7 +52,7 @@ definition   vchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow>
     
 definition switch :: "view \<Rightarrow> cars \<Rightarrow> view \<Rightarrow> bool" ("_ = _ > _")
   where   "  (v=c>w) == ext v = ext w \<and> lan v = lan w \<and>  own w = c \<and> more v = more w"
-    
+
 
 lemma h_chop_middle1:"(v=u\<parallel>w) \<longrightarrow> left (ext v) \<le> right (ext u)" 
   by (metis hchop_def real_int.rchop_def real_int.left_leq_right)
@@ -383,7 +382,7 @@ lemma switch_always_exists:"\<forall>c. \<exists>u. (v=c>u)"
   by (metis select_convs switch_def)
     
 lemma switch_origin:" \<exists>u. (u=(own v)>v)" 
-  using switch_def by auto
+  using switch_def  by auto
     
 lemma switch_refl:"(v=(own v)>v)"
   by (simp add:switch_def)
