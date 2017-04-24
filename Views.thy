@@ -429,5 +429,4 @@ qed
   
 end
   
-(*  lemmas[simp] = switch_dict hchop_dict vchop_dict *)
 end

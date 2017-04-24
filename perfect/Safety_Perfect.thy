@@ -12,19 +12,16 @@ begin
   
 context hmlsl_perfect
 begin
-    interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-  proof unfold_locales 
-  
+interpretation hmlsl : hmlsl "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
+proof unfold_locales   
   fix e ts c
   show " 0 < perfect e ts c" 
     by (metis less_add_same_cancel2 less_trans perfect_def traffic.psGeZero traffic.sdGeZero) 
 qed
-notation hmlsl.space ("space")
 notation hmlsl.re ("re'(_')")
-  notation hmlsl.cl("cl'(_')")
-  notation hmlsl.len ("len")
-print_locale!hmlsl_perfect
-
+notation hmlsl.cl("cl'(_')")
+notation hmlsl.len ("len")
+  
   
 abbreviation safe::"cars\<Rightarrow>\<sigma>" 
   where "safe e \<equiv> \<^bold>\<forall> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<rightarrow> \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>" 
@@ -51,7 +48,7 @@ proof (rule allI|rule impI)+
   from assm have DC :"ts,v \<Turnstile> DC" by simp
   from assm have LC: "ts,v \<Turnstile> LC" by simp
   from abs show "ts',move ts ts' v \<Turnstile>  \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> " 
-   proof (induction     )
+  proof (induction     )
     case (refl  ) 
     have "move ts ts v = v" using traffic.move_nothing by simp
     thus ?case using init traffic.move_nothing nequals  by auto
@@ -76,7 +73,7 @@ proof (rule allI|rule impI)+
     have local_LC: "ts',move ts ts' v \<Turnstile>( \<^bold>\<forall>d.( \<^bold>\<exists> c. pcc c d) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>)  " 
       using LC "cr_res.hyps" by blast
     have "move ts ts' v = move ts' ts'' (move ts ts' v)" using traffic.move_stability_res "cr_res.hyps" traffic.move_trans 
-        using move_stability_clm by auto
+      using move_stability_clm by auto
     hence move_stab: "move ts ts' v = move ts ts'' v" by (metis traffic.abstract.simps cr_res.hyps traffic.move_trans)
     show ?case 
     proof (rule)
@@ -240,6 +237,6 @@ proof (rule allI|rule impI)+
     then show False using assm nequals by blast
   qed
 qed
-   
+  
 end
 end

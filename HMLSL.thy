@@ -231,9 +231,6 @@ using at_neg_neg1 at_neg_neg2 by metis
 
 lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
 lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
-
-lemmas[iff] = globally_all_iff'
-print_claset 
   
 lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
   using traffic.abstract.refl traffic.move_nothing  by fastforce
@@ -427,13 +424,6 @@ proof (rule allI|rule notI)+
   hence "lan vn = \<emptyset>" using nat_int.non_empty_elem_in el_dict by auto
   with vn_not_e show False by blast 
 qed
-
-
-lemma test2:"\<Turnstile> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>\<ge> 0))"
-by simp
-
-
-
 
 lemma clm_sing:"\<Turnstile>\<^bold>\<not>  (cl(c) \<^bold>\<smile> cl(c)) "
 using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one   

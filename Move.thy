@@ -51,7 +51,5 @@ lemma move_stability_res:"(ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<
   by (auto)+
 
 end
-  
-(*lemmas[simp] = move_dict
- *) 
+ 
 end

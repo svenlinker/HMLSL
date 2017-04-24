@@ -5,8 +5,7 @@ begin
 locale hmlsl_regular = regular_sensors + restriction
 begin
 interpretation hmlsl : hmlsl "regular :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-proof unfold_locales 
-  
+proof unfold_locales   
   fix e ts c
   show " 0 < regular e ts c"  
     by (metis less_add_same_cancel2 less_trans regular_def traffic.psGeZero traffic.sdGeZero) 

@@ -15,8 +15,7 @@ context hmlsl_regular
 begin
   
 interpretation hmlsl : hmlsl "regular :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-proof unfold_locales 
-  
+proof unfold_locales   
   fix e ts c
   show " 0 < regular e ts c" 
     by (metis less_add_same_cancel2 less_trans regular_def traffic.psGeZero traffic.sdGeZero) 
@@ -40,7 +39,7 @@ abbreviation LC::"\<sigma>"
   where "LC \<equiv> \<^bold>G ( \<^bold>\<forall>d.( \<^bold>\<exists> c. pcc c d) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>)  "
     
     
-  
+    
 theorem safety_flawed:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)"
 proof (rule allI|rule impI)+  
   fix ts v ts' 
