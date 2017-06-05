@@ -255,11 +255,11 @@ proof -
 (*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0)   \<and> 
+(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0)   \<and> *) 
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)
  } " 
-    using pos_def res_def clm_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two (*consec_re*) dyn_geq_zero 
+    using pos_def res_def clm_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two (*consec_re*) (* dyn_geq_zero *) 
       ps_ge_zero sd_ge_zero ts_rep_def by auto
   obtain v where v_def:"v=\<lparr>ext = Abs_real_int (0,3), lan = Abs_nat_int{0}, own = d\<rparr>" by best
   obtain ts where ts_def:"ts=Abs_traffic ts_rep" by blast

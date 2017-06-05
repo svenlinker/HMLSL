@@ -34,7 +34,7 @@ typedef traffic = "{ts :: ((cars\<Rightarrow>real) * (cars \<Rightarrow> lanes) 
 (*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> 
+(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> *)
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)
  } "
@@ -70,11 +70,11 @@ proof -
 (*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> 
+(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> *)
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)  
  } " 
-    using sp_def re_def cl_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re dyn_geq_zero 
+    using sp_def re_def cl_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re  (*dyn_geq_zero *)
       ps_def sd_def ts_def by auto
   thus ?thesis by blast
 qed 
@@ -134,9 +134,9 @@ qed
 lemma clmNextRes : "((clm ts) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n, n+1})"
 using Rep_traffic res_def clm_def by auto 
 
-lemma dynGeqZero:"\<forall>x. (dyn ts c x \<ge> 0)" 
+(*lemma dynGeqZero:"\<forall>x. (dyn ts c x \<ge> 0)" 
 using Rep_traffic  dyn_def by auto 
-
+*)
 lemma psGeZero:"\<forall>c. (physical_size ts c > 0)"
 using Rep_traffic physical_size_def by auto 
 
@@ -261,7 +261,8 @@ where "  (ts \<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow> ts')  == (pos ts')
                                 \<and> |res ts c| = 2"
 
 definition drive::"traffic \<Rightarrow> real \<Rightarrow> traffic \<Rightarrow> bool" (" _ \<^bold>\<midarrow> _ \<^bold>\<rightarrow> _" 27)
-where "(ts \<^bold>\<midarrow> x \<^bold>\<rightarrow> ts') == (\<forall>c. (pos ts' c = (pos ts c) + (dyn ts c x))) 
+  where "(ts \<^bold>\<midarrow> x \<^bold>\<rightarrow> ts') == (\<forall>c. (pos ts' c = (pos ts c) + (dyn ts c x))) 
+                              \<and> (\<forall> c y. 0 \<le> y \<and> y \<le> x \<longrightarrow> dyn ts c y \<ge> 0)  
                               \<and> (res ts' = res ts)
                               \<and> (clm ts' = clm ts)
                               \<and> (dyn ts' = dyn ts)
@@ -273,12 +274,12 @@ where "(ts \<^bold>\<midarrow>dyn(c, f )\<^bold>\<rightarrow> ts') == (pos ts' =
                               \<and> (res ts' = res ts)
                               \<and> (clm ts' = clm ts)
                               \<and> (dyn ts' = (dyn ts)(c:= f))
-                              \<and> (\<forall>t. f t \<ge> 0)
+(*                              \<and> (\<forall>t. f t \<ge> 0) *)
                               \<and> (physical_size ts') = (physical_size ts)"
 
 inductive evolve::"traffic \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<leadsto> _")
 where refl : "ts \<^bold>\<leadsto> ts" |
- drive:  "\<exists>x. x \<ge> 0 \<and> ( ts \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts''    \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
+ drive:  "\<exists>x. x \<ge> 0 \<and>  ( ts \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts''    \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
  change: "\<exists>c. \<exists>f. (ts \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts'' \<Longrightarrow> ts \<^bold>\<leadsto> ts''"
 
 lemma evolve_trans:"(ts0 \<^bold>\<leadsto> ts1) \<Longrightarrow> (ts1 \<^bold>\<leadsto> ts2) \<Longrightarrow> (ts0 \<^bold>\<leadsto> ts2)"  
@@ -423,7 +424,7 @@ proof
           by (smt Abs_nat_int_inverse Un_commute atLeastAtMost_singleton_iff def_ts'_res insert_commute mem_Collect_eq n1_n2_un nat_int.un_consec_seq nat_int.union_def order_refl rep_clm rep_res)
       qed
     qed
-    have dyn_geq_zero: "(\<forall>c t. fst (snd (snd (snd (ts')))) c t \<ge> 0)" using ts'_def dynGeqZero by (simp )
+(*    have dyn_geq_zero: "(\<forall>c t. fst (snd (snd (snd (ts')))) c t \<ge> 0)" using ts'_def dynGeqZero by (simp ) *)
     have ps_ge_zero: "(\<forall>c . fst (snd (snd (snd (snd (ts'))))) c > 0)" using ts'_def psGeZero by (simp )
     have sd_ge_zero: "(\<forall>c . snd (snd (snd (snd (snd (ts'))))) c > 0)" using ts'_def sdGeZero by (simp )
         
@@ -436,12 +437,12 @@ proof
 (*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and> *)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> 
+(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> *)
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0) 
      }"
       using  ts'_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re   
-        clNextRe mem_Collect_eq dyn_geq_zero ps_ge_zero sd_ge_zero by blast
+        clNextRe mem_Collect_eq (*dyn_geq_zero*) ps_ge_zero  sd_ge_zero by blast
     have rep_eq:"Rep_traffic (Abs_traffic ts') = ts'" using ts'_def ts'_type Abs_traffic_inverse by blast 
     have sp_eq:"(pos (Abs_traffic ts')) = (pos ts) "  using rep_eq ts'_def
       using Rep_traffic pos_def by auto 
