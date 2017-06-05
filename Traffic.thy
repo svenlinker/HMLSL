@@ -329,7 +329,7 @@ proof
   hence "res ts' c = res ts c \<squnion> clm ts c" using create_reservation_def
     using fun_upd_apply by auto
   thus "res ts c \<sqsubseteq> res ts' c" using union_dict
-    by (metis (no_types, lifting) Un_commute clm_consec_res disjoint nat_int.un_subset2 nat_int.union_def nat_int.chop_subset1 nat_int.nchop_def)
+    by (metis (no_types, lifting) Un_commute clm_consec_res  nat_int.un_subset2 nat_int.union_def nat_int.chop_subset1 nat_int.nchop_def)
 qed
 lemma create_res_subseteq2:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<longrightarrow> clm ts c \<sqsubseteq> res ts' c "
 proof

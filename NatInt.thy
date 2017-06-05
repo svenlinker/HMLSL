@@ -172,7 +172,7 @@ definition consec:: "nat_int\<Rightarrow>nat_int \<Rightarrow> bool"
     
 definition N_Chop :: "nat_int \<Rightarrow> nat_int \<Rightarrow> nat_int \<Rightarrow> bool" ("N'_Chop'(_,_,_')" 51)
   where nchop_def :
-    "N_Chop(i,j,k) \<equiv> (i =  j \<squnion> k  \<and> j \<sqinter> k = \<emptyset> \<and> (j = \<emptyset> \<or>  k = \<emptyset> \<or> consec j k))"
+    "N_Chop(i,j,k) \<equiv> (i =  j \<squnion> k   \<and> (j = \<emptyset> \<or>  k = \<emptyset> \<or> consec j k))"
     
 
     
@@ -776,7 +776,7 @@ qed
 lemma chop_assoc1:"N_Chop(i,i1,i2) \<and> N_Chop(i2,i3,i4) \<longrightarrow> (N_Chop(i, i1 \<squnion> i3, i4) \<and> N_Chop(i1 \<squnion> i3, i1, i3))"
 proof 
   assume assm:"N_Chop(i,i1,i2) \<and> N_Chop(i2,i3,i4)"
-  then have chop_def:"(i =  i1 \<squnion> i2  \<and> i1 \<sqinter> i2 = \<emptyset> \<and>
+  then have chop_def:"(i =  i1 \<squnion> i2   \<and>
         (i1 = \<emptyset> \<or>  i2 = \<emptyset> \<or> ( consec i1 i2)))"
     using nchop_def by blast
   hence "(i1 = \<emptyset> \<or>  i2 = \<emptyset> \<or> ( consec i1 i2))" by simp 
