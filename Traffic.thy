@@ -31,7 +31,7 @@ typedef traffic = "{ts :: ((cars\<Rightarrow>real) * (cars \<Rightarrow> lanes) 
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>
+(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
                       (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> 
@@ -67,7 +67,7 @@ proof -
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>
+(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
                       (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> 
@@ -120,8 +120,17 @@ lemma atMostTwoLanes: "|((res ts) c)| +|((clm ts) c)| \<le> 2"
 using Rep_traffic  res_def clm_def  by auto 
 
 lemma  consecutiveRes:" |((res ts)  c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((res ts) c) = {n,n+1})"
-using Rep_traffic  res_def  by auto 
-
+proof
+  assume assump:"|((res ts)  c)| =2" 
+  then have not_empty:"(res ts c) \<noteq> \<emptyset>" 
+    by (simp add: card_non_empty_geq_one)
+  from assump and card_seq have "Rep_nat_int (res ts  c) = {} \<or> (\<exists>n . Rep_nat_int (res ts c) = {n,n+1})" 
+    by (metis add_diff_cancel_left' atLeastAtMost_singleton insert_is_Un nat_int.un_consec_seq one_add_one order_refl)  
+  with assump show "(\<exists>n . Rep_nat_int (res ts c) = {n,n+1})" 
+    using Rep_nat_int_inject bot_nat_int.rep_eq card_non_empty_geq_one 
+    by (metis not_empty)
+qed
+  
 lemma clmNextRes : "((clm ts) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n, n+1})"
 using Rep_traffic res_def clm_def by auto 
 
@@ -424,7 +433,7 @@ proof
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>
+(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and> *)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
                       (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> 

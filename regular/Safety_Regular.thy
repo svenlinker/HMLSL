@@ -238,8 +238,8 @@ proof -
   have re_leq_two:"\<forall>c. |re c| \<le> 2" using nat_int.card'.rep_eq res_def nat_int.rep_single card'_dict by auto
   have cl_leq_one:"\<forall>c. |cl c| \<le> 1" using nat_int.card_empty_zero clm_def card'_dict by (simp )
   have add_leq_two:"\<forall>c . |re c| + |cl c| \<le> 2"  using nat_int.card_empty_zero clm_def re_leq_two card'_dict by (simp )
-  have consec_re:" \<forall>c. |(re c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int (re c) = {n,n+1})"  
-    by (simp add: Abs_nat_int_inverse nat_int.card'_def res_def card'_dict)
+(*  have consec_re:" \<forall>c. |(re c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int (re c) = {n,n+1})"  
+    by (simp add: Abs_nat_int_inverse nat_int.card'_def res_def card'_dict)*)
   have  clNextRe : "\<forall>c. ((cl c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int (re c) \<union> Rep_nat_int (cl c) = {n, n+1}))"
     by (simp add: clm_def)
   from dyn_def have dyn_geq_zero:"\<forall>c. \<forall>x. (dy c x) \<ge> 0" by auto
@@ -252,14 +252,14 @@ proof -
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>
+(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
                       (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0)   \<and> 
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)
  } " 
-    using pos_def res_def clm_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re dyn_geq_zero 
+    using pos_def res_def clm_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two (*consec_re*) dyn_geq_zero 
       ps_ge_zero sd_ge_zero ts_rep_def by auto
   obtain v where v_def:"v=\<lparr>ext = Abs_real_int (0,3), lan = Abs_nat_int{0}, own = d\<rparr>" by best
   obtain ts where ts_def:"ts=Abs_traffic ts_rep" by blast
