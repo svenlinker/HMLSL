@@ -44,14 +44,27 @@ begin
 lemmas[simp] = R_Chop_dict   
   
 definition       hchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow> bool" ("_=_\<parallel>_")
-  where "(v=u\<parallel>w) == real_int.R_Chop(ext v)(ext u)(ext w) \<and> lan v=lan u \<and> lan v=lan w \<and> own v = own u \<and> own v = own w \<and> more v = more w  "
+  where "(v=u\<parallel>w) == real_int.R_Chop(ext v)(ext u)(ext w) \<and> 
+                    lan v=lan u \<and> 
+                    lan v=lan w \<and> 
+                    own v = own u \<and> 
+                    own v = own w \<and> 
+                    more v = more w \<and>
+                    more v = more u  "
 definition   vchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow> bool" ("_=_--_")
-  where   "  (v=u--w) == (nat_int.N_Chop(lan v)(lan u)( lan w) \<and> 
-                  ext v = ext u \<and> ext v = ext w 
-                  \<and> own v = own u \<and> own  v = own w \<and> more v = more w) "
+  where "(v=u--w) == nat_int.N_Chop(lan v)(lan u)( lan w) \<and> 
+                     ext v = ext u \<and> 
+                     ext v = ext w \<and> 
+                     own v = own u \<and> 
+                     own  v = own w \<and>
+                     more v = more w \<and>
+                     more v = more u "
     
 definition switch :: "view \<Rightarrow> cars \<Rightarrow> view \<Rightarrow> bool" ("_ = _ > _")
-  where   "  (v=c>w) == ext v = ext w \<and> lan v = lan w \<and>  own w = c \<and> more v = more w"
+  where   "  (v=c>w) == ext v = ext w \<and> 
+                        lan v = lan w \<and>  
+                        own w = c \<and> 
+                        more v = more w"
 
 
 lemma h_chop_middle1:"(v=u\<parallel>w) \<longrightarrow> left (ext v) \<le> right (ext u)" 
@@ -76,7 +89,7 @@ lemma horizontal_chop_empty_right :"\<forall>v. \<exists> u. (v=v\<parallel>u)"
     
 lemma horizontal_chop_empty_left :"\<forall>v. \<exists>u. (v=u\<parallel>v)" 
   using hchop_def real_int.chop_singleton_left 
-  by (metis (no_types, hide_lams) select_convs(1) select_convs(2) select_convs(3)) 
+  by (metis (no_types, hide_lams) select_convs(1) select_convs(2) select_convs(3) select_convs(4)) 
     
 lemma horizontal_chop_non_empty:"\<parallel>ext v\<parallel> > 0 \<longrightarrow> (\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> > 0 \<and> \<parallel>ext w\<parallel>>0)"
 proof
@@ -155,7 +168,7 @@ lemma vertical_chop_empty_down:"\<forall>v.\<exists> u.(v=v--u)"
     
 lemma vertical_chop_empty_up:"\<forall>v.\<exists>u.(v=u--v)"
   using vchop_def nat_int.chop_empty_left 
-  by (metis (no_types, hide_lams) select_convs(1) select_convs(2) select_convs(3))
+  by (metis (no_types, hide_lams) select_convs(1) select_convs(2) select_convs(3) select_convs(4))
     
     
 lemma vertical_chop_assoc1:"(v=v1--v2) \<and> (v2=v3--v4) \<longrightarrow> (\<exists>v'. (v=v'--v4) \<and> (v'=v1--v3))"
@@ -425,8 +438,5 @@ proof
     by (simp add: less_eq_view_ext_def)     
   show  "(\<exists>v'. ( v' = c > u') \<and> v' \<le> v)" using switch less by blast
 qed
-  
-  
 end
-  
 end
