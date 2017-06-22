@@ -8,7 +8,7 @@ and view as parameters, and evaluates to True or False.
 
 section\<open>Basic HMLSL\<close>
 theory HMLSL
-imports  "Traffic" "Restriction" "Move" Length
+imports   "Restriction" "Move" Length
 begin
 
 text {* the type of formulas  *}

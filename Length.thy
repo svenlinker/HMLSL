@@ -6,7 +6,7 @@ The length of cars visible to the owner of a given view.
 
 section\<open>Visible Length of Cars with Perfect Sensors\<close>
 theory Length
-  imports "Traffic" Sensors
+  imports  Sensors
 begin
   
 context sensors
