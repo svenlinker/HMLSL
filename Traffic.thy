@@ -31,10 +31,8 @@ typedef traffic = "{ts :: ((cars\<Rightarrow>real) * (cars \<Rightarrow> lanes) 
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
-                        (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> *)
+                      (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)
  } "
@@ -104,24 +102,24 @@ where "braking_distance ts \<equiv> snd (snd (snd (snd (snd (Rep_traffic ts)))))
 
 
 
-lemma disjoint: "((res ts) c) \<sqinter> ((clm ts) c) = \<emptyset>"
+lemma disjoint: "(res ts c) \<sqinter> (clm ts c) = \<emptyset>"
 using Rep_traffic res_def clm_def   by auto 
 
-lemma atLeastOneRes: "1 \<le> |((res ts) c)|" 
+lemma atLeastOneRes: "1 \<le> |res ts c|" 
 using Rep_traffic  res_def by auto 
 
-lemma atMostTwoRes:" |((res ts) c)| \<le> 2"
+lemma atMostTwoRes:" |res ts c| \<le> 2"
 using Rep_traffic  res_def  by auto 
 
-lemma  atMostOneClm: "|((clm ts) c)| \<le> 1" 
+lemma  atMostOneClm: "|clm ts c| \<le> 1" 
 using Rep_traffic  clm_def  by auto 
 
-lemma atMostTwoLanes: "|((res ts) c)| +|((clm ts) c)| \<le> 2"
+lemma atMostTwoLanes: "|res ts c| +|clm ts c| \<le> 2"
 using Rep_traffic  res_def clm_def  by auto 
 
-lemma  consecutiveRes:" |((res ts)  c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((res ts) c) = {n,n+1})"
+lemma  consecutiveRes:" |res ts  c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int (res ts c) = {n,n+1})"
 proof
-  assume assump:"|((res ts)  c)| =2" 
+  assume assump:"|res ts  c| =2" 
   then have not_empty:"(res ts c) \<noteq> \<emptyset>" 
     by (simp add: card_non_empty_geq_one)
   from assump and card_seq have "Rep_nat_int (res ts  c) = {} \<or> (\<exists>n . Rep_nat_int (res ts c) = {n,n+1})" 
@@ -274,7 +272,6 @@ where "(ts \<^bold>\<midarrow>dyn(c, f )\<^bold>\<rightarrow> ts') == (pos ts' =
                               \<and> (res ts' = res ts)
                               \<and> (clm ts' = clm ts)
                               \<and> (dyn ts' = (dyn ts)(c:= f))
-(*                              \<and> (\<forall>t. f t \<ge> 0) *)
                               \<and> (physical_size ts') = (physical_size ts)"
 
 inductive evolve::"traffic \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<leadsto> _")

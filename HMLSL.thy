@@ -79,7 +79,8 @@ abbreviation at :: "cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma> " ("\<^bo
 where "\<^bold>@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
 
 abbreviation re:: "cars \<Rightarrow> \<sigma>" ("re'(_')" 70)
-where "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and>  restrict v (res ts) c = lan v \<and>  |lan v|=1" 
+  where "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and>  
+                         restrict v (res ts) c = lan v \<and>  |lan v|=1" 
 
 abbreviation cl:: "cars \<Rightarrow> \<sigma>" ("cl'(_')" 70)
 where "cl(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> restrict v (clm ts) c = lan v \<and> |lan v| = 1" 
@@ -107,7 +108,7 @@ abbreviation length_geq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> \<ge> _" 6
 where "\<^bold>\<l> \<ge> r == (\<^bold>\<l> = r) \<^bold>\<or> (\<^bold>\<l> > r)"
 
 abbreviation valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
-where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>V. \<phi>(ts)(V)"
+where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>v. \<phi>(ts)(v)"
 
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
 where "ts, v \<Turnstile> \<phi> == \<phi>(ts)(v)"
