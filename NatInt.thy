@@ -343,7 +343,7 @@ lemma inter_distr1:"consec j k \<longrightarrow> i \<sqinter> (j \<squnion> k) =
   unfolding consec_def
 proof  
   assume assm:"j \<noteq> \<emptyset> \<and> k \<noteq> \<emptyset> \<and> maximum j +1 = minimum k"
-  then show " i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)" using Abs_nat_int_inverse sledgehammer
+  then show " i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)" using Abs_nat_int_inverse 
   proof -
     have f1: "\<forall>n. n = \<emptyset> \<or> maximum n = Max (Rep_nat_int n)"
       using nat_int.maximum_def by auto
