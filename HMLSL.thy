@@ -317,8 +317,13 @@ lemma width_free:"\<Turnstile>(free \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
 by simp
 
 lemma width_somewhere_res:"\<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<rightarrow> (\<^bold>\<omega> \<ge> 1)"
-using horizontal_chop_width_stable vertical_chop_width_mon  
-by smt
+proof (rule allI|rule impI)+
+  fix ts v
+  assume "ts,v \<Turnstile>  \<^bold>\<langle>re(c)\<^bold>\<rangle>"
+  then show "ts,v \<Turnstile> (\<^bold>\<omega> \<ge> 1)"
+    using view.hchop_def view.vertical_chop_width_mon by fastforce  
+qed    
+
 
 lemma clm_disj_res:"\<Turnstile> \<^bold>\<not> \<^bold>\<langle> cl(c) \<^bold>\<and> re(c) \<^bold>\<rangle>" 
 proof (rule allI|rule notI)+
