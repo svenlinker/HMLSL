@@ -313,9 +313,6 @@ proof
   qed
 qed
   
-lemma un_assoc: "consec i j \<and> consec j k \<longrightarrow> (i \<squnion> j) \<squnion> k = i \<squnion> (j \<squnion> k)" 
-  by (smt Abs_nat_int_inverse dual_order.trans le_add1 leq_max_sup leq_min_inf maximum_def mem_Collect_eq minimum_def consec_def rep_non_empty_means_seq union_def un_consec_seq) 
-    
     
     
 lemma un_subset1: "consec i j \<longrightarrow> i \<sqsubseteq> i \<squnion> j"
@@ -339,14 +336,30 @@ proof
   then show "j \<sqsubseteq> i \<squnion> j" using Abs_nat_int_inverse Rep_nat_int
     by (metis (mono_tags, lifting) Un_upper2 less_eq_nat_int.rep_eq mem_Collect_eq nat_int.union_def)
 qed
-  
+
+
   
 lemma inter_distr1:"consec j k \<longrightarrow> i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)"  
   unfolding consec_def
 proof  
   assume assm:"j \<noteq> \<emptyset> \<and> k \<noteq> \<emptyset> \<and> maximum j +1 = minimum k"
-  then show " i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)" using Abs_nat_int_inverse 
-    by (smt bot_nat_int.rep_eq Rep_nat_int Rep_nat_int_inject atLeastatMost_empty_iff inf_nat_int.rep_eq inf_sup_distrib1 mem_Collect_eq nat_int.leq_max_sup' nat_int.leq_min_inf nat_int.minimum_def nat_int.union_def un_consec_seq)
+  then show " i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)" using Abs_nat_int_inverse sledgehammer
+  proof -
+    have f1: "\<forall>n. n = \<emptyset> \<or> maximum n = Max (Rep_nat_int n)"
+      using nat_int.maximum_def by auto
+    have f2: "Rep_nat_int j \<noteq> {}"
+      using assm nat_int.maximum_in by auto
+    have f3: "maximum j = Max (Rep_nat_int j)"
+      using f1 by (meson assm)
+    have "maximum k \<^bold>\<in> k"
+      using assm nat_int.maximum_in by blast
+    then have "Rep_nat_int k \<noteq> {}"
+      by fastforce
+    then have "Rep_nat_int (j \<squnion> k) = Rep_nat_int j \<union> Rep_nat_int k"
+      using f3 f2 Abs_nat_int_inverse Rep_nat_int assm nat_int.minimum_def nat_int.union_def union_result by auto
+    then show ?thesis
+      by (metis Rep_nat_int_inverse inf_nat_int.rep_eq inf_sup_distrib1 nat_int.union_def)
+  qed
 qed
   
 lemma inter_distr2:"consec j k \<longrightarrow> (j \<squnion> k) \<sqinter> i = (j \<sqinter> i) \<squnion> (k \<sqinter> i)"
@@ -383,7 +396,47 @@ lemma consec_in_exclusive1:"consec i j \<and> n \<^bold>\<in> i \<longrightarrow
 
 lemma consec_in_exclusive2:"consec i j \<and> n \<^bold>\<in> j \<longrightarrow> n \<^bold>\<notin> i"
   using consec_in_exclusive1 el.rep_eq not_in.rep_eq by blast
-  
+
+lemma consec_un_max:"consec i j \<longrightarrow> maximum j = maximum (i \<squnion> j)"
+proof
+  assume assm:"consec i j"
+  then have "(\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" 
+    using nat_int.consec_lesser by blast
+  then have "\<forall>n . (n \<^bold>\<in> i \<longrightarrow> n < maximum j)" 
+    using assm local.consec_def nat_int.maximum_in by auto
+  then have "\<forall>n. (n \<^bold>\<in> i \<squnion> j \<longrightarrow> n \<le> maximum j)" 
+    by (metis (no_types, lifting) Rep_nat_int Rep_nat_int_inverse Un_iff assm atLeastAtMost_iff bot_nat_int.rep_eq less_imp_le_nat local.consec_def local.not_empty_means_seq nat_int.consec_un nat_int.el.rep_eq nat_int.in_not_in_iff1 nat_int.leq_max_sup')
+  then show "maximum j = maximum (i \<squnion> j)" 
+    by (metis Rep_nat_int_inverse assm atLeastAtMost_iff bot.extremum_uniqueI le_antisym local.consec_def nat_int.consec_un_element2 nat_int.el.rep_eq nat_int.leq_max_sup' nat_int.maximum_in nat_int.un_subset2 rep_non_empty_means_seq)
+qed
+
+lemma consec_un_min:"consec i j \<longrightarrow> minimum i = minimum (i \<squnion> j)"
+proof
+  assume assm:"consec i j"
+  then have "(\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" 
+    using nat_int.consec_lesser by blast
+  then have "\<forall>n . (n \<^bold>\<in> j \<longrightarrow> n > minimum i)" 
+    using assm local.consec_def nat_int.minimum_in by auto
+  then have 1:"\<forall>n. (n \<^bold>\<in> i \<squnion> j \<longrightarrow> n \<ge> minimum i)"  
+    using Rep_nat_int Rep_nat_int_inverse Un_iff assm atLeastAtMost_iff bot_nat_int.rep_eq less_imp_le_nat local.consec_def local.not_empty_means_seq nat_int.consec_un nat_int.el.rep_eq nat_int.in_not_in_iff1
+    by (metis (no_types, lifting) leq_min_inf local.minimum_def)
+  from assm have "i \<squnion> j \<noteq> \<emptyset>" 
+    by (metis bot.extremum_uniqueI nat_int.consec_def nat_int.un_subset2)
+  then show "minimum i = minimum (i \<squnion> j)"
+    using minimum_def Rep_nat_int_inverse assm atLeastAtMost_iff bot.extremum_uniqueI le_antisym local.consec_def nat_int.consec_un_element2 nat_int.el.rep_eq nat_int.leq_min_inf nat_int.minimum_in nat_int.un_subset1 rep_non_empty_means_seq
+  proof -
+    have f1: "Rep_nat_int i \<subseteq> Rep_nat_int (i \<squnion> j)"
+      using assm less_eq_nat_int.rep_eq nat_int.un_subset1 by presburger
+    have "\<forall>x0. (x0 \<^bold>\<in> i \<squnion> j \<longrightarrow> minimum i \<le> x0) = (\<not> x0 \<^bold>\<in> i \<squnion> j \<or> minimum i \<le> x0)"
+      by auto
+    then have "\<forall>n. \<not> n \<^bold>\<in> i \<squnion> j \<or> minimum i \<le> n"
+      using "1" by blast
+    then show ?thesis
+      using f1 by (metis \<open>i \<squnion> j \<noteq> \<emptyset>\<close> assm atLeastAtMost_iff le_antisym leq_min_inf nat_int.consec_def nat_int.el.rep_eq nat_int.minimum_def nat_int.minimum_in rep_non_empty_means_seq subsetCE)
+  qed
+qed
+
+
 lemma consec_trans_lesser:" consec i j \<and> consec j k \<longrightarrow> (\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> k \<longrightarrow> n < m))"
 proof (rule allI|rule impI)+
   assume cons:" consec i j \<and> consec j k"
@@ -434,17 +487,38 @@ proof
   hence min_max_yz:"maximum i +1=minimum j" using consec_def by blast 
   hence min_max_xyz:"maximum (i \<squnion> j) +1 = minimum ( k)" using consec_def using assm by blast
   have min_y_yz:"maximum j = maximum (i \<squnion> j)" 
-  proof -
-    from assm have cons:"consec i j" by best
-    hence "\<forall> n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m)" using consec_lesser by best
-    hence "\<forall>n. n \<^bold>\<in> i \<longrightarrow> n < maximum j" using maximum_in cons consec_def by blast
-    thus "maximum j = maximum (i \<squnion> j)" using union_def 
-      by (smt assm consec_def dual_order.trans le_add1 leq_max_sup' nat_int.leq_max_sup nat_int.leq_min_inf nat_int.maximum_def nat_int.minimum_def nat_int.rep_non_empty_means_seq nat_int.un_consec_seq) 
-  qed
-  hence min_max_xy:"maximum j+1 = minimum k" using min_max_xyz by simp
+    using assm nat_int.consec_un_max by blast
+  then have min_max_xy:"maximum j+1 = minimum k" using min_max_xyz by simp
   thus consec_x_y:"consec j k" using assm consec_def by auto
 qed
-  
+
+lemma un_assoc: "consec i j \<and> consec j k \<longrightarrow> (i \<squnion> j) \<squnion> k = i \<squnion> (j \<squnion> k)" 
+proof
+  assume assm:"consec i j \<and> consec j k"
+  have f1: "Rep_nat_int i = {} \<or> Rep_nat_int j = {} \<or> Max (Rep_nat_int i) + 1 \<noteq> Min (Rep_nat_int j) \<or> Rep_nat_int i \<union> Rep_nat_int j \<in> {N. \<exists>n na. {n..na} = N}"
+    using Rep_nat_int local.union_result by force
+  have f2: "i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> maximum i + 1 = minimum j"
+    using assm nat_int.consec_def by blast
+  then have f3: "Rep_nat_int j \<noteq> Rep_nat_int \<emptyset>"
+    using Rep_nat_int_inject by presburger
+  have f4: "Rep_nat_int i \<noteq> {}"
+    using f2 Rep_nat_int_inject bot_nat_int.rep_eq by auto
+  have "maximum i = Max (Rep_nat_int i)" 
+    by (simp add: f2 nat_int.maximum_def)
+  then have f5: "Rep_nat_int (i \<squnion> j) = Rep_nat_int i \<union> Rep_nat_int j"
+    using f4 f3 f2 f1 by (simp add: Abs_nat_int_inverse bot_nat_int.rep_eq maximum_dict nat_int.minimum_def nat_int.union_def)
+  have f6: "Rep_nat_int j = {} \<or> Rep_nat_int k = {} \<or> Max (Rep_nat_int j) + 1 \<noteq> Min (Rep_nat_int k) \<or> Rep_nat_int j \<union> Rep_nat_int k \<in> {N. \<exists>n na. {n..na} = N}"
+    using Rep_nat_int local.union_result by force
+  have "Max (Rep_nat_int j) = maximum j"
+    using f2 maximum_dict nat_int_class.maximum_def by presburger
+  then have "Rep_nat_int k \<union> Rep_nat_int j = Rep_nat_int (j \<squnion> k)"
+    using f6 by (metis (no_types) Abs_nat_int_inverse Rep_nat_int_inject assm bot_nat_int.rep_eq inf_sup_aci(5) nat_int.consec_def nat_int.minimum_def nat_int.union_def)
+  then show "(i \<squnion> j) \<squnion> k = i \<squnion> (j \<squnion> k)"
+    using f5 by (simp add: inf_sup_aci(5) inf_sup_aci(7) nat_int.union_def)
+qed
+    
+
+
 lemma consec_assoc1:"consec j k \<and> consec i (j \<squnion> k) \<longrightarrow> consec (i \<squnion> j) k "
 proof
   assume assm:"consec j k \<and> consec i (j \<squnion> k)"
@@ -461,10 +535,10 @@ proof
   hence min_max_xy:"maximum i+1 = minimum j" using min_max_xyz by simp
   hence consec_x_y:"consec i j" using assm _consec_def by auto
   hence max_y_xy:"maximum j = maximum (i \<squnion> j)" using consec_lesser assm 
-    by (smt Un_empty atLeastatMost_empty_iff leq_max_sup leq_min_inf maximum_def minimum_def consec_def leq_max_sup' rep_non_empty_means_seq union_def un_consec_seq)
+    by (simp add: nat_int.consec_un_max)
   have none_empty:"i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> k \<noteq> \<emptyset>" using assm by (simp add: consec_def)
   hence un_non_empty:"i\<squnion>j \<noteq> \<emptyset>" 
-    by (metis consec_x_y add_eq_self_zero assm inf.absorb_iff2 inf_commute le_add1 leq_max_sup leq_min_inf maximum_def min_max_yz min_y_yz minimum_def rep_non_empty_means_seq  un_assoc un_empty_absorb2 un_subset2  zero_neq_one)
+    using bot.extremum_uniqueI consec_x_y nat_int.un_subset2 by force
   have max:"maximum (i\<squnion>j) +1 = minimum k" using min_max_yz max_y_xy by auto  
   thus "consec (i \<squnion> j) k"  using max un_non_empty none_empty consec_def by blast
 qed
@@ -474,10 +548,10 @@ proof
   assume assm:"consec i j \<and> consec (i\<squnion> j) k"
   hence consec_y_z:"consec j k" using assm  consec_def consec_intermediate2 
     by blast
-  hence max_y_xy:"maximum j = maximum (i \<squnion> j)" using consec_lesser assm 
-    by (smt Un_empty atLeastatMost_empty_iff leq_max_sup leq_min_inf maximum_def minimum_def consec_def leq_max_sup' rep_non_empty_means_seq union_def un_consec_seq)
+  hence max_y_xy:"maximum j = maximum (i \<squnion> j)" 
+    by (simp add: assm nat_int.consec_un_max)  
   have min_y_yz:"minimum j = minimum (j \<squnion> k)" 
-    by (smt Rep_nat_int bot_nat_int.rep_eq Rep_nat_int_inverse Un_empty atLeastatMost_empty_iff consec_y_z leq_max_sup maximum_def mem_Collect_eq consec_def leq_min_inf' union_def un_consec_seq)
+    by (simp add: consec_y_z nat_int.consec_un_min)
   have none_empty:"i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> k \<noteq> \<emptyset>" using assm by (simp add: consec_def)
   then have un_non_empty:"j\<squnion>k \<noteq> \<emptyset>" 
     by (metis  bot_nat_int.rep_eq Rep_nat_int_inject consec_y_z  less_eq_nat_int.rep_eq un_subset1 subset_empty)
@@ -708,7 +782,12 @@ proof
         have consec: "consec j k" 
           by (metis j_def k_def One_nat_def Suc_leI add.assoc diff_add n_le consec_def leq_max_sup' leq_min_inf' leq_nat_non_empty neq0_conv x_le x_neq_0)
         have union:"i = j \<squnion> k" 
-          by (smt Abs_nat_int_inverse j_def k_def Rep_nat_int_inverse consec mem_Collect_eq n_def n_le consec_def leq_max_sup' leq_min_inf' union_def un_consec_seq x_le)
+        proof -
+          have "Abs_nat_int {n..n + (x - 1)} \<noteq> \<emptyset> \<and> Abs_nat_int {n + x..n + (x + y) - 1} \<noteq> \<emptyset> \<and> maximum (Abs_nat_int {n..n + (x - 1)}) + 1 = minimum (Abs_nat_int {n + x..n + (x + y) - 1})"
+            using consec j_def k_def local.consec_def by blast
+          then show ?thesis
+            by (metis Rep_nat_int_inverse j_def k_def le_add1 leq_max_sup' local.union_def n_def nat_int.leq_min_inf' rep_non_empty_means_seq un_consec_seq x_le)
+        qed
         have disj:"j \<sqinter> k = \<emptyset>" using consec by (simp add: consec_inter_empty)
         have chop:"N_Chop(i,j,k)" using consec union disj nchop_def by simp
         have card_j:"|j| = x" 
@@ -727,11 +806,11 @@ lemma chop_single:"(N_Chop(i,j,k) \<and> |i| = 1) \<longrightarrow> ( |j| =0 \<o
     
 lemma chop_leq_max:"N_Chop(i,j,k) \<and> consec j k \<longrightarrow> 
   (\<forall>n . n \<in> Rep_nat_int i \<and> n \<le> maximum j \<longrightarrow> n \<in> Rep_nat_int j)" 
-  by (smt Rep_nat_int_inverse atLeastAtMost_iff bot_nat_int.rep_eq consec_def dual_order.trans equals0D le_add1 leq_min_inf' nat_int.leq_max_sup nat_int.maximum_def nat_int.nchop_def nat_int.rep_non_empty_means_seq nat_int.un_consec_seq union_def)
+  by (metis Un_iff le_antisym less_imp_le_nat nat_int.consec_def nat_int.consec_lesser nat_int.consec_un nat_int.el.rep_eq nat_int.maximum_in nat_int.nchop_def nat_int.not_in.rep_eq)
     
 lemma chop_geq_min:"N_Chop(i,j,k) \<and> consec j k \<longrightarrow> 
   (\<forall>n . n \<in> Rep_nat_int i \<and> minimum k \<le> n \<longrightarrow> n \<in> Rep_nat_int k)" 
-  by (smt Rep_nat_int_inverse atLeastAtMost_iff atLeastatMost_empty_iff bot_nat_int.rep_eq consec_def leq_max_sup' nat_int.card_seq nat_int.leq_min_inf' nat_int.nchop_def nat_int.un_consec_seq union_def)
+  by (metis atLeastAtMost_iff bot_nat_int.rep_eq equals0D leq_max_sup leq_min_inf nat_int.consec_def nat_int.consec_un_max nat_int.maximum_def nat_int.minimum_def nat_int.nchop_def rep_non_empty_means_seq)
     
     
 lemma chop_min:"N_Chop(i,j,k) \<and> consec j k \<longrightarrow> minimum i = minimum j"
