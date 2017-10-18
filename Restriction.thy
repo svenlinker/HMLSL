@@ -266,12 +266,15 @@ lemma restriction_consec_clm:"(v=u--w) \<and> nat_int.consec (lan u) (lan w)
     
     
 lemma restriction_add_res:"(v=u--w) \<longrightarrow> |restrict v (res ts) c| = |restrict u (res ts) c| + |restrict w (res ts) c|"
-  using  nat_int.card_un_add nat_int.card_empty_zero restriction_un consecutiveRes
-    nat_int.chop_add1 nat_int.inter_distr1 nat_int.inter_empty1 nat_int.un_empty_absorb1 nat_int.un_empty_absorb2 
-    nat_int.nchop_def restrict_def vchop_def 
-    restriction_consec_res card'_dict 
-  by (smt plus_nat.add_0)
-    
+proof
+  assume assm: "v=u--w"
+  then have 1:"restrict u (res ts) c \<sqinter> restrict w (res ts) c = \<emptyset>" 
+    using restriction.restriction_disj by auto
+  from assm have "restrict v (res ts) c = restrict u (res ts) c \<squnion> restrict w (res ts) c" 
+    using restriction.restriction_un by blast
+  with 1 show " |restrict v (res ts) c| = |restrict u (res ts) c| + |restrict w (res ts) c|" 
+    by (metis add.right_neutral add_cancel_left_left assm card'_dict nat_int.card_empty_zero nat_int.card_un_add nat_int.un_empty_absorb1 nat_int.un_empty_absorb2 restriction.restriction_consec_res union_dict)
+qed    
   
 lemma restriction_eq_view_card:"restrict v f c = lan v \<longrightarrow> |restrict v f c| =|lan v|" 
   by simp
