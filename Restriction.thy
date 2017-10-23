@@ -196,9 +196,6 @@ qed
 lemma restriction_consec_res:"(v=u--w) 
   \<longrightarrow> restrict u (res ts) c = \<emptyset> \<or> restrict w (res ts) c = \<emptyset> 
   \<or>  nat_int.consec (restrict u (res ts) c) ( restrict w (res ts) c)" 
-(*  using  nat_int.card_un_add nat_int.card_empty_zero restriction_un consecutiveRes atMostTwoRes atLeastOneRes
-    nat_int.chop_add1 nat_int.inter_distr1 nat_int.inter_empty1 nat_int.un_empty_absorb1 nat_int.un_empty_absorb2 nat_int.nchop_def restrict_def vchop_def 
-    vertical_chop_restriction_res_consec_or_empty *)
 proof -
 { assume "restrict w (res ts) c \<noteq> \<emptyset>"
   { assume "lan u \<noteq> \<emptyset> \<and> lan w \<noteq> \<emptyset>"
@@ -217,7 +214,6 @@ proof -
   then show ?thesis
     by fastforce
 qed
-(*  by smt*)
     
 lemma restriction_clm_res_disjoint:" (restrict v (res ts) c) \<sqinter> (restrict v (clm ts) c) = \<emptyset>"
   by (metis (no_types) inf_assoc nat_int.inter_empty2 restriction.restrict_def restrict_def' traffic.disjoint)

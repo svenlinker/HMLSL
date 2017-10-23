@@ -8,11 +8,11 @@ section\<open>Visible Length of Cars with Perfect Sensors\<close>
 theory Length
   imports  Sensors
 begin
-  
+
 context sensors
 begin
-  
-  
+
+
 definition len:: "view \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real_int"
   where len_def :"len v ( ts ) c ==
     if (left (space ts v c) > right (ext v))  
@@ -23,7 +23,7 @@ definition len:: "view \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> re
       else  
         Abs_real_int (max (left (ext v)) (left (space ts v c)), 
                       min (right (ext v)) (right (space ts v c)))"
-    
+
 lemma len_left: " left ((len v  ts) c) \<ge> left (ext v)" 
 proof - 
   have "(left ((space ts v) c) \<le> right (ext v) \<and> right ((space ts v) c) \<ge> left (ext v)) 
@@ -44,7 +44,7 @@ proof -
       using Abs_real_int_inverse CollectI fst_conv real_int.left_leq_right snd_conv by auto 
   qed
 qed  
-  
+
 lemma len_right: " right ((len v  ts) c) \<le> right (ext v)"
 proof  -
   have "(left ((space ts v) c) \<le> right (ext v) \<and> right ((space ts v) c) \<ge> left (ext v)) 
@@ -65,10 +65,10 @@ proof  -
       using   Abs_real_int_inverse CollectI fst_conv real_int.left_leq_right snd_conv len_def by auto
   qed
 qed
-  
+
 lemma len_sub_int:"len v ts c \<le> ext v" 
   using less_eq_real_int_def len_left len_right by blast
-    
+
 lemma len_space_left: "left (space ts v c) \<le> right (ext v) \<longrightarrow> left (len v ts c) \<ge> left (space ts v c)" 
 proof
   assume assm:"left (space ts v c) \<le> right (ext v)"
@@ -86,7 +86,7 @@ proof
     then show ?thesis  by linarith
   qed
 qed    
-  
+
 lemma len_space_right: "right (space ts v c) \<ge> left (ext v) \<longrightarrow> right (len v ts c) \<le> right (space ts v c)" 
 proof
   assume assm:"right (space ts v c) \<ge> left (ext v)"
@@ -104,8 +104,8 @@ proof
     then show ?thesis  by linarith
   qed
 qed    
-  
-  
+
+
 lemma len_hchop_left_right_border: "((len v ts) c = ext v) \<and> (v=v1\<parallel>v2) \<longrightarrow> (right ((len v1 ts) c) = right (ext v1))"
 proof
   assume assm:"((len v ts) c = ext v) \<and> (v=v1\<parallel>v2)"
@@ -180,7 +180,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_hchop_left_left_border: "((len v ts) c = ext v) \<and> (v=v1\<parallel>v2) \<longrightarrow> (left ((len v1 ts) c) = left (ext v1))"
 proof
   assume assm:"((len v ts) c = ext v) \<and> (v=v1\<parallel>v2)"
@@ -291,11 +291,11 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_view_hchop_left: "((len v ts) c = ext v) \<and> (v=v1\<parallel>v2) \<longrightarrow> ((len v1 ts) c = ext v1)"
   using Abs_real_int_inverse len_hchop_left_left_border len_hchop_left_right_border prod.expand
   by (metis Rep_real_int_inject left.rep_eq right.rep_eq)
-    
+
 lemma len_hchop_right_left_border: "((len v ts) c = ext v) \<and> (v=v1\<parallel>v2) \<longrightarrow> (left ((len v2 ts) c) = left (ext v2))"
 proof
   assume assm:"((len v ts) c = ext v) \<and> (v=v1\<parallel>v2)"
@@ -364,7 +364,7 @@ proof
           using l2 by linarith
         from assm have len_v_in_type:"((max (left (ext v)) (left ((space ts v) c)), min (right (ext v)) (right ((space ts v) c)))) \<in> {r :: real*real . fst r \<le> snd r}"                 
           using \<open>left ((space ts v) c) > left (ext v)\<close> r2 len_in_type by auto
-            
+
         hence " left (len v ( ts) c) \<noteq> left (ext v)" 
           using Abs_real_int_inverse Pair_inject \<open>left ((space ts v) c) > left (ext v)\<close> len_def real_int.left_leq_right surjective_pairing by auto 
         with l1 show False by best
@@ -372,7 +372,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_hchop_right_right_border: "((len v ts) c = ext v) \<and> (v=v1\<parallel>v2) \<longrightarrow> (right ((len v2 ts) c) = right (ext v2))"
 proof
   assume assm:"((len v ts) c = ext v) \<and> (v=v1\<parallel>v2)"
@@ -505,7 +505,7 @@ proof
             using f4 by (simp add: real_int.rchop_def)
           have f8: "\<And>r. (left r, left r) = Rep_real_int (rr r)" 
             by (metis f1 left.rep_eq prod.collapse rchop_def right.rep_eq)
-              
+
           have "left (ext v1) \<le> left (ext v2)" 
             using f7 real_int.left_leq_right by auto
           then show ?thesis
@@ -536,12 +536,12 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_view_hchop_right: "((len v ts) c = ext v) \<and> (v=v1\<parallel>v2) \<longrightarrow> ((len v2 ts) c = ext v2)"
   using Abs_real_int_inverse len_hchop_right_left_border len_hchop_right_right_border 
   by (metis real_int.shift_def real_int.shift_zero)
-    
-    
+
+
 lemma len_compose_hchop:"(v=v1\<parallel>v2) \<and> (len v1 ( ts) c = ext v1) \<and> (len v2 ( ts) c = ext v2)
                           \<longrightarrow> (len v ( ts) c = ext v)"
 proof
@@ -619,8 +619,8 @@ proof
     qed
   qed
 qed
-  
-  
+
+
 lemma len_stable:"(v=v1--v2) \<longrightarrow> len v1 ( ts) c = len v2 ( ts) c"
 proof
   assume assm:"v=v1--v2"
@@ -646,7 +646,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_empty_on_subview1:"\<parallel>len v ( ts) c\<parallel> = 0 \<and> (v=v1\<parallel>v2) \<longrightarrow> \<parallel>len v1 ( ts) c\<parallel> = 0"
 proof
   assume assm:"\<parallel>len v ( ts) c\<parallel> = 0 \<and> (v=v1\<parallel>v2)"
@@ -670,7 +670,12 @@ proof
                               min (right (ext v1)) (right ((space ts v) c)))" 
         using left_inside_v1 len_def right_inside_v1 assm hchop_def space_def  by auto
       from left_inside_v1 and right_inside_v1 have inside_v:"\<not>left ((space ts v) c) > right (ext v) \<and> \<not>left (ext v) > right ((space ts v) c)"
-        by (smt assm h_chop_middle2 hchop_def real_int.rchop_def )
+      proof -
+        have "fst (Rep_real_int (ext v2)) \<le> snd (Rep_real_int (ext v))"
+          using assm view.h_chop_middle2 by force
+        then show ?thesis
+          using assm left_inside_v1 real_int.rchop_def right_inside_v1 view.hchop_def by force
+      qed
       hence len_v:"len v ( ts) c = Abs_real_int ((max (left (ext v)) (left ((space ts v) c))), 
                               min (right (ext v)) (right ((space ts v) c)))" 
         by (simp add: len_def)
@@ -682,7 +687,7 @@ proof
       have left_len_eq:"(max (left (ext v)) (left ((space ts v) c))) = max (left (ext v1)) (left ((space ts v) c))"
         using assm hchop_def real_int.rchop_def  by auto
       have right_len_leq:"min (right (ext v)) (right ((space ts v) c)) \<ge> min (right (ext v1)) (right ((space ts v) c))"
-        by (smt assm h_chop_middle2 hchop_def real_int.rchop_def  )
+        by (metis (no_types, hide_lams) assm min.bounded_iff min_less_iff_conj not_le order_refl real_int.rchop_def view.h_chop_middle2 view.hchop_def)
       hence left_geq_right:"max (left (ext v1)) (left ((space ts v) c))\<ge> min (right (ext v1)) (right ((space ts v) c))"
         using left_len_eq len_v_empty by auto
       thus "\<parallel>len v1 ( ts) c\<parallel> = 0" 
@@ -699,7 +704,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_empty_on_subview2:"\<parallel>len v ( ts) c\<parallel> = 0 \<and> (v=v1\<parallel>v2) \<longrightarrow> \<parallel>len v2 ( ts) c\<parallel> = 0"
 proof
   assume assm:"\<parallel>len v ( ts) c\<parallel> = 0 \<and> (v=v1\<parallel>v2)"
@@ -723,7 +728,18 @@ proof
                               min (right (ext v2)) (right ((space ts v) c)))" 
         using left_inside_v2 len_def right_inside_v2 assm hchop_def space_def by auto
       from left_inside_v2 and right_inside_v2 have inside_v:"\<not>left ((space ts v) c) > right (ext v) \<and> \<not>left (ext v) > right ((space ts v) c)"
-        by (smt assm h_chop_middle1 hchop_def real_int.rchop_def )
+      proof -
+        have f1: "\<forall>r ra. min (r::real) ra = ra \<or> \<not> ra \<le> r"
+          by linarith
+        have f2: "right (ext v1) = left (ext v2)"
+          using assm real_int.rchop_def view.hchop_def by blast
+        have "left (ext v2) \<le> right (space ts v c)"
+          using right_inside_v2 by linarith
+        then have "left (ext v1) \<le> right (space ts v c)"
+          using f2 f1 by (metis (no_types) left_leq_right min.bounded_iff)
+        then show ?thesis
+          by (metis (no_types) assm left_inside_v2 not_le real_int.rchop_def view.hchop_def)
+      qed
       hence len_v:"len v ( ts) c = Abs_real_int ((max (left (ext v)) (left ((space ts v) c))), 
                               min (right (ext v)) (right ((space ts v) c)))" 
         by (simp add: len_def)
@@ -733,9 +749,9 @@ proof
         using Abs_real_int_inverse Rep_real_int_inverse inside_v
         using len_v_borders local.less_eq by auto
       have left_len_eq:"(max (left (ext v)) (left ((space ts v) c))) \<le> max (left (ext v2)) (left ((space ts v) c))"
-        by (smt assm h_chop_middle1 h_chop_middle2 hchop_def len_v_empty real_int.rchop_def right_inside_v2 )
+        by (metis (no_types, hide_lams) assm left_leq_right max.mono order_refl real_int.rchop_def view.hchop_def)
       have right_len_leq:"min (right (ext v)) (right ((space ts v) c)) = min (right (ext v2)) (right ((space ts v) c))"
-        by (smt assm h_chop_middle2 hchop_def real_int.rchop_def )   
+        using assm real_int.rchop_def view.hchop_def by auto
       hence left_geq_right:"max (left (ext v2)) (left ((space ts v) c)) \<ge> min (right (ext v2)) (right ((space ts v) c))"
         using left_len_eq len_v_empty by auto
       then have "max (left (ext v2)) (left ((space ts v2) c)) \<ge> min (right (ext v2)) (right ((space ts v2) c))"
@@ -748,7 +764,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_hchop_add:"(v=v1\<parallel>v2) \<longrightarrow> \<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>"
 proof
   assume chop:"v=v1\<parallel>v2"
@@ -758,7 +774,7 @@ proof
     hence len_zero:"\<parallel>len v ( ts) c\<parallel> = 0" 
       by (simp add: Abs_real_int_inverse  len_def real_int.length_zero_iff_borders_eq snd_eqD)
     with chop have "\<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel> = 0" 
-      by (smt len_empty_on_subview1 len_empty_on_subview2)
+      by (metis add_cancel_right_left len_empty_on_subview1 len_empty_on_subview2)
     thus ?thesis using len_zero by (simp )
   next 
     assume inside_right:"\<not>left ((space ts v) c) > right (ext v)"   
@@ -768,7 +784,7 @@ proof
       hence len_zero:"\<parallel>len v ( ts) c\<parallel> = 0" 
         by (simp add: Abs_real_int_inverse  len_def real_int.length_zero_iff_borders_eq snd_eqD)
       with chop have "\<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel> = 0" 
-        by (smt len_empty_on_subview1 len_empty_on_subview2)
+        by (metis add_cancel_right_left len_empty_on_subview1 len_empty_on_subview2)
       thus ?thesis using len_zero by (simp )
     next 
       assume inside_left:" \<not>left (ext v) > right ((space ts v) c) "
@@ -785,7 +801,12 @@ proof
         hence min_less_v1:"min (right (ext v)) (right ((space ts v) c)) < right (ext v1)" 
           using Abs_real_int_inverse len_in_type len_def_v by auto
         hence outside_v2:"right ((space ts v) c) < left (ext v2)" 
-          using chop hchop_def real_int.rchop_def h_chop_middle2  by (smt h_chop_middle2)
+        proof -
+          have "left (ext v2) = right (ext v1)"
+            using chop real_int.rchop_def view.hchop_def by force
+          then show ?thesis
+            by (metis (no_types) chop dual_order.order_iff_strict min_less_iff_conj min_less_v1 not_less view.h_chop_middle2)
+        qed 
         hence len_v2_0:"\<parallel>len v2 ( ts) c\<parallel> = 0" using  Abs_real_int_inverse len_def real_int.length_zero_iff_borders_eq outside_v2  snd_eqD
             Rep_real_int_inverse chop hchop_def prod.collapse real_int.rchop_def real_int.chop_singleton_right space_def  by auto
         have inside_left_v1:"  \<not>left (ext v1) > right ((space ts v) c) " 
@@ -797,7 +818,20 @@ proof
                               min (right (ext v1)) (right ((space ts v) c)))"        
           using len_def inside_left_v1 inside_right_v1 chop hchop_def space_def  by auto
         hence "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel>" using inside_v1 inside_left 
-          by (smt chop h_chop_middle2 hchop_def len_def_v outside_v2 real_int.rchop_def)
+        proof -
+          have f3: "\<forall>r ra. \<not> min (ra::real) r < min r ra"
+            by force
+          have f4: "\<forall>r ra. min (ra::real) r = r \<or> ra \<le> r"
+            by fastforce
+          have f5: "real_int.R_Chop (ext v) (ext v1) (ext v2)"
+            using chop view.hchop_def by blast
+          then have f6: "right (space ts v c) < right (ext v1)"
+            using f3  min_absorb1 by (metis dual_order.order_iff_strict left_leq_right min_less_v1 not_le real_int.rchop_def)
+          have "\<forall>r ra. ra \<le> right r \<or> \<not> ra < left r"
+            by (metis (no_types) dual_order.order_iff_strict left_leq_right min.bounded_iff not_le)
+          then show ?thesis
+            using f6 f5 f4 by (metis (no_types) dual_order.order_iff_strict inside_left left_leq_right len1_def len_def not_le real_int.rchop_def)
+        qed
         thus "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>" 
           using len_v2_0 by (simp )
       next
@@ -808,7 +842,12 @@ proof
           hence max_geq_v1:"max (left (ext v)) (left ((space ts v) c)) > left (ext v2)" 
             using Abs_real_int_inverse len_in_type len_def by (simp )
           hence outside_v1:"left ((space ts v) c) > right (ext v1)" 
-            using chop hchop_def real_int.rchop_def h_chop_middle1  by smt
+          proof -
+            have "left (ext v) \<le> right (ext v1)"
+              by (meson chop view.h_chop_middle1)
+            then show ?thesis
+              using chop max_geq_v1 real_int.rchop_def view.hchop_def by fastforce
+          qed
           hence len_v1_0:"\<parallel>len v1 ( ts) c\<parallel> = 0" using
               Abs_real_int_inverse len_def real_int.length_zero_iff_borders_eq outside_v1  snd_eqD
               Rep_real_int_inverse chop hchop_def prod.collapse real_int.rchop_def real_int.chop_singleton_right space_def  by auto
@@ -820,8 +859,13 @@ proof
                 Abs_real_int ((max (left (ext v2)) (left ((space ts v) c))), 
                               min (right (ext v2)) (right ((space ts v) c)))"        
             using len_def inside_left_v2 inside_right_v2 hchop_def chop space_def  by auto
-          hence "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v2 ( ts) c\<parallel>" using inside_v2 inside_left    
-            by (smt chop h_chop_middle1 hchop_def len_def_v outside_v1 real_int.rchop_def)       
+          hence "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v2 ( ts) c\<parallel>" 
+          proof -
+            have "left (ext v) \<le> left (ext v2)"
+              by (metis (no_types) chop real_int.rchop_def view.h_chop_middle1 view.hchop_def)
+            then show ?thesis
+              using chop inside_left inside_right len2_def len_def outside_v1 real_int.rchop_def view.hchop_def by auto
+          qed  
           thus "\<parallel>len v ( ts) c\<parallel> = \<parallel>len v1 ( ts) c\<parallel> + \<parallel>len v2 ( ts) c\<parallel>" 
             using len_v1_0 by (simp add: )
         next
@@ -838,7 +882,7 @@ proof
           from inside_left_v1 and inside_right_v1 have len1_in_type:"((max (left (ext v1)) (left ((space ts v) c)), min (right (ext v1)) (right ((space ts v) c)))) 
             \<in> {r :: real*real . fst r \<le> snd r}" 
             using CollectD CollectI Rep_real_int fst_conv snd_conv by auto
-              
+
           have inside_left_v2:"  \<not>left (ext v2) > right ((space ts v) c) " 
             using real_int.rchop_def hchop_def inside_left chop Abs_real_int_inverse len_def_v len_in_type r_inside_v2 snd_conv  by auto 
           have inside_right_v2:"\<not>left ((space ts v) c) > right (ext v2)" 
@@ -875,9 +919,9 @@ proof
     qed
   qed
 qed
-  
-  
-  
+
+
+
 lemma len_non_empty_inside: "\<parallel>len v ( ts) c\<parallel> > 0 \<longrightarrow> left ((space ts v) c) < right (ext v) \<and> right ((space ts v) c) > left (ext v)"
 proof
   assume assm: "\<parallel>len v ( ts) c\<parallel> > 0"
@@ -931,7 +975,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_fills_subview:"\<parallel>len v ( ts) c\<parallel> > 0 \<longrightarrow> 
                          ( \<exists> v1 v2 v3 v'. (v=v1\<parallel>v2) \<and> (v2=v'\<parallel>v3) \<and> len v' ( ts) c = ext v' \<and> \<parallel>len v' ( ts) c\<parallel> = \<parallel>len v ( ts) c\<parallel>)"
 proof
@@ -942,7 +986,7 @@ proof
       using len_non_empty_inside by auto
     hence len_v: "len v ( ts) c = Abs_real_int ((max (left (ext v)) (left ((space ts v) c))), 
                               min (right (ext v)) (right ((space ts v) c)))" using len_def by auto
-    
+
     obtain v1 and v2 and v3 and v' where v1:"v1=\<lparr> ext = Abs_real_int(left (ext v), left (len v ( ts) c)), lan = lan v, own = own v \<rparr> "                              
       and v2:"v2=\<lparr> ext = Abs_real_int(left (len v ( ts) c), right (ext v)), lan = lan v, own = own v \<rparr>"
       and v':"v'=\<lparr> ext = Abs_real_int(left (len v ( ts) c), right (len v ( ts) c)), lan = lan v, own = own v \<rparr>"
@@ -980,7 +1024,7 @@ proof
     then show ?thesis using 1 2 3 by blast
   qed
 qed
-  
+
 lemma ext_eq_len_eq:"ext v = ext v'\<and> own v = own v'  \<longrightarrow> len v ( ts) c = len v' ( ts) c" 
 proof
   assume assm:"ext v = ext v' \<and>  own v = own v'"
@@ -1010,7 +1054,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_stable_down:"(v=v1--v2) \<longrightarrow> len v ( ts) c = len v1 ( ts) c"
 proof
   assume assm:"v=v1--v2"
@@ -1034,7 +1078,7 @@ proof
     qed
   qed
 qed
-  
+
 lemma len_stable_up:"(v=v1--v2) \<longrightarrow> len v ( ts) c = len v2 ( ts) c"
 proof
   assume assm:"v=v1--v2"
@@ -1058,8 +1102,8 @@ proof
     qed
   qed
 qed
-  
-  
+
+
 lemma len_empty_subview:"\<parallel>len v ts c\<parallel> = 0 \<and> (v' \<le> v) \<longrightarrow> \<parallel>len v' ts c\<parallel> = 0"
 proof
   assume assm:"\<parallel>len v ts c\<parallel> = 0 \<and> (v' \<le> v)"
@@ -1071,7 +1115,7 @@ proof
   hence "\<parallel>len v3 ts c \<parallel> = 0" using views len_stable_up by auto
   thus "\<parallel>len v' ts c \<parallel> = 0" using views len_stable_down by auto
 qed
-  
+
 lemma view_leq_len_leq:"(ext v \<le> ext v') \<and> (own v = own v') \<and> \<parallel>len v ts c\<parallel> > 0 \<longrightarrow> len v ts c \<le> len v' ts c"
 proof
   assume assm:"(ext v \<le> ext v') \<and> (own v = own v') \<and> \<parallel>len v ts c\<parallel> > 0"
@@ -1123,7 +1167,7 @@ proof
     qed
   qed
 qed
-  
-  
+
+
 end
 end
