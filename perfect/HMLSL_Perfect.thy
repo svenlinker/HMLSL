@@ -132,10 +132,35 @@ lemma backwards_wdc_res_stab:"(ts \<^bold>\<midarrow>wdc(d) \<^bold>\<rightarrow
   using withdraw_claim_length_stable traffic.withdraw_clm_eq_res 
   by (metis (mono_tags, lifting) traffic.withdraw_claim_def) 
     
-lemma backwards_wdr_res_stab:"(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
-  using withdraw_reservation_length_stable traffic.withdraw_res_subseteq
-  by (smt inf_absorb2 order_trans restriction.restrict_def restriction.restrict_res) 
-    
+lemma backwards_wdr_res_stab:"(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))" 
+proof (rule allI| rule impI)+
+  assume assm: "(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c))"
+  show "ts,v \<Turnstile> re(c)" 
+  proof (cases "c=d")
+    case True
+    then have 0:"res ts' c = Abs_nat_int {n}" 
+      using assm withdraw_reservation_def by auto
+    then have 1:"n \<^bold>\<in> restrict v (res ts') c" 
+      by (metis assm el.rep_eq in_singleton less_eq_nat_int.rep_eq local.hmlsl.free_no_res non_empty_elem_in restriction.restrict_res restriction.restrict_view subsetCE)
+    have 2:"len v ts c = len v ts' c" 
+      using assm perfect_sensors.withdraw_reservation_length_stable by blast
+    from True have 3:"n \<^bold>\<in> res ts c"
+      using assm withdraw_reservation_def by blast
+    then have "n \<^bold>\<in> restrict v (res ts) c" using assm 
+      using "1" el.rep_eq inf_nat_int.rep_eq restriction.restrict_def by auto
+    then have "Rep_nat_int (restrict v (res ts ) c) = {n}"  
+      using 0 assm el.rep_eq inf_nat_int.rep_eq rep_single restriction.restrict_def' by fastforce
+    then show ?thesis 
+      by (metis "0" "2" Rep_nat_int_inverse assm inf.absorb1 restriction.restrict_def restriction.restrict_view)
+  next
+    case False
+    then have "res ts c = res ts' c" 
+      using assm withdraw_reservation_def by auto
+    then show ?thesis 
+      using assm perfect_sensors.withdraw_reservation_length_stable restriction.restrict_def by auto
+  qed
+qed
+
 lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)"
 proof (rule allI| rule impI)+ 
   fix ts v ts'
