@@ -143,10 +143,8 @@ lemma sensors_le:"e \<noteq> c \<longrightarrow> regular e ts c < regular c ts c
   using  traffic.sdGeZero by (simp add: regular_def) 
     
     
-lemma sensors_leq:" regular e ts c \<le> regular c ts c"
-  using regular_def using sensors_le traffic.sdGeZero traffic.psGeZero 
-  by smt
-    
+lemma sensors_leq:" regular e ts c \<le> regular c ts c" 
+  using less_eq_real_def regular_sensors.sensors_le by force 
     
 lemma space_eq: "own v = own v' \<longrightarrow> space ts v c = space ts v' c" using regular_sensors.space_def sensors_def by auto
     
