@@ -343,9 +343,20 @@ by (metis one_add_one width_add1)
 
 
 lemma res_at_most_two:"\<Turnstile>\<^bold>\<not> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
-using atMostTwoRes  restriction_add_res vchop_def 
-  restriction_res_leq_two    
-  by (smt add_le_same_cancel2 not_one_le_zero one_add_one )
+proof(rule allI| rule notI )+
+  fix ts v 
+  assume "ts, v \<Turnstile> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
+  then obtain v' and v1 and v2 and v3  where "v = v1--v'" and "v'=v2--v3" 
+    and "ts,v1 \<Turnstile>re(c)" and "ts,v2 \<Turnstile>re(c)" and "ts,v3 \<Turnstile>re(c)" 
+    by blast
+  then show False 
+  proof -
+    have "|restrict v' (res ts) c| < |restrict v (res ts) c|"
+      using \<open>ts,v1 \<Turnstile>re(c)\<close> \<open>v=v1--v'\<close> restriction.restriction_add_res by auto
+    then show ?thesis
+      by (metis (no_types) \<open>ts,v2 \<Turnstile> re(c)\<close> \<open>ts,v3 \<Turnstile>re(c)\<close> \<open>v'=v2--v3\<close> not_less one_add_one restriction.restriction_add_res restriction.restriction_res_leq_two)
+  qed
+qed
 
 lemma res_at_most_two2:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>(re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) ) \<^bold>\<rangle>"
 using res_at_most_two by blast
@@ -371,7 +382,7 @@ proof (rule allI|rule notI)+
     by (metis not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
 qed
 
-lemma res_adj:"\<Turnstile>\<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) "
+lemma res_adj:"\<Turnstile>\<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " 
 proof (rule allI|rule notI)+
   fix ts v
   assume "ts,v \<Turnstile> (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " 
@@ -380,8 +391,10 @@ proof (rule allI|rule notI)+
      by blast
   hence res1:"|restrict v1 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
   from chop have res2: "|restrict v2 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
-  from res1 and res2 have resv:"|restrict v (res ts) c| = 2" using   card'_dict  
-    by (smt add_mono_thms_linordered_semiring(1) chop dual_order.antisym one_add_one restriction_add_res restriction_card_mon2 restriction_res_leq_two)
+  from res1 and res2 have "|restrict v (res ts) c| \<ge> 2" using   card'_dict 
+    using chop restriction.restriction_add_res by auto  
+  then have resv:"|restrict v (res ts) c| = 2" 
+    by (simp add: dual_order.antisym restriction.restriction_res_leq_two)
   hence res_two_lanes:"|res ts c| =2" using atMostTwoRes restrict_res card'_dict using   card'_dict  
     by (metis (no_types, lifting) nat_int.card_subset_le dual_order.antisym)
   from this obtain p where p_def:"Rep_nat_int (res ts c) = {p, p+1}" using consecutiveRes using   card'_dict   by force
@@ -391,8 +404,8 @@ proof (rule allI|rule notI)+
     by (metis nat_int.card_empty_zero less_irrefl width_ge)
   hence consec_vn_v2:"nat_int.consec (lan vn) (lan v2)" 
     using nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def card'_dict using   card'_dict   by auto
-  hence v'_not_e:"lan v' \<noteq> \<emptyset>" using card'_dict using   card'_dict  
-    by (smt nat_int.card_empty_zero chop less_irrefl vertical_chop_assoc2 width_ge)
+  have v'_not_e:"lan v' \<noteq> \<emptyset>" using card'_dict chop 
+    by (metis less_irrefl nat_int.card_empty_zero view.vertical_chop_assoc2 width_ge)
   hence consec_v1_v':"nat_int.consec (lan v1) (lan v')" using card'_dict using   card'_dict  
     by (metis (no_types, lifting) nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def)
   hence consec_v1_vn:"nat_int.consec (lan v1) (lan vn)" using   card'_dict  
@@ -412,12 +425,12 @@ proof (rule allI|rule notI)+
         (* SLOW! *)
       by (metis (no_types, lifting) chop  consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
     hence p:"p \<^bold>\<in> lan v2" using p_def restrict_def 
-      by (smt One_nat_def Rep_nat_int add_0_left add_eq_self_zero arith_special(3) atMostTwoRes card.insert card_seteq chop doubleton_eq_iff insert_subset nat_int.card'_def nat_int.finite nat_int.el_def nat_int.singleton less_eq_nat_int.rep_eq plus_nat.simps(2) resv restrict_res)
+      using chop by auto
     show False using lesser_con suc_p p by blast
   qed
   hence "p \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
   then have "p+1 \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes consec_dict el_dict not_in_dict using   card'_dict  
-        (* SLOW! *)
+            (* SLOW! *)
     by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
   hence suc_p_in_v2:"p+1 \<^bold>\<in> lan v2" using p_def restrict_def using chop by auto
   have lesser_con1: "\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan vn) \<longrightarrow> n < m)" using consec_v1_vn nat_int.consec_lesser el_dict by auto
@@ -442,12 +455,12 @@ lemma clm_sing_not_interrupted:"\<Turnstile> \<^bold>\<not>(cl(c) \<^bold>\<smil
 using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one clm_sing   
 by (metis (no_types, hide_lams) add.commute add_eq_self_zero dual_order.antisym le_add1 one_neq_zero)
 
-lemma clm_sing_somewhere2:"\<Turnstile>\<^bold>\<not>  (\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>) " using    
-  clm_sing_not_interrupted vertical_chop_assoc1 
-  by (smt add_eq_self_zero le_antisym one_neq_zero restriction.restriction_add_clm restriction.restriction_card_mon1 restriction.restriction_card_mon_trans restriction.restriction_clm_leq_one)
+lemma clm_sing_somewhere2:"\<Turnstile>\<^bold>\<not>  (\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>) " 
+  using clm_sing_not_interrupted vertical_chop_assoc1 
+  by meson
 
-lemma clm_sing_somewhere3:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>)\<^bold>\<rangle> "     
-  by (smt add_eq_self_zero le_antisym one_neq_zero restriction.restriction_add_clm restriction.restriction_card_mon1 restriction.restriction_card_mon_trans restriction.restriction_clm_leq_one)
+lemma clm_sing_somewhere3:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>)\<^bold>\<rangle> "  
+  by (meson clm_sing_not_interrupted view.vertical_chop_assoc1)
 
 lemma clm_at_most_somewhere:"\<Turnstile>\<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
 proof (rule allI| rule notI)+
@@ -472,9 +485,19 @@ qed
 
 
 lemma res_decompose: "\<Turnstile>(re(c)  \<^bold>\<rightarrow> re(c) \<^bold>\<frown> re(c))" 
-using len_view_hchop_left len_view_hchop_right using    
-  restriction_stable horizontal_chop_non_empty hchop_def restrict_def width_hchop_stable 
-by smt
+proof (rule allI| rule impI)+
+  fix ts v
+  assume assm:"ts,v \<Turnstile>re(c)"
+  then obtain v1 and v2 where 1:"v=v1\<parallel>v2" and 2:"\<parallel>ext v1\<parallel> > 0" and 3:"\<parallel>ext v2\<parallel> > 0" 
+    using  view.horizontal_chop_non_empty by blast
+  then have 4:"|lan v1| = 1" and 5:"|lan v2| = 1"
+    using assm view.hchop_def by auto
+  then have 6:"ts,v1 \<Turnstile>re(c)"  
+    by (metis 2 1  assm len_view_hchop_left  restriction.restrict_eq_lan_subs restriction.restrict_view restriction.restriction_stable1)
+  from 5 have 7:"ts,v2 \<Turnstile>re(c)" 
+    by (metis "1" "3" "6" assm len_view_hchop_right restriction.restrict_eq_lan_subs restriction.restrict_view restriction.restriction_stable)
+  from 1 and 6 and 7 show "ts,v \<Turnstile>re(c) \<^bold>\<frown> re(c)" by blast
+qed
 
 lemma res_compose: "\<Turnstile>(re(c) \<^bold>\<frown> re(c)  \<^bold>\<rightarrow> re(c))"     
 using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def
@@ -576,8 +599,25 @@ proof (rule allI|rule impI)+
     using length_meld by blast
   have widt_one:"|lan v| = 1" using assm     
     by (metis horizontal_chop_width_stable)
-  have no_car:"(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"     
-    by (smt assm len_hchop_add restriction_stable1 restriction_stable2)
+  have no_car:"(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"  
+  proof (rule ccontr)
+    assume "\<not> (\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)" 
+    then obtain c where ex:" \<parallel>len v ts c\<parallel> \<noteq> 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" 
+      by blast
+    from ex have 1:"\<parallel>len v ts c\<parallel> > 0" 
+      using less_eq_real_def real_int.length_ge_zero by auto
+    have "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" using ex ..
+    then show False
+    proof
+      assume case1:"restrict v (clm ts) c \<noteq> \<emptyset>"
+      then show False using assm 
+        by (metis (no_types, hide_lams) add.left_neutral ex len_hchop_add restriction.restrict_def view.hchop_def)    
+    next
+      assume case2:"restrict v (res ts) c \<noteq> \<emptyset>"
+      then show False using assm 
+        by (metis (no_types, hide_lams) add.left_neutral ex len_hchop_add restriction.restrict_def view.hchop_def)  
+    qed
+  qed
   show "ts,v \<Turnstile>free"
     using len_ge_0 widt_one no_car by blast
 qed
@@ -685,7 +725,7 @@ proof (rule allI | rule impI)+
     from this obtain c and v1 and v' and v2 and vc where 
       vc_def:"(v=v1\<parallel>v') \<and> (v'=vc\<parallel>v2) \<and> (ts,vc \<Turnstile> cl(c) \<^bold>\<or> re(c))" by blast
     hence len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" 
-      by (smt len_empty_on_subview1 len_empty_on_subview2 real_int.length_ge_zero length_dict )
+      by (metis len_empty_on_subview1 len_empty_on_subview2 length_dict less_eq_real_def real_int.length_ge_zero)
     from vc_def have vc_ex_car:"restrict vc (clm ts) c \<noteq> \<emptyset> \<or> restrict vc (res ts) c \<noteq>\<emptyset>" 
       using nat_int.card_empty_zero one_neq_zero card'_dict by auto
     have eq_lan:"lan v = lan vc" using vc_def using hchop_def    by auto
