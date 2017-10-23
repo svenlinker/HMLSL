@@ -210,7 +210,7 @@ proof
     qed          
 
     have max:"nat_int.maximum (clm ts c) = n" using n_in_clm suc_n_not_in_clm el_dict not_in_dict  
-      by (smt Int_insert_right Max_singleton Un_commute assm inf_sup_absorb insert_absorb2 insert_commute nat_int.maximum_def n_def nat_int.el.rep_eq nat_int.not_in.rep_eq singleton_insert_inj_eq' subset_insert sup.cobounded2)
+      by (metis Rep_nat_int_inverse assm card_non_empty_geq_one le_antisym nat_int.in_singleton nat_int.maximum_in singleton traffic.atMostOneClm)
     have min:"nat_int.minimum (res ts c) = n+1" using suc_n_in_res n_not_in_res el_dict not_in_dict card'_dict
       by (metis (no_types, lifting) Int_insert_right Min_singleton atLeastOneRes nat_int.card_empty_zero inf_bot_right inf_sup_absorb nat_int.minimum_def n_def nat_int.el.rep_eq nat_int.not_in.rep_eq not_one_le_zero)
     have "nat_int.consec (clm ts c) (res ts c)" using n_in_clm suc_n_in_res disj nat_int.consec_def max min card'_dict
@@ -380,8 +380,24 @@ proof
                                 (dyn ts), (physical_size ts), (braking_distance ts))" 
       by blast
     have disj:"\<forall>c .(((fst (snd ts'))) c \<sqinter> ((fst (snd (snd ts')))) c = \<emptyset>)" by (simp add: disjoint nat_int.inter_empty1 ts'_def)
-    have re_geq_one:"\<forall>c. |fst (snd ts') c| \<ge> 1" using card'_dict union_dict 
-      by (smt One_nat_def Suc_leI Un_commute add_is_0 atLeastOneRes nat_int.card_un_add clm_consec_res fst_conv fun_upd_apply nat_int.union_def neq0_conv False snd_conv ts'_def)
+    have re_geq_one:"\<forall>d. |fst (snd ts') d| \<ge> 1" 
+    proof 
+      fix d
+      show " |fst (snd ts') d| \<ge> 1"
+      proof (cases "c = d")
+        case True
+        then have "fst (snd ts') d = res ts d \<squnion> clm ts c" 
+          by (simp add: ts'_def)
+        then have "res ts d \<sqsubseteq> fst (snd ts') d" 
+          by (metis False True Un_ac(3) nat_int.un_subset1 nat_int.un_subset2 nat_int.union_def traffic.clm_consec_res union_dict)
+        then show ?thesis 
+          by (metis bot.extremum_uniqueI card_non_empty_geq_one traffic.atLeastOneRes)
+      next
+        case False
+        then show ?thesis 
+          using traffic.atLeastOneRes ts'_def by auto
+      qed
+    qed
     have re_leq_two:"\<forall>c. |(fst (snd ts')) c| \<le> 2" using card'_dict union_dict
       by (metis (no_types, lifting) Un_commute add.commute atMostTwoLanes atMostTwoRes nat_int.card_un_add clm_consec_res fun_upd_apply nat_int.union_def False prod.sel(1) prod.sel(2) ts'_def)
     have cl_leq_one:"\<forall>c. |(fst (snd (snd ts'))) c| \<le> 1" using atMostOneClm nat_int.card_empty_zero ts'_def card'_dict union_dict by auto
@@ -389,7 +405,9 @@ proof
       by (metis (no_types, lifting) add.right_neutral atMostTwoLanes nat_int.card_empty_zero fun_upd_apply prod.sel(1) prod.sel(2) re_leq_two ts'_def)
     have  clNextRe : "\<forall>c. (((fst (snd (snd ts'))) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((fst (snd ts')) c) \<union> Rep_nat_int (fst (snd (snd ts')) c) = {n, n+1}))"
       using clmNextRes ts'_def by auto
-    have consec_re:" \<forall>c. |((fst (snd ts')) c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts')) c) = {n,n+1})" 
+
+
+    have consec_re:" \<forall>c. |((fst (snd ts')) c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts')) c) = {n,n+1})"
     proof (rule allI|rule impI)+
       fix d
       assume assm:"|((fst (snd ts')) d)| =2"
@@ -415,13 +433,42 @@ proof
           using clmNextRes False by auto
         have n1_n2_un:"Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n1, n2}" using
             rep_clm rep_res by simp
+        then have 3:"Rep_nat_int (res ts c \<squnion> clm ts c) = Rep_nat_int ((fst (snd ts')) c)" 
+          by (simp add: def_ts'_res eq)
         have "n1 = n2+1 \<or> n2 = n1+1" using consec n1_n2_un 
           by (metis doubleton_eq_iff)
-        thus ?thesis using Abs_nat_int_inverse union_dict
-          by (smt Abs_nat_int_inverse Un_commute atLeastAtMost_singleton_iff def_ts'_res insert_commute mem_Collect_eq n1_n2_un nat_int.un_consec_seq nat_int.union_def order_refl rep_clm rep_res)
+        then have "Rep_nat_int (res ts c ) \<union> Rep_nat_int (clm ts c) = Rep_nat_int (res ts c \<squnion> clm ts c)" 
+        proof 
+          assume eq:"n1 = n2+1"
+          then have "consec (res ts c) (clm ts c)" 
+            by (metis False Rep_nat_int_inverse consec_def el_dict maximum_in minimum_in nat_int.consec_def nat_int.in_singleton rep_clm rep_res traffic.clm_consec_res)
+          then have "Rep_nat_int (res ts c \<squnion> clm ts c) = {n1, n2}" 
+          proof -
+            have "{n2..n2 + 1} = {n1, n2}"
+              by (metis (no_types) eq atLeastAtMost_singleton_iff n1_n2_un order_refl rep_clm rep_res un_consec_seq)
+            then show ?thesis
+              using Abs_nat_int_inverse n1_n2_un nat_int.union_def union_dict by auto
+          qed
+          then show ?thesis 
+            by (simp add: n1_n2_un)
+        next
+          assume eq:"n2 = n1+1"
+           then have "consec (clm ts c) (res ts c)" 
+            by (metis False Rep_nat_int_inverse consec_def el_dict maximum_in minimum_in nat_int.consec_def nat_int.in_singleton rep_clm rep_res traffic.clm_consec_res)
+          then have "Rep_nat_int (res ts c \<squnion> clm ts c) = {n1, n2}" 
+          proof -
+            have "{n1, n2} = {n1..n2}"
+              by (metis (no_types) Rep_nat_int_inverse \<open>consec (clm ts c) (res ts c)\<close> atLeastAtMost_singleton consec_def insert_is_Un leq_min_inf' maximum_dict nat_int.leq_max_sup' order_refl rep_clm rep_res un_consec_seq)
+            then show ?thesis
+              using Abs_nat_int_inverse nat_int.union_def rep_clm rep_res union_dict by auto
+          qed 
+          then show ?thesis 
+            by (simp add: n1_n2_un)
+        qed
+        thus ?thesis
+          using consec def_ts'_res by auto
       qed
     qed
-(*    have dyn_geq_zero: "(\<forall>c t. fst (snd (snd (snd (ts')))) c t \<ge> 0)" using ts'_def dynGeqZero by (simp ) *)
     have ps_ge_zero: "(\<forall>c . fst (snd (snd (snd (snd (ts'))))) c > 0)" using ts'_def psGeZero by (simp )
     have sd_ge_zero: "(\<forall>c . snd (snd (snd (snd (snd (ts'))))) c > 0)" using ts'_def sdGeZero by (simp )
         
