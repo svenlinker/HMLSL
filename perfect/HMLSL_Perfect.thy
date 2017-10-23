@@ -138,20 +138,12 @@ proof (rule allI| rule impI)+
   show "ts,v \<Turnstile> re(c)" 
   proof (cases "c=d")
     case True
-    then have 0:"res ts' c = Abs_nat_int {n}" 
-      using assm withdraw_reservation_def by auto
-    then have 1:"n \<^bold>\<in> restrict v (res ts') c" 
-      by (metis assm el.rep_eq in_singleton less_eq_nat_int.rep_eq local.hmlsl.free_no_res non_empty_elem_in restriction.restrict_res restriction.restrict_view subsetCE)
-    have 2:"len v ts c = len v ts' c" 
-      using assm perfect_sensors.withdraw_reservation_length_stable by blast
-    from True have 3:"n \<^bold>\<in> res ts c"
-      using assm withdraw_reservation_def by blast
-    then have "n \<^bold>\<in> restrict v (res ts) c" using assm 
-      using "1" el.rep_eq inf_nat_int.rep_eq restriction.restrict_def by auto
-    then have "Rep_nat_int (restrict v (res ts ) c) = {n}"  
-      using 0 assm el.rep_eq inf_nat_int.rep_eq rep_single restriction.restrict_def' by fastforce
+then have wdr_conseq:"res ts' c = Abs_nat_int{n} \<and> n \<^bold>\<in> res ts c" using withdraw_reservation_def  
+      using assm  by auto
+    then have "lan v =  Abs_nat_int{n}" using assm   Abs_nat_int_inverse  
+      by (metis (no_types, lifting) Rep_nat_int card_subset_less inf_le1 le_less less_irrefl rep_single restriction.restrict_def singleton2)    
     then show ?thesis 
-      by (metis "0" "2" Rep_nat_int_inverse assm inf.absorb1 restriction.restrict_def restriction.restrict_view)
+      by (metis assm inf.absorb1 perfect_sensors.withdraw_reservation_length_stable restriction.restrict_def' traffic.withdraw_res_subseteq wdr_conseq)
   next
     case False
     then have "res ts c = res ts' c" 

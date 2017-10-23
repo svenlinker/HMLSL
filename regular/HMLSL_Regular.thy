@@ -84,8 +84,8 @@ proof
       using assm  by auto
     then have "lan v =  Abs_nat_int{n}" using assm   Abs_nat_int_inverse  
       by (metis (no_types, lifting) Rep_nat_int card_subset_less inf_le1 le_less less_irrefl rep_single restriction.restrict_def singleton2)    
-    then show ?thesis using  assm el_dict el_def card'_dict  withdraw_reservation_length_stable restrict_def 
-      by (smt Int_iff Rep_nat_int_inverse wdr_conseq bot_nat_int.rep_eq card_non_empty_geq_one card_subset_le el.rep_eq inf_nat_int.rep_eq insert_absorb le_antisym nat_int.in_refl nat_int.in_singleton restriction.restrict_view singleton)
+    then show ?thesis 
+      by (metis assm inf.absorb1 regular_sensors.withdraw_reservation_length_stable restrict_def' traffic.withdraw_res_subseteq wdr_conseq)
   next    
     case False
     then have "res ts c = res ts' c" using  withdraw_reservation_def  assm by simp
