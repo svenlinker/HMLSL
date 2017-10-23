@@ -405,8 +405,6 @@ proof
       by (metis (no_types, lifting) add.right_neutral atMostTwoLanes nat_int.card_empty_zero fun_upd_apply prod.sel(1) prod.sel(2) re_leq_two ts'_def)
     have  clNextRe : "\<forall>c. (((fst (snd (snd ts'))) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((fst (snd ts')) c) \<union> Rep_nat_int (fst (snd (snd ts')) c) = {n, n+1}))"
       using clmNextRes ts'_def by auto
-
-
     have consec_re:" \<forall>c. |((fst (snd ts')) c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts')) c) = {n,n+1})"
     proof (rule allI|rule impI)+
       fix d
