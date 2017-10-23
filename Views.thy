@@ -332,8 +332,16 @@ proof
           have consec:"nat_int.consec (lan vd) (lan v)" using min 
             by (simp add:  Suc_leI   nat_int.consec_def nat_int.leq_max_sup' nat_int.leq_nat_non_empty neq2  vd)
           have disjoint:"lan vd \<sqinter> lan v = \<emptyset>" using min consec nat_int.consec_inter_empty by auto
-          have union:" lan v' = lan vd \<squnion> lan v" using min max consec neq2 union_dict
-            by (smt Rep_nat_int_inverse   bot_nat_int.rep_eq atLeastatMost_empty_iff nat_int.leq_max_sup nat_int.maximum_def nat_int.consec_def nat_int.leq_min_inf' nat_int.rep_non_empty_means_seq nat_int.union_def select_convs(2) nat_int.un_consec_seq v'_neq_empty vd)
+          have "maximum (lan vd \<squnion> lan v) = maximum (lan v)" using consec 
+            using consec_dict consec_un_max by auto
+          then have max':"maximum (lan vd \<squnion> lan v) = maximum (lan v')" using max 
+            by (simp add: maximum_dict)
+          have "minimum (lan vd \<squnion> lan v) = minimum (lan vd)" using consec 
+            using consec_dict consec_un_min by auto
+          then have min':"minimum (lan vd \<squnion> lan v) = minimum (lan v')" using vd 
+            by (metis atLeastatMost_empty_iff bot_nat_int.abs_eq consec minimum_dict nat_int.consec_def nat_int.leq_min_inf' select_convs(2))
+          have union:" lan v' = lan vd \<squnion> lan v" using min max consec neq2 union_dict nat_int.leq_max_sup 
+            using max' maximum_dict min' minimum_dict nat_int.consec_un_equality v'_neq_empty by fastforce
           then have "(v2=vd--v3) \<and> (v3=v--vu)" using vd v3 vu vchop_def nat_int.nchop_def nat_int.un_empty_absorb1 nat_int.un_empty_absorb2
               nat_int.inter_empty1 nat_int.inter_empty2 lanes_v2 own_v2 ext_v2 assm_exp vd_in_type  Abs_nat_int_inverse  disjoint consec union
             using select_convs(1) select_convs(2) select_convs(3) union_dict by force
@@ -365,8 +373,18 @@ proof
               Suc_leI   nat_int.consec_def nat_int.leq_max_sup' nat_int.leq_min_inf' nat_int.leq_nat_non_empty neq3  v3 vd 
             by (auto)
           have disjoint2:"lan vd \<sqinter> lan v3 = \<emptyset>" using min consec2 nat_int.consec_inter_empty  by auto
-          have union2:" lan v' = lan vd \<squnion> lan v3" using min max consec2 neq3 union_dict
-            by (smt Rep_nat_int_inverse atLeastatMost_empty_iff  bot_nat_int.rep_eq consec nat_int.card_seq nat_int.consec_def nat_int.leq_max_sup' nat_int.leq_min_inf' nat_int.union_def neq2 select_convs(2) nat_int.un_consec_seq union v'_neq_empty vd vu)
+          have "minimum (lan vd \<squnion> lan v3) = minimum (lan vd)" 
+            using consec2 consec_dict consec_un_min by auto 
+          then have min':"minimum (lan vd \<squnion> lan v3) = minimum (lan v')" using vd vd_in_type 
+            by (metis atLeastatMost_empty_iff2 bot_nat_int.abs_eq consec2 leq_min_inf' minimum_dict nat_int.consec_def select_convs(2))
+          have "maximum (lan vd \<squnion>lan v3) = maximum (lan v3)" 
+            using consec2 consec_dict consec_un_max by auto
+          then have "maximum (lan vd \<squnion>lan v3) = maximum (lan vu)" 
+            using consec consec_dict consec_un_max union by auto
+          then have max':"maximum (lan vd \<squnion>lan v3) = maximum (lan v')" 
+            by (metis One_nat_def Suc_leI add.right_neutral add_Suc_right leq_max_sup' max maximum_dict select_convs(2) vu) 
+          have union2:" lan v' = lan vd \<squnion> lan v3" using min max consec2 neq3 union_dict min' max' 
+            using maximum_dict minimum_dict nat_int.consec_un_equality v'_neq_empty by force
           then have "(v2=vd--v3) \<and> (v3=v--vu)" using vd v3  vchop_def nat_int.nchop_def nat_int.un_empty_absorb1 nat_int.un_empty_absorb2
               nat_int.inter_empty1 nat_int.inter_empty2 lanes_v2 own_v2 ext_v2 assm_exp vd_in_type  Abs_nat_int_inverse  disjoint2 consec2 union2
             using select_convs(1) select_convs(2) select_convs(3) chop1 union_dict by force

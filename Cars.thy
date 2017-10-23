@@ -28,10 +28,5 @@ proof -
     by (metis (mono_tags, lifting) Abs_cars_inverse mem_Collect_eq)
   thus ?thesis by blast
 qed
-
-(*notation inf (infix "\<sqinter>" 70)*)
-
-  
-  
   
 end

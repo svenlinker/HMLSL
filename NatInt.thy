@@ -436,6 +436,22 @@ proof
   qed
 qed
 
+lemma consec_un_defined:"consec i j \<longrightarrow> (Rep_nat_int (i \<squnion> j) \<in> {S . (\<exists> (m::nat) n . {m..n }=S) })"
+  using Rep_nat_int by auto
+
+lemma consec_un_equality: "(consec i j \<and> k \<noteq> \<emptyset>) \<longrightarrow>( minimum (i \<squnion> j) = minimum (k) \<and> maximum (i \<squnion> j) = maximum (k)) \<longrightarrow> i \<squnion> j = k"
+proof (rule impI)+
+  assume cons:"consec i j \<and> k \<noteq> \<emptyset>"
+  assume endpoints:" minimum (i \<squnion> j) = minimum (k) \<and> maximum (i \<squnion> j) = maximum (k)"
+  have "Rep_nat_int( i \<squnion> j) = {minimum(i \<squnion> j)..maximum(i \<squnion> j)}" 
+    by (metis cons leq_max_sup leq_min_inf local.consec_def nat_int.consec_un_element2 nat_int.maximum_def nat_int.minimum_def nat_int.non_empty_elem_in rep_non_empty_means_seq)
+  then have 1:"Rep_nat_int( i \<squnion> j) = {minimum(k) .. maximum(k)}" using endpoints 
+    by simp
+  have "Rep_nat_int( k) = {minimum(k) .. maximum(k)}" 
+    by (metis cons leq_max_sup leq_min_inf nat_int.maximum_def nat_int.minimum_def rep_non_empty_means_seq)
+  then  show " i \<squnion> j = k" using 1 
+    by (metis Rep_nat_int_inverse)
+qed
 
 lemma consec_trans_lesser:" consec i j \<and> consec j k \<longrightarrow> (\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> k \<longrightarrow> n < m))"
 proof (rule allI|rule impI)+
