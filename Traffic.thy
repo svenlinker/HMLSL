@@ -15,8 +15,11 @@ Definitions for transitions between traffic snapshots.
 section\<open>Traffic Snapshots\<close>
 
 theory Traffic
-imports Cars
+imports NatInt RealInt Cars
 begin
+
+type_synonym lanes = nat_int
+type_synonym extension = real_int
 
 text {* Definition of the traffic snapshot. The constraints on res and clm are the sanity conditions
 of traffic snapshots.  *}

@@ -11,8 +11,12 @@ different owners.
 
 section\<open>Views on Traffic\<close>
 theory Views
-  imports Cars
+  imports NatInt RealInt Cars
 begin
+
+
+type_synonym lanes = nat_int
+type_synonym extension = real_int
   
   
 record view = 

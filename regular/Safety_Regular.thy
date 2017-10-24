@@ -222,7 +222,7 @@ qed
   
 lemma safety_not_invariant_switch:" \<exists>ts v. (ts,v \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and> ( \<^bold>\<exists> c. \<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
 proof -
-  obtain d c ::cars where assumption:"d \<noteq>c" using at_least_two_cars_exists by best  
+  obtain d c ::cars where assumption:"d \<noteq>c" using cars.at_least_two_cars_exists by best  
   obtain pos' where  pos'_def:"\<forall>(c::cars). (pos' c) = (5::real)" by best
   obtain po where pos_def:"po = (pos'(c:=0))(d:=2)" by best
   obtain re where res_def:"\<forall>(c::cars). re c = Abs_nat_int{0}" by best  

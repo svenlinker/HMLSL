@@ -8,25 +8,23 @@ Also defines type synonyms for lanes and extension of views and traffic snapshot
 section\<open>Cars\<close>
 
 theory Cars
-imports RealInt NatInt
+  imports Main
 begin
 
-type_synonym lanes = nat_int
-type_synonym extension = real_int
 
-axiomatization car_constructor::"nat \<Rightarrow> nat"
-where car_constructor_inject:" car_constructor x = car_constructor y \<Longrightarrow> x = y" 
-and car_constructor_zero:" car_constructor (Suc x) \<noteq> car_constructor 0"
+typedef cars = "{n. (is_nat n)} " 
+  using Nat_Transfer.transfer_int_nat_function_closures(9) by auto
 
-typedef cars = "{c . \<exists>n. (car_constructor n) = c}"
-by auto
+locale cars 
+begin
 
 lemma at_least_two_cars_exists:"\<exists>c d ::cars . c \<noteq>d" 
 proof -
-  have "car_constructor 0 \<noteq> car_constructor 1" using car_constructor_inject by auto
-  hence "Abs_cars (car_constructor 0) \<noteq> Abs_cars (car_constructor 1)" 
-    by (metis (mono_tags, lifting) Abs_cars_inverse mem_Collect_eq)
+  have "(0::int) \<noteq> 1" by simp
+  then have "Abs_cars (0::int) \<noteq> Abs_cars(1) " 
+    by (metis Abs_cars_inverse Nat_Transfer.transfer_int_nat_function_closures(9) Nat_Transfer.transfer_nat_int_function_closures(6) int_nat_eq mem_Collect_eq)
   thus ?thesis by blast
 qed
   
+end
 end
