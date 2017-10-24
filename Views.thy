@@ -10,6 +10,17 @@ different owners.
 *)
 
 section\<open>Views on Traffic\<close>
+text{* 
+In this section, we define a notion of locality for each car. These
+local parts of a road are called \emph{views} and define the part of 
+the model currently under consideration by a car. In particular, a 
+view consists of 
+\begin{itemize}
+\item the \emph{extension}, a real-valued interval denoting the distance perceived,  
+\item the \emph{lanes}, a discrete interval, denoting which lanes are perceived,
+\item the \emph{owner}, the car associated with this view.
+ *}
+
 theory Views
   imports NatInt RealInt Cars
 begin
