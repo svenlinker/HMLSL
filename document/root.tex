@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{isabelle,isabellesym}
+% further packages required for unusual symbols (see also
+% isabellesym.sty), use only when needed
+
+\usepackage{amssymb}
+  %for \<leadsto>, \<box>, \<diamond>, \<sqsupset>, \<mho>, \<Join>,
+  %\<lhd>, \<lesssim>, \<greatersim>, \<lessapprox>, \<greaterapprox>,
+  %\<triangleq>, \<yen>, \<lozenge>
+
+%\usepackage{eurosym}
+  %for \<euro>
+
+%\usepackage[only,bigsqcap]{stmaryrd}
+  %for \<Sqinter>
+
+%\usepackage{eufrak}
+  %for \<AA> ... \<ZZ>, \<aa> ... \<zz> (also included in amssymb)
+
+%\usepackage{textcomp}
+  %for \<onequarter>, \<onehalf>, \<threequarters>, \<degree>, \<cent>,
+  %\<currency>
+
+% this should be the last package used
+\usepackage{pdfsetup}
+
+% urls in roman style, theory text in math-similar italics
+\urlstyle{rm}
+\isabellestyle{it}
+
+% for uniform font size
+%\renewcommand{\isastyle}{\isastyleminor}
+
+
+\begin{document}
+
+\title{HMLSL}
+\author{By cthulhu}
+\maketitle
+
+\begin{abstract}
+Formal verification of autonomous vehicles on motorways is a challenging problem, 
+due to the complex interactions between
+dynamical behaviours and controller choices of the vehicles. In previous 
+work, we showed how an abstraction of motorway traffic, with an
+emphasis on spatial properties, can be beneficial. In this paper,
+we present a semantic embedding of a spatio-temporal multi-modal
+logic, specifically defined to reason about motorway traffic, into Isabelle/HOL. 
+The semantic model is an abstraction of a motorway, 
+emphasising local spatial properties, and parameterised by the types of sensors
+deployed in the vehicles. We use the logic
+to define controller constraints to ensure safety, i.e., the
+absence of collisions on the motorway. 
+After proving safety with a restrictive definition of
+sensors, we relax these assumptions and show how to amend
+the controller constraints to still guarantee safety.
+
+Published in iFM 2017 \cite{Linker2017}.
+\end{abstract}
+
+\tableofcontents
+
+% sane default for proof documents
+\parindent 0pt\parskip 0.5ex
+
+% generated text of all theories
+\input{session}
+
+% optional bibliography
+\bibliographystyle{abbrv}
+\bibliography{root}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
