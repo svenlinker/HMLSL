@@ -1,5 +1,5 @@
 theory HMLSL_Regular
-  imports Regular_Sensors
+  imports "../HMLSL" Regular_Sensors
 begin
   
 locale hmlsl_regular = regular_sensors + restriction

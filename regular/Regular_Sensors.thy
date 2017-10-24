@@ -1,5 +1,5 @@
 theory Regular_Sensors
-  imports  "../HMLSL"
+  imports  "../Length"
 begin
   
 definition regular::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"

@@ -1,5 +1,5 @@
 theory Perfect_Sensors
-  imports  "../HMLSL"
+  imports  "../Length"
 begin
   
 definition perfect::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"

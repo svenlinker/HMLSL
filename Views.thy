@@ -19,6 +19,7 @@ view consists of
 \item the \emph{extension}, a real-valued interval denoting the distance perceived,  
 \item the \emph{lanes}, a discrete interval, denoting which lanes are perceived,
 \item the \emph{owner}, the car associated with this view.
+\end{itemize} 
  *}
 
 theory Views

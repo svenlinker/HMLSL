@@ -5,10 +5,10 @@ Defines perfect sensors for cars. Cars can perceive both
 the physical size and braking distance of all other cars.
 *)
 
-section\<open> HMLSL for perfect sensors\<close>
+section\<open>HMLSL for perfect sensors\<close>
   
 theory HMLSL_Perfect
-  imports "Perfect_Sensors"
+  imports "../HMLSL" "Perfect_Sensors"
 begin
   
   
