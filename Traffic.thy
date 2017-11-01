@@ -219,6 +219,22 @@ proof
   qed
 qed
 
+text {* We define several possible transitions between traffic snapshots. 
+Cars may create or withdraw claims and reservations, as long as the sanity conditions 
+of the traffic snapshots are fullfilled. 
+
+In particular, a car can only create
+a claim, if it possesses only a reservation on a single lane, and does not 
+already possess a claim. Withdrawing a claim can be done in any situation. 
+It only has an effect, if the car possesses a claim. Similarly, the 
+transition for a car to create a reservation is always possible, but only
+changes the spatial situation on the road, if the car already has a claim.
+Finally, a car may withdraw its reservation to a single lane, if its
+current reservation consists of two lanes.
+
+All of these transitions concern the spatial properties of a single car at a time, i.e., 
+for several cars to change their properties, several transitions have to be taken.
+*}
   
 definition create_claim ::" traffic\<Rightarrow>  cars \<Rightarrow>  nat \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<midarrow>c'( _, _ ') \<^bold>\<rightarrow> _" 27)
 where "  (ts \<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow> ts')  == (pos ts') = (pos ts) 
@@ -258,6 +274,32 @@ where "  (ts \<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow> ts')  == (pos ts')
                                 \<and> n \<^bold>\<in> (res ts c)
                                 \<and> |res ts c| = 2"
 
+text {* 
+The following two transitions concern the dynamical behaviour of the cars. 
+Similar to the spatial properties, a car may change its dynamics, by setting
+it to a new function f:real \<Rightarrow> real. Observe that this function is indeed 
+arbitrary and does not constrain the possible behaviour in any way. However,
+this transition allows a car to change the function determining their braking
+distance (in fact, all cars are allowed to change this function, if a car changes
+sets a new dynamical function). That is, our model describes an over-approximation
+of a concrete situation, where the braking distance is determined by the dynamics. 
+
+The final transition describes the passing of \(x\) time units. That is, all cars 
+update their position according to their current dynamical behaviour. Observe that
+this transition requires that the dynamics of each car is at least \(0\), for each time
+point between \(0\) and \(x\). Hence, this condition denotes that all cars drive
+into the same direction. If the current dynamics of a car violated this constraint,
+it would have to reset its dynamics, until time may pass again.
+*}
+
+definition change_dyn::"traffic \<Rightarrow> cars \<Rightarrow> ( real \<Rightarrow> real) \<Rightarrow> traffic \<Rightarrow> bool" (" _ \<^bold>\<midarrow> dyn'(_,_') \<^bold>\<rightarrow> _" 27)
+where "(ts \<^bold>\<midarrow>dyn(c, f )\<^bold>\<rightarrow> ts') == (pos ts' = pos ts) 
+                              \<and> (res ts' = res ts)
+                              \<and> (clm ts' = clm ts)
+                              \<and> (dyn ts' = (dyn ts)(c:= f))
+                              \<and> (physical_size ts') = (physical_size ts)"
+
+
 definition drive::"traffic \<Rightarrow> real \<Rightarrow> traffic \<Rightarrow> bool" (" _ \<^bold>\<midarrow> _ \<^bold>\<rightarrow> _" 27)
   where "(ts \<^bold>\<midarrow> x \<^bold>\<rightarrow> ts') == (\<forall>c. (pos ts' c = (pos ts c) + (dyn ts c x))) 
                               \<and> (\<forall> c y. 0 \<le> y \<and> y \<le> x \<longrightarrow> dyn ts c y \<ge> 0)  
@@ -267,17 +309,17 @@ definition drive::"traffic \<Rightarrow> real \<Rightarrow> traffic \<Rightarrow
                               \<and> (physical_size ts') = (physical_size ts)
                               \<and> (braking_distance ts') = (braking_distance ts)"
 
-definition change_dyn::"traffic \<Rightarrow> cars \<Rightarrow> ( real \<Rightarrow> real) \<Rightarrow> traffic \<Rightarrow> bool" (" _ \<^bold>\<midarrow> dyn'(_,_') \<^bold>\<rightarrow> _" 27)
-where "(ts \<^bold>\<midarrow>dyn(c, f )\<^bold>\<rightarrow> ts') == (pos ts' = pos ts) 
-                              \<and> (res ts' = res ts)
-                              \<and> (clm ts' = clm ts)
-                              \<and> (dyn ts' = (dyn ts)(c:= f))
-                              \<and> (physical_size ts') = (physical_size ts)"
+text{* 
+We bundle the dynamical transitions into \emph{evolutions}, since
+we will only reason about combinations of the dynamical behaviour. 
+This fits to the level of abstraction by hiding the dynamics completely
+inside of the model.
+*}
 
 inductive evolve::"traffic \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<leadsto> _")
 where refl : "ts \<^bold>\<leadsto> ts" |
- drive:  "\<exists>x. x \<ge> 0 \<and>  ( ts \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts''    \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
- change: "\<exists>c. \<exists>f. (ts \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts'' \<Longrightarrow> ts \<^bold>\<leadsto> ts''"
+ change: "\<exists>c. \<exists>f. (ts \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts'' \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
+ drive:  "\<exists>x. x \<ge> 0 \<and>  ( ts \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts''    \<Longrightarrow> ts \<^bold>\<leadsto> ts''" 
 
 lemma evolve_trans:"(ts0 \<^bold>\<leadsto> ts1) \<Longrightarrow> (ts1 \<^bold>\<leadsto> ts2) \<Longrightarrow> (ts0 \<^bold>\<leadsto> ts2)"  
 proof (induction rule:evolve.induct)
@@ -290,7 +332,12 @@ next
   case (change ts ts' ts'')
   then show ?case by (metis evolve.change)
 qed
- 
+
+text {* 
+For general transition sequences, we introduce \emph{abstract transitions}. 
+A traffic snapshot \(ts^\prime\) is reachable from \(ts\) via an abstract transition,
+if there is an arbitrary sequence of transitions from \(ts\) to \(ts^\prime\).
+*}
  
 inductive abstract::"traffic \<Rightarrow> traffic \<Rightarrow> bool"  ("_ \<^bold>\<Rightarrow> _") for ts
 where refl: "(ts \<^bold>\<Rightarrow> ts)" |
@@ -328,6 +375,12 @@ next
 qed
 
 
+text {* 
+Most properties of the transitions are straightforward. However, to show
+that the transition to create a reservation is always possible,
+we need to explicitly construct the resulting traffic snapshot. Due
+to the size of such a snapshot, the proof is lengthy.
+*}
   
     
 lemma create_res_subseteq1:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<longrightarrow> res ts c \<sqsubseteq> res ts' c "
@@ -476,15 +529,13 @@ proof
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and> *)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> *)
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0) 
      }"
       using  ts'_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re   
-        clNextRe mem_Collect_eq (*dyn_geq_zero*) ps_ge_zero  sd_ge_zero by blast
+        clNextRe mem_Collect_eq  ps_ge_zero  sd_ge_zero by blast
     have rep_eq:"Rep_traffic (Abs_traffic ts') = ts'" using ts'_def ts'_type Abs_traffic_inverse by blast 
     have sp_eq:"(pos (Abs_traffic ts')) = (pos ts) "  using rep_eq ts'_def
       using Rep_traffic pos_def by auto 

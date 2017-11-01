@@ -7,6 +7,16 @@
 *)
 
 section\<open>Move a View according to Difference between Traffic Snapshots\<close>
+text {*
+In this section, we define a function to move a view according
+to the changes between two traffic snapshots. The intuition is
+that the view moves with the same speed as its owner. That is,
+if we move a view \(v\) from \(ts\) to \(ts^\prime\), we 
+shift the extension of the view by the difference in the
+position of the owner of \(v\).
+*}
+
+
 theory Move
   imports Traffic Views
 begin
@@ -60,5 +70,4 @@ lemma move_stability_res:"(ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<
   by (auto)+
 
 end
-
 end
