@@ -6,6 +6,20 @@ used for claim and reservation functions of Traffic Snapshots.
 *)
 
 section\<open>Restrict Claims and Reservations to a View\<close>
+text {* 
+To model that a view restricts the number of lanes a car may 
+perceive, we define a function \(restrict\) taking a view \(v\), a function
+\(f\) from cars to lanes and a car \(f\), and returning the intersection
+between \(f(c)\) and the set of lanes of \(v\). This function
+will in the following only be applied to the functions yielding
+reservations and claims from traffic snapshots. 
+
+The lemmas of this section describe the connection between 
+\(restrict\) and the different operations on traffic snapshots
+and views (e.g., the transition relations or the fact that 
+reservations and claims are consecutive).
+*}
+
 theory Restriction
   imports Traffic Views
 begin
