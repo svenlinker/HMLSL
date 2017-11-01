@@ -35,7 +35,12 @@ record view =
   ext::extension 
   lan ::lanes  
   own ::cars
-  
+
+text {* 
+The orders on discrete and continuous intervals induce an order on views. 
+For two views \(v\) and \(v^\prime\) with \(v \leq v^\prime\), we call \(v\)
+a \emph{subview} of \(v^\prime\).*}
+
 instantiation  view_ext:: (order) order
 begin  
 definition "less_eq_view_ext (V:: 'a view_ext)  (V':: 'a view_ext)  \<equiv> 
@@ -57,8 +62,11 @@ end
 locale view
 begin
 
-lemmas[simp] = R_Chop_dict   
-  
+lemmas[simp] = R_Chop_dict N_Chop_dict  
+
+text{* We lift the chopping relations from discrete and continuous intervals
+to views, and introduce new notation for these relations.*} 
+
 definition       hchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow> bool" ("_=_\<parallel>_")
   where "(v=u\<parallel>w) == real_int.R_Chop(ext v)(ext u)(ext w) \<and> 
                     lan v=lan u \<and> 
@@ -75,13 +83,23 @@ definition   vchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow>
                      own  v = own w \<and>
                      more v = more w \<and>
                      more v = more u "
-    
+
+text{* We can also switch the perspective of a view to the car \(c\). That is,
+we substitute \(c\) for the original owner of the view.  *}
+
 definition switch :: "view \<Rightarrow> cars \<Rightarrow> view \<Rightarrow> bool" ("_ = _ > _")
   where   "  (v=c>w) == ext v = ext w \<and> 
                         lan v = lan w \<and>  
                         own w = c \<and> 
                         more v = more w"
 
+
+text{* Most of the lemmas in this theory are direct transferrals of the corrsponding
+lemmas on discrete and continuous intervals, which implies rather simple proofs.
+The only exception is 
+the connection between subviews and the chopping operations. This proof is rather lengthy,
+since we need to distinguish several cases, and within each case, we need to
+ explicitly construct six different views for the chopping relations.*}
 
 lemma h_chop_middle1:"(v=u\<parallel>w) \<longrightarrow> left (ext v) \<le> right (ext u)" 
   by (metis hchop_def real_int.rchop_def real_int.left_leq_right)
@@ -123,20 +141,20 @@ qed
 lemma horizontal_chop_split_add:"x \<ge> 0 \<and> y \<ge> 0 \<longrightarrow> \<parallel>ext v\<parallel> = x+y \<longrightarrow> (\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y)"
 proof (rule impI)+
   assume geq_0:"x \<ge> 0 \<and> y \<ge> 0" and len_v:"\<parallel>ext v\<parallel> = x+y"
-  obtain V1 where v1_def: "V1 = \<lparr> ext = Abs_real_int (left (ext v), left (ext v) + x), lan = lan v, own = (own v) \<rparr>" by simp
+  obtain u where v1_def: "u = \<lparr> ext = Abs_real_int (left (ext v), left (ext v) + x), lan = lan v, own = (own v) \<rparr>" by simp
   have v1_in_type:"(left (ext v), left (ext v) + x) \<in> {r::(real*real) . fst r \<le> snd r}" 
     by (simp add: geq_0)
-  obtain V2 where v2_def: "V2 = \<lparr> ext = Abs_real_int (left (ext v)+x, left (ext v) + (x+y)), lan =  (lan v), own =  (own v) \<rparr>" by simp
+  obtain w where v2_def: "w = \<lparr> ext = Abs_real_int (left (ext v)+x, left (ext v) + (x+y)), lan =  (lan v), own =  (own v) \<rparr>" by simp
   have v2_in_type:"(left (ext v)+x, left (ext v) + (x+y)) \<in> {r::(real*real) . fst r \<le> snd r}" 
     by (simp add: geq_0)
-  from v1_def and geq_0 have len_v1:"\<parallel>ext V1\<parallel> = x" using v1_in_type 
+  from v1_def and geq_0 have len_v1:"\<parallel>ext u\<parallel> = x" using v1_in_type 
     by (simp add: Abs_real_int_inverse  real_int.length_def) 
-  from v2_def and geq_0 have len_v2:"\<parallel>ext V2\<parallel>= y" using v2_in_type 
+  from v2_def and geq_0 have len_v2:"\<parallel>ext w\<parallel>= y" using v2_in_type 
     by (simp add: Abs_real_int_inverse  real_int.length_def) 
-  from v1_def and v2_def have "(v=V1\<parallel>V2)" 
+  from v1_def and v2_def have "(v=u\<parallel>w)" 
     using Abs_real_int_inverse fst_conv hchop_def len_v prod.collapse real_int.rchop_def real_int.length_def snd_conv v1_in_type v2_in_type by auto
-  with len_v1 and len_v2 have "(v=V1\<parallel>V2) \<and> \<parallel>ext V1\<parallel> = x \<and> \<parallel>ext V2\<parallel> = y" by simp
-  thus "(\<exists>V1 V2. (v=V1\<parallel>V2) \<and> \<parallel>ext V1\<parallel> = x \<and> \<parallel>ext V2\<parallel> = y)" by blast
+  with len_v1 and len_v2 have "(v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y" by simp
+  thus "(\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y)" by blast
 qed
   
 lemma horizontal_chop_assoc1:"(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4) \<longrightarrow> (\<exists>v'. (v=v'\<parallel>v4) \<and> (v'=v1\<parallel>v3))"
@@ -233,7 +251,7 @@ proof
     and "w = \<lparr> ext = ext v, lan = j, own = (own v) \<rparr> " by blast
   hence "(v=u--w) \<and> |lan u|=x \<and> |lan w|=y" 
     using l1_l2_def view.vchop_def card'_dict 
-    by (simp add: N_Chop_dict)
+    by (simp)
   thus "(\<exists> u w.  (v=u--w) \<and> |lan u| = x \<and> |lan w| = y)" by blast
 qed
   
@@ -417,7 +435,13 @@ next
     by (meson horizontal_chop_leq1 horizontal_chop_leq2 order_trans vertical_chop_leq1 vertical_chop_leq2)
 qed
   
-  
+
+text{* The switch relation is compatible with the chopping relations, in the 
+following sense. If we can chop a view \(v\) into two subviews \(u\) and
+\(w\), and we can reach \(v^\prime\) via the switch relation, then
+there also exist two subviews \(u^\prime\), \(w^\prime\) of \(v^\prime\),
+such that \(u^\prime\) is reachable from \(u\) (and respectively for \(w^\prime\), \(w\)).
+ *}
   (* switch lemmas *)
 lemma switch_unique:"(v =c> u) \<and> (v =c> w) \<longrightarrow>u = w"
   using switch_def by auto

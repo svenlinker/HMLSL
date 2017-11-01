@@ -13,6 +13,20 @@ Definitions for transitions between traffic snapshots.
 *)
 
 section\<open>Traffic Snapshots\<close>
+text{* 
+Traffic snapshots define the spatial and dynamical arrangement of cars
+on the whole of the motorway at a single point in time. A traffic snapshot
+consists of several functions assigning spatial properties and dynamical
+behaviour to each car. The functions are named as follows.
+\begin{itemize}
+\item pos: positions of cars
+\item res: reservations of cars
+\item clm: claims of cars
+\item dyn: current dynamic behaviour of cars
+\item physical_size: the real sizes of cars
+\item braking_distance: braking distance each car needs in emergency
+\end{itemize}
+*}
 
 theory Traffic
 imports NatInt RealInt Cars
@@ -21,11 +35,9 @@ begin
 type_synonym lanes = nat_int
 type_synonym extension = real_int
 
-text {* Definition of the traffic snapshot. The constraints on res and clm are the sanity conditions
+text {* Definition of the type of traffic snapshots. 
+The constraints on the different functions are the \emph{sanity conditions}
 of traffic snapshots.  *}
-(*
-  The definition of the type traffic snapshot already includes the sanity conditions
-*)
 
 typedef traffic = "{ts :: ((cars\<Rightarrow>real) * (cars \<Rightarrow> lanes) * (cars\<Rightarrow>lanes) *((cars\<Rightarrow> (real\<Rightarrow> real)))*(cars \<Rightarrow> real) *(cars \<Rightarrow> real)) . 
                     
@@ -68,14 +80,12 @@ proof -
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0) \<and> *)
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)  
  } " 
-    using sp_def re_def cl_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re  (*dyn_geq_zero *)
+    using sp_def re_def cl_def disj  re_geq_one re_leq_two cl_leq_one add_leq_two consec_re  
       ps_def sd_def ts_def by auto
   thus ?thesis by blast
 qed 
@@ -83,10 +93,11 @@ qed
 locale traffic   
 begin   
 
+text{* For brevity, we define names for the different functions
+within a traffic snapshot. *}
 
 definition pos::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
 where "pos ts \<equiv> fst (Rep_traffic ts)"
-
 
 definition res::"traffic \<Rightarrow> (cars \<Rightarrow> lanes)"
 where "res ts \<equiv> fst (snd (Rep_traffic ts))"
@@ -104,6 +115,11 @@ definition braking_distance::"traffic \<Rightarrow> (cars \<Rightarrow> real)"
 where "braking_distance ts \<equiv> snd (snd (snd (snd (snd (Rep_traffic ts)))))"
 
 
+text {* 
+It is helpful to be able to refer to the sanity conditions of a traffic 
+snapshot via lemmas, hence we prove that the sanity conditions hold
+for each traffic snapshot.
+*}
 
 lemma disjoint: "(res ts c) \<sqinter> (clm ts c) = \<emptyset>"
 using Rep_traffic res_def clm_def   by auto 
@@ -135,14 +151,16 @@ qed
 lemma clmNextRes : "((clm ts) c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n, n+1})"
 using Rep_traffic res_def clm_def by auto 
 
-(*lemma dynGeqZero:"\<forall>x. (dyn ts c x \<ge> 0)" 
-using Rep_traffic  dyn_def by auto 
-*)
 lemma psGeZero:"\<forall>c. (physical_size ts c > 0)"
 using Rep_traffic physical_size_def by auto 
 
 lemma sdGeZero:"\<forall>c. (braking_distance ts c > 0)"
-using Rep_traffic braking_distance_def by auto 
+  using Rep_traffic braking_distance_def by auto 
+
+text {* 
+While not a sanity condition directly, the following lemma helps to establish
+general properties of HMLSL later on. It is a consequence of clmNextRes. 
+*}
 
 lemma clm_consec_res: "(clm ts) c \<noteq> \<emptyset> \<longrightarrow> nat_int.consec (clm ts c) (res ts c) \<or> nat_int.consec (res ts c) (clm ts c)"
 proof
@@ -151,27 +169,18 @@ proof
   obtain n where n_def: " Rep_nat_int ((res ts) c) \<union> Rep_nat_int ((clm ts) c) = {n, n+1}" using adj
     by blast
   have disj:"res ts c \<sqinter> clm ts c = \<emptyset>" using disjoint by blast
-  from n_def and disj have "n \<^bold>\<in> res ts c \<or> n \<^bold>\<in> clm ts c" 
-    using UnE insertI1 nat_int.el.rep_eq el_dict by auto
-  thus "nat_int.consec (clm ts c) (res ts c) \<or> nat_int.consec (res ts c) (clm ts c)"
+  from n_def and disj have "(n \<^bold>\<in> res ts c \<and> n \<^bold>\<notin> clm ts c) \<or> (n \<^bold>\<in> clm ts c \<and> n \<^bold>\<notin> res ts c)" 
+    by (metis UnE bot_nat_int.rep_eq disjoint_insert(1) el.rep_eq inf_nat_int.rep_eq insertI1 insert_absorb not_in.rep_eq) 
+  thus "nat_int.consec (clm ts c) (res ts c) \<or> nat_int.consec (res ts c) (clm ts c)" 
   proof
-    assume n_in_res: "n \<^bold>\<in> res ts c"
+    assume n_in_res: "n \<^bold>\<in> res ts c \<and>  n \<^bold>\<notin> clm ts c"
     hence suc_n_in_clm:"n+1 \<^bold>\<in> clm ts c" using el_dict
       by (metis (no_types) UnE assm disj inf.absorb_iff2 inf_sup_absorb insert_subset less_eq_nat_int.rep_eq n_def n_in_res nat_int.el.rep_eq sup.cobounded2 sup_bot.right_neutral)
     have "Rep_nat_int (res ts c) \<noteq> {n, n + 1}" 
       by (metis assm disj n_def inf_absorb1 inf_commute less_eq_nat_int.rep_eq sup.cobounded2)
     then have suc_n_not_in_res:"n+1 \<^bold>\<notin> res ts c" 
       using n_def n_in_res nat_int.el.rep_eq nat_int.not_in.rep_eq not_in_dict el_dict by auto
-    have n_not_in_clm:"n \<^bold>\<notin> clm ts c" 
-    proof (rule ccontr)
-      assume "\<not>n \<^bold>\<notin> clm ts c" 
-      then have n_in_clm:"n \<in> Rep_nat_int (clm ts c)" using nat_int.el.rep_eq nat_int.not_in.rep_eq not_in_dict el_dict by auto
-      have "n \<in> Rep_nat_int (res ts c)" using n_in_res by (simp add: nat_int.el_def el_dict)
-      then have "n \<in> Rep_nat_int (res ts c) \<inter> Rep_nat_int (clm ts c)" using n_in_clm by blast
-      then have "n \<^bold>\<in> (res ts c \<sqinter> clm ts c)" 
-        using Abs_nat_int_inverse Rep_nat_int nat_int.el_def  nat_int.inter_result inf_nat_int.rep_eq nat_int.el.rep_eq el_dict by auto
-      then show False using disj using nat_int.non_empty_elem_in el_dict not_in_dict by auto
-    qed 
+    from n_in_res have n_not_in_clm:"n \<^bold>\<notin> clm ts c" by blast
     have max:"nat_int.maximum (res ts c) = n" using n_in_res suc_n_not_in_res nat_int.el.rep_eq nat_int.not_in.rep_eq 
       using n_def nat_int.maximum_in nat_int.non_empty_elem_in el_dict not_in_dict 
       using inf_sup_aci(4) by fastforce 
@@ -182,7 +191,7 @@ proof
       using nat_int.non_empty_elem_in by auto
     thus ?thesis by blast
   next
-    assume n_in_clm: "n \<^bold>\<in> clm ts c"
+    assume n_in_clm: "n \<^bold>\<in> clm ts c \<and> n \<^bold>\<notin> res ts c "
     have suc_n_not_in_clm:"n+1 \<^bold>\<notin> clm ts c" 
     proof (rule ccontr)
       assume "\<not> n+1 \<^bold>\<notin> (clm ts c)"      
@@ -191,18 +200,7 @@ proof
         using assm card_non_empty_geq_one el_dict n_in_clm singleton by fastforce
       then show False using atMostOneClm not_less by blast
     qed
-    have n_not_in_res:"n \<^bold>\<notin> res ts c" 
-    proof (rule ccontr)
-      assume "\<not>n \<^bold>\<notin> res ts c" 
-      then have n_in_res:"n \<in> Rep_nat_int (res ts c)"  using el_dict not_in_dict
-        by (simp )
-      have "n \<in> Rep_nat_int (clm ts c)" using n_in_clm el_dict by (simp )
-      then have "n \<in> Rep_nat_int (res ts c) \<inter> Rep_nat_int (clm ts c)" using n_in_res by blast
-      then have "n \<^bold>\<in> (res ts c \<sqinter> clm ts c)" 
-        using Abs_nat_int_inverse Rep_nat_int nat_int.el_def  nat_int.inter_result 
-        by (simp add: inf_nat_int.rep_eq el_dict)
-      then show False using disj using nat_int.non_empty_elem_in el_dict  by auto
-    qed
+    from n_in_clm have n_not_in_res:"n \<^bold>\<notin> res ts c" by blast 
     have suc_n_in_res:"n+1 \<^bold>\<in> res ts c" 
     proof (rule ccontr)
       assume "\<not>n+1 \<^bold>\<in> res ts c"
@@ -211,7 +209,6 @@ proof
       then show False using n_not_in_res 
         using nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
     qed          
-
     have max:"nat_int.maximum (clm ts c) = n" using n_in_clm suc_n_not_in_clm el_dict not_in_dict  
       by (metis Rep_nat_int_inverse assm card_non_empty_geq_one le_antisym nat_int.in_singleton nat_int.maximum_in singleton traffic.atMostOneClm)
     have min:"nat_int.minimum (res ts c) = n+1" using suc_n_in_res n_not_in_res el_dict not_in_dict card'_dict
