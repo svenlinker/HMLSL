@@ -8,23 +8,23 @@ and view as parameters, and evaluates to True or False.
 
 section\<open>Basic HMLSL\<close>
 theory HMLSL
-imports   "Restriction" "Move" Length
+  imports   "Restriction" "Move" Length
 begin
 
 text {* the type of formulas  *}
 type_synonym \<sigma> = " traffic \<Rightarrow> view \<Rightarrow> bool"
 
 locale hmlsl = restriction+
- fixes sensors::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real" 
+  fixes sensors::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real" 
   assumes sensors_ge:"(sensors e ts c) > 0"  begin
 end
 
 sublocale hmlsl<sensors 
-    by (simp add: sensors.intro sensors_ge)
+  by (simp add: sensors.intro sensors_ge)
 
 context hmlsl
-  begin
-    
+begin
+
 abbreviation mtrue  :: "\<sigma>" ("\<^bold>\<top>")
   where "\<^bold>\<top> \<equiv> \<lambda> ts w. True" 
 abbreviation mfalse :: "\<sigma>" ("\<^bold>\<bottom>") 
@@ -64,92 +64,97 @@ abbreviation somewhere ::"\<sigma>\<Rightarrow>\<sigma>" ( "\<^bold>\<langle>_\<
 abbreviation everywhere::"\<sigma>\<Rightarrow>\<sigma>" ("\<^bold>[_\<^bold>]" 55)
   where "\<^bold>[\<phi>\<^bold>] \<equiv> \<^bold>\<not>\<^bold>\<langle>\<^bold>\<not>\<phi>\<^bold>\<rangle>"
 abbreviation res_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>r'(_') _" 55)
-where "\<^bold>\<box>r(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)" 
+  where "\<^bold>\<box>r(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)" 
 abbreviation clm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>c'(_') _" 55)
-where "\<^bold>\<box>c(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts' n. (ts\<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
+  where "\<^bold>\<box>c(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts' n. (ts\<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
 abbreviation wdres_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>wdr'(_') _" 55)
-where "\<^bold>\<box>wdr(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts' n. (ts\<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
+  where "\<^bold>\<box>wdr(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts' n. (ts\<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
 abbreviation wdclm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>wdc'(_') _" 55)
-where "\<^bold>\<box>wdc(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>wdc(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
+  where "\<^bold>\<box>wdc(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>wdc(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
 abbreviation time_box::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>\<^bold>\<tau> _" 55) 
-where "\<^bold>\<box>\<^bold>\<tau> \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts\<^bold>\<leadsto>ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)" 
+  where "\<^bold>\<box>\<^bold>\<tau> \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts\<^bold>\<leadsto>ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)" 
 abbreviation globally::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>G _" 55)
-where "\<^bold>G \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts \<^bold>\<Rightarrow> ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)"
+  where "\<^bold>G \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts \<^bold>\<Rightarrow> ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)"
 abbreviation at :: "cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma> " ("\<^bold>@ _ _" 56)
-where "\<^bold>@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
+  where "\<^bold>@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
 
 abbreviation re:: "cars \<Rightarrow> \<sigma>" ("re'(_')" 70)
-  where "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and>  
-                         restrict v (res ts) c = lan v \<and>  |lan v|=1" 
+  where 
+    "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> restrict v (res ts) c = lan v \<and>  |lan v|=1" 
 
 abbreviation cl:: "cars \<Rightarrow> \<sigma>" ("cl'(_')" 70)
-where "cl(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> restrict v (clm ts) c = lan v \<and> |lan v| = 1" 
+  where 
+    "cl(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> restrict v (clm ts) c = lan v \<and> |lan v| = 1" 
 
 abbreviation free:: "\<sigma>" ("free")
-where "free ==  \<lambda> ts v. \<parallel>ext v\<parallel> > 0 \<and> |lan v| = 1 \<and>
-                  (\<forall>c.  \<parallel>len v ts c\<parallel> = 0 \<or> ((restrict v (clm ts) c = \<emptyset>) \<and> (restrict v (res ts) c = \<emptyset>)))"  
+  where 
+    "free == \<lambda> ts v. \<parallel>ext v\<parallel> > 0 \<and> |lan v| = 1 \<and>
+                  (\<forall>c.  \<parallel>len v ts c\<parallel> = 0 \<or> (restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>))"  
 
 abbreviation width_eq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> = _ " 60)
-where "\<^bold>\<omega> = n == \<lambda>  ts v. |lan v| = n"  
+  where "\<^bold>\<omega> = n == \<lambda>  ts v. |lan v| = n"  
 
 abbreviation width_geq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> \<ge> _" 60)
-where "\<^bold>\<omega> \<ge> n == \<lambda>  ts v. |lan v| \<ge> n" 
+  where "\<^bold>\<omega> \<ge> n == \<lambda>  ts v. |lan v| \<ge> n" 
 
 abbreviation width_ge::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> > _" 60)
-where "\<^bold>\<omega> > n == (\<^bold>\<omega> = n+1) \<^bold>\<smile> \<^bold>\<top>"
+  where "\<^bold>\<omega> > n == (\<^bold>\<omega> = n+1) \<^bold>\<smile> \<^bold>\<top>"
 
 abbreviation length_eq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> = _ " 60)
-where "\<^bold>\<l> = r == \<lambda> ts v. \<parallel>ext v\<parallel> = r"
+  where "\<^bold>\<l> = r == \<lambda> ts v. \<parallel>ext v\<parallel> = r"
 
 abbreviation length_ge:: "real \<Rightarrow> \<sigma>" ("\<^bold>\<l> > _" 60)
-where "\<^bold>\<l> > r == \<lambda> ts v. \<parallel>ext v\<parallel> > r"
+  where "\<^bold>\<l> > r == \<lambda> ts v. \<parallel>ext v\<parallel> > r"
 
 abbreviation length_geq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> \<ge> _" 60)
-where "\<^bold>\<l> \<ge> r == (\<^bold>\<l> = r) \<^bold>\<or> (\<^bold>\<l> > r)"
+  where "\<^bold>\<l> \<ge> r == (\<^bold>\<l> = r) \<^bold>\<or> (\<^bold>\<l> > r)"
 
 abbreviation valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
-where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>v. \<phi>(ts)(v)"
+  where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>v. \<phi>(ts)(v)"
 
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
-where "ts, v \<Turnstile> \<phi> == \<phi>(ts)(v)"
+  where "ts,v \<Turnstile> \<phi> == \<phi>(ts)(v)"
 
 text {* Some general theorems about MLSL *}
 
-lemma hchop_weaken1: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>)) " 
-using horizontal_chop_empty_right  by fastforce
+lemma hchop_weaken1: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) " 
+  using horizontal_chop_empty_right  by fastforce
 
-lemma hchop_weaken2: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi>)) " 
-using horizontal_chop_empty_left  by fastforce
+lemma hchop_weaken2: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi>) " 
+  using horizontal_chop_empty_left  by fastforce
+
+lemma hchop_weaken: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi> \<^bold>\<frown> \<^bold>\<top>)" 
+  using hchop_weaken1 hchop_weaken2  by metis
 
 lemma hchop_neg1:"\<Turnstile> \<^bold>\<not> (\<phi> \<^bold>\<frown> \<^bold>\<top>) \<^bold>\<rightarrow> ((\<^bold>\<not> \<phi>) \<^bold>\<frown> \<^bold>\<top>)" 
-using horizontal_chop1  by fastforce
+  using horizontal_chop1  by fastforce
 
 lemma hchop_neg2:"\<Turnstile> \<^bold>\<not> (\<^bold>\<top>\<^bold>\<frown>\<phi> ) \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<^bold>\<not> \<phi>)"
-using horizontal_chop1  by fastforce
+  using horizontal_chop1  by fastforce
 
 lemma hchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)))" 
-by blast
+  by blast
 
 lemma hchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>)\<^bold>\<frown>\<phi>) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<frown> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<frown> \<phi>)))" 
-by blast
+  by blast
 
 lemma hchop_assoc:"\<Turnstile>\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<frown> \<chi>) \<^bold>\<leftrightarrow> (\<phi> \<^bold>\<frown> \<psi>) \<^bold>\<frown> \<chi>"
-using horizontal_chop_assoc1 horizontal_chop_assoc2  by fastforce
+  using horizontal_chop_assoc1 horizontal_chop_assoc2  by fastforce
 
 lemma v_chop_weaken1:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<smile> \<^bold>\<top>))" 
-using vertical_chop_empty_down  by fastforce
+  using vertical_chop_empty_down  by fastforce
 
 lemma v_chop_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<smile> \<phi>))" 
-using vertical_chop_empty_up  by fastforce
+  using vertical_chop_empty_up  by fastforce
 
 lemma v_chop_assoc:"\<Turnstile>(\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<smile> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>) \<^bold>\<smile> \<chi>)"
-using vertical_chop_assoc1 vertical_chop_assoc2  by fastforce
+  using vertical_chop_assoc1 vertical_chop_assoc2  by fastforce
 
 lemma vchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<smile> \<chi>)))" 
-by blast
+  by blast
 
 lemma vchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>) \<^bold>\<smile> \<phi> ) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<smile> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<smile> \<phi>)))" 
-by blast
+  by blast
 
 lemma at_exists :"\<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
 proof (rule allI|rule impI)+
@@ -162,28 +167,29 @@ qed
 
 
 lemma at_conj_distr:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))"
-using switch_unique by blast
+  using switch_unique by blast
 
 lemma at_disj_dist:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
-using switch_unique  by fastforce
+  using switch_unique  by fastforce
 
-lemma at_hchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"
+lemma at_hchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ((\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))" 
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))"
   obtain v' where v':"v=c>v'" using switch_always_exists  by fastforce
   with assm obtain v1' and v2' where chop:"(v'=v1'\<parallel>v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
     by blast
-  from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1\<parallel>v2)" using switch_hchop2   by fastforce
-  hence v1:"ts,v1 \<Turnstile> (\<^bold>@c \<phi>)" and v2:"ts,v2 \<Turnstile> (\<^bold>@c \<psi>)" using switch_unique chop  by fastforce+   
+  from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1\<parallel>v2)" 
+    using switch_hchop2  by fastforce
+  hence v1:"ts,v1 \<Turnstile> (\<^bold>@c \<phi>)" and v2:"ts,v2 \<Turnstile> (\<^bold>@c \<psi>)" using switch_unique chop by fastforce+   
   from v1 and v2 and origin show "ts,v \<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)" by blast
 qed
 
 lemma at_hchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
-using switch_unique switch_hchop1 switch_def   by metis
+  using switch_unique switch_hchop1 switch_def   by metis
 
 lemma at_hchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
-using at_hchop_dist1 at_hchop_dist2 by blast
+  using at_hchop_dist1 at_hchop_dist2 by blast
 
 lemma at_vchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
 proof (rule allI|rule impI)+
@@ -192,47 +198,47 @@ proof (rule allI|rule impI)+
   obtain v' where v':"v=c>v'" using switch_always_exists  by fastforce
   with assm obtain v1' and v2' where chop:"(v'=v1'--v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
     by blast
-  from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1--v2)" using switch_vchop2   by fastforce
+  from chop and v' obtain v1 and v2 where origin:"(v1=c>v1') \<and> (v2=c>v2') \<and> (v=v1--v2)" 
+    using switch_vchop2 by fastforce
   hence v1:"ts,v1 \<Turnstile> (\<^bold>@c \<phi>)" and v2:"ts,v2 \<Turnstile> (\<^bold>@c \<psi>)" using switch_unique chop  by fastforce+      
   from v1 and v2 and origin show "ts,v \<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)" by blast
 qed
 
 lemma at_vchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
-using switch_unique switch_vchop1 switch_def   by metis
+  using switch_unique switch_vchop1 switch_def   by metis
 
 lemma at_vchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
-using at_vchop_dist1 at_vchop_dist2 by blast
+  using at_vchop_dist1 at_vchop_dist2 by blast
 
 lemma at_eq:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
   using switch_always_exists  by (metis )
-  
+
 lemma at_neg1:"\<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
-using switch_unique 
-by (metis select_convs switch_def)
+  using switch_unique 
+  by (metis select_convs switch_def)
 
 lemma at_neg2:"\<Turnstile>\<^bold>\<not> (\<^bold>@c \<phi> ) \<^bold>\<rightarrow> ( (\<^bold>@c \<^bold>\<not> \<phi>))"
-using switch_unique  by fastforce
+  using switch_unique  by fastforce
 
 lemma at_neg :"\<Turnstile>(\<^bold>@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
   using at_neg1 at_neg2 by metis
+
 lemma at_neg':"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> (\<^bold>@c( \<^bold>\<not> \<phi>))" using at_neg by simp
-    
-lemma test:"\<And>ts v.(\<^bold>\<not> (\<^bold>@c ( \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>@c \<^bold>\<not> \<phi>))(ts)(v)" using at_neg by metis
-  
+
 lemma at_neg_neg1:"\<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
-using switch_unique switch_def switch_refl 
-by (metis select_convs switch_def)
+  using switch_unique switch_def switch_refl 
+  by (metis select_convs switch_def)
 
 lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> (\<^bold>@c  \<phi>)"
-using switch_unique switch_def switch_refl  
-by metis
+  using switch_unique switch_def switch_refl  
+  by metis
 
 lemma at_neg_neg:"\<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)" 
-using at_neg_neg1 at_neg_neg2 by metis
+  using at_neg_neg1 at_neg_neg2 by metis
 
 lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
 lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
-  
+
 lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
   using traffic.abstract.refl traffic.move_nothing  by fastforce
 
@@ -244,77 +250,77 @@ proof (rule allI|rule impI)+
   moreover from 1 and 2 have "move ts' ts'' (move ts ts' v) = move ts ts'' v" using traffic.move_trans by blast
   with 3 show "ts'', move ts' ts'' (move ts ts' v)  \<Turnstile>\<phi>" using calculation by simp
 qed
-    
-  
+
+
 lemma spatial_weaken: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle>)" 
   using horizontal_chop_empty_left horizontal_chop_empty_right vertical_chop_empty_down vertical_chop_empty_up   by fastforce
 
 lemma spatial_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<psi>) \<^bold>\<rightarrow> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<psi>\<^bold>\<rangle>)"
-using spatial_weaken horizontal_chop_empty_left horizontal_chop_empty_right 
-vertical_chop_empty_down vertical_chop_empty_up by blast 
+  using spatial_weaken horizontal_chop_empty_left horizontal_chop_empty_right 
+    vertical_chop_empty_down vertical_chop_empty_up by blast 
 
 
 lemma somewhere_distr: "\<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle>" 
-by blast
+  by blast
 
 lemma somewhere_and:"\<Turnstile> \<^bold>\<langle>\<phi> \<^bold>\<and> \<psi>\<^bold>\<rangle> \<^bold>\<rightarrow>  \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<and> \<^bold>\<langle>\<psi>\<^bold>\<rangle>"
-by blast
+  by blast
 
 lemma somewhere_and_or_distr :"\<Turnstile>(\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>)" 
-by blast
+  by blast
 
 lemma width_add1:"\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y) \<^bold>\<rightarrow> \<^bold>\<omega> = x+y)"
-using vertical_chop_add1  by fastforce
+  using vertical_chop_add1  by fastforce
 
 lemma width_add2:"\<Turnstile>((\<^bold>\<omega> = x+y) \<^bold>\<rightarrow>  (\<^bold>\<omega> = x) \<^bold>\<smile> \<^bold>\<omega> = y)"
-using vertical_chop_add2  by fastforce
+  using vertical_chop_add2  by fastforce
 
 lemma width_hchop_stable: "\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<omega> = x) \<^bold>\<frown> (\<^bold>\<omega>=x)))"
-using hchop_def horizontal_chop1 
-by force 
+  using hchop_def horizontal_chop1 
+  by force 
 
 lemma length_geq_zero:"\<Turnstile> (\<^bold>\<l> \<ge> 0)"
-by (metis order.not_eq_order_implies_strict real_int.length_ge_zero length_dict)
+  by (metis order.not_eq_order_implies_strict real_int.length_ge_zero length_dict)
 
 lemma length_split: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
-using horizontal_chop_non_empty  by fastforce
+  using horizontal_chop_non_empty  by fastforce
 
 lemma length_meld: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0))"
-using hchop_def real_int.chop_add_length_ge_0  length_dict 
+  using hchop_def real_int.chop_add_length_ge_0  length_dict 
   by (metis (no_types, lifting))
 
 lemma length_dense:"\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<leftrightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
-using length_meld length_split by blast
+  using length_meld length_split by blast
 
 lemma length_add1:"\<Turnstile>((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>= y)) \<^bold>\<rightarrow> (\<^bold>\<l>= x+y)"
-using hchop_def real_int.rchop_def real_int.length_def   by fastforce
+  using hchop_def real_int.rchop_def real_int.length_def   by fastforce
 
 lemma length_add2:"\<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<^bold>\<rightarrow> ( (\<^bold>\<l>=x+y) \<^bold>\<rightarrow> ((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)))"
-using horizontal_chop_split_add  by fastforce
+  using horizontal_chop_split_add  by fastforce
 
 lemma length_add:"\<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<^bold>\<rightarrow> ( (\<^bold>\<l>=x+y) \<^bold>\<leftrightarrow> ((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)))"
-using length_add1 length_add2 by blast
+  using length_add1 length_add2 by blast
 
 lemma length_vchop_stable:"\<Turnstile>(\<^bold>\<l> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x))"
-using vchop_def vertical_chop1  by fastforce
+  using vchop_def vertical_chop1  by fastforce
 
 lemma res_ge_zero:"\<Turnstile>(re(c) \<^bold>\<rightarrow> \<^bold>\<l>>0)"
-by blast
+  by blast
 
 lemma clm_ge_zero:"\<Turnstile>(cl(c) \<^bold>\<rightarrow> \<^bold>\<l>>0)"
-by blast
+  by blast
 
 lemma free_ge_zero:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<l>>0"
-by blast
+  by blast
 
 lemma width_res:"\<Turnstile>(re(c) \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-by auto
+  by auto
 
 lemma width_clm:"\<Turnstile>(cl(c) \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-by simp
+  by simp
 
 lemma width_free:"\<Turnstile>(free \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-by simp
+  by simp
 
 lemma width_somewhere_res:"\<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<rightarrow> (\<^bold>\<omega> \<ge> 1)"
 proof (rule allI|rule impI)+
@@ -334,12 +340,12 @@ proof (rule allI|rule notI)+
   then show False using disjoint 
     by (metis card_non_empty_geq_one inf.idem restriction.restriction_clm_leq_one restriction.restriction_clm_res_disjoint)
 qed
-    
+
 lemma width_ge:"\<Turnstile> (\<^bold>\<omega>> 0) \<^bold>\<rightarrow> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>> 0))"
-using  vertical_chop_add1  add_gr_0 zero_less_one  by auto
+  using  vertical_chop_add1  add_gr_0 zero_less_one  by auto
 
 lemma two_res_width: "\<Turnstile>((re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<omega> = 2)"
-by (metis one_add_one width_add1)
+  by (metis one_add_one width_add1)
 
 
 lemma res_at_most_two:"\<Turnstile>\<^bold>\<not> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
@@ -359,7 +365,7 @@ proof(rule allI| rule notI )+
 qed
 
 lemma res_at_most_two2:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>(re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) ) \<^bold>\<rangle>"
-using res_at_most_two by blast
+  using res_at_most_two by blast
 
 lemma res_at_most_somewhere:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> "
 proof (rule allI|rule notI)+
@@ -388,7 +394,7 @@ proof (rule allI|rule notI)+
   assume "ts,v \<Turnstile> (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " 
   then obtain v1 and v' and v2 and vn  
     where chop:"(v=v1--v') \<and> (v'=vn--v2) \<and> (ts,v1\<Turnstile>re(c)) \<and> (ts,vn \<Turnstile> \<^bold>\<omega> > 0) \<and> (ts,v2\<Turnstile>re(c))"
-     by blast
+    by blast
   hence res1:"|restrict v1 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
   from chop have res2: "|restrict v2 (res ts) c| \<ge> 1" by (simp add: le_numeral_extra(4))
   from res1 and res2 have "|restrict v (res ts) c| \<ge> 2" using   card'_dict 
@@ -430,7 +436,7 @@ proof (rule allI|rule notI)+
   qed
   hence "p \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
   then have "p+1 \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes consec_dict el_dict not_in_dict using   card'_dict  
-            (* SLOW! *)
+      (* SLOW! *)
     by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
   hence suc_p_in_v2:"p+1 \<^bold>\<in> lan v2" using p_def restrict_def using chop by auto
   have lesser_con1: "\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan vn) \<longrightarrow> n < m)" using consec_v1_vn nat_int.consec_lesser el_dict by auto
@@ -445,15 +451,15 @@ proof (rule allI|rule notI)+
 qed
 
 lemma clm_sing:"\<Turnstile>\<^bold>\<not>  (cl(c) \<^bold>\<smile> cl(c)) "
-using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one   
-by (metis (no_types, hide_lams) add_eq_self_zero le_add1 le_antisym one_neq_zero)
+  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one   
+  by (metis (no_types, hide_lams) add_eq_self_zero le_add1 le_antisym one_neq_zero)
 
 lemma clm_sing_somewhere:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>cl(c) \<^bold>\<smile> cl(c)\<^bold>\<rangle> "
-using clm_sing by blast
+  using clm_sing by blast
 
 lemma clm_sing_not_interrupted:"\<Turnstile> \<^bold>\<not>(cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile> cl(c))"
-using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one clm_sing   
-by (metis (no_types, hide_lams) add.commute add_eq_self_zero dual_order.antisym le_add1 one_neq_zero)
+  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one clm_sing   
+  by (metis (no_types, hide_lams) add.commute add_eq_self_zero dual_order.antisym le_add1 one_neq_zero)
 
 lemma clm_sing_somewhere2:"\<Turnstile>\<^bold>\<not>  (\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>) " 
   using clm_sing_not_interrupted vertical_chop_assoc1 
@@ -500,17 +506,17 @@ proof (rule allI| rule impI)+
 qed
 
 lemma res_compose: "\<Turnstile>(re(c) \<^bold>\<frown> re(c)  \<^bold>\<rightarrow> re(c))"     
-using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def
-by (metis (no_types, lifting))
+  using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def
+  by (metis (no_types, lifting))
 
 lemma res_dense:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> re(c) \<^bold>\<frown> re(c)"
-using res_decompose res_compose by blast
+  using res_decompose res_compose by blast
 
 lemma res_continuous :"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown> ( \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
-by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right restrict_def)
+  by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right restrict_def)
 
 lemma no_clm_before_res:"\<Turnstile>\<^bold>\<not>(cl(c) \<^bold>\<frown> re(c))" using card'_dict      
-by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le disjoint hchop_def inf_assoc inf_le1 not_one_le_zero restrict_def)
+  by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le disjoint hchop_def inf_assoc inf_le1 not_one_le_zero restrict_def)
 
 lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
 proof (rule ccontr)
@@ -551,28 +557,28 @@ qed
 
 
 lemma clm_compose: "\<Turnstile>(cl(c) \<^bold>\<frown> cl(c)  \<^bold>\<rightarrow> cl(c))" 
-using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def     
-by (metis (no_types, lifting))
+  using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def     
+  by (metis (no_types, lifting))
 
 lemma clm_dense:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> cl(c) \<^bold>\<frown> cl(c)"
-using clm_decompose clm_compose by blast
+  using clm_decompose clm_compose by blast
 
 lemma clm_continuous :"\<Turnstile>(cl(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
-by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right restrict_def)
+  by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right restrict_def)
 
 
 lemma res_not_free: "\<Turnstile>(\<^bold>\<exists> c. re(c) \<^bold>\<rightarrow> \<^bold>\<not>free)" 
-using nat_int.card_empty_zero one_neq_zero card'_dict by auto
+  using nat_int.card_empty_zero one_neq_zero card'_dict by auto
 
 lemma clm_not_free: "\<Turnstile>(\<^bold>\<exists> c. cl(c) \<^bold>\<rightarrow> \<^bold>\<not>free)"
-using nat_int.card_empty_zero card'_dict by auto
+  using nat_int.card_empty_zero card'_dict by auto
 
 lemma free_no_res:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. re(c)))" 
-using nat_int.card_empty_zero one_neq_zero card'_dict 
-by (metis less_irrefl)
+  using nat_int.card_empty_zero one_neq_zero card'_dict 
+  by (metis less_irrefl)
 
 lemma free_no_clm:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. cl(c)))" 
-using nat_int.card_empty_zero one_neq_zero card'_dict by (metis less_irrefl)
+  using nat_int.card_empty_zero one_neq_zero card'_dict by (metis less_irrefl)
 
 lemma free_decompose:"\<Turnstile>free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free)"
 proof (rule allI|rule impI)+
@@ -609,13 +615,15 @@ proof (rule allI|rule impI)+
     have "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" using ex ..
     then show False
     proof
-      assume case1:"restrict v (clm ts) c \<noteq> \<emptyset>"
+      assume "restrict v (clm ts) c \<noteq> \<emptyset>"
       then show False using assm 
-        by (metis (no_types, hide_lams) add.left_neutral ex len_hchop_add restriction.restrict_def view.hchop_def)    
+        by (metis (no_types, hide_lams) add.left_neutral ex len_hchop_add restriction.restrict_def 
+            view.hchop_def)    
     next
-      assume case2:"restrict v (res ts) c \<noteq> \<emptyset>"
+      assume "restrict v (res ts) c \<noteq> \<emptyset>"
       then show False using assm 
-        by (metis (no_types, hide_lams) add.left_neutral ex len_hchop_add restriction.restrict_def view.hchop_def)  
+        by (metis (no_types, hide_lams) add.left_neutral ex len_hchop_add restriction.restrict_def 
+            view.hchop_def)  
     qed
   qed
   show "ts,v \<Turnstile>free"
@@ -624,10 +632,10 @@ qed
 
 
 lemma free_dense:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<frown> free)"
-using free_decompose free_compose by blast
+  using free_decompose free_compose by blast
 
 lemma free_dense2:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
-using horizontal_chop_empty_left horizontal_chop_empty_right       by fastforce
+  using horizontal_chop_empty_left horizontal_chop_empty_right  by fastforce
 
 
 lemma no_cars_means_free:"\<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free" 
@@ -738,29 +746,29 @@ proof (rule allI | rule impI)+
 qed
 
 lemma free_eq_no_cars:"\<Turnstile>free \<^bold>\<leftrightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
-using no_cars_means_free free_means_no_cars by blast
+  using no_cars_means_free free_means_no_cars by blast
 
 lemma free_nowhere_res:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown> (re(c)) \<^bold>\<frown> \<^bold>\<top>)"
-using free_eq_no_cars by blast
+  using free_eq_no_cars by blast
 
 lemma two_res_not_res: "\<Turnstile>((re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<not>re(c))" 
-by (metis add_eq_self_zero one_neq_zero width_add1)
+  by (metis add_eq_self_zero one_neq_zero width_add1)
 
 lemma two_clm_width: "\<Turnstile>((cl(c) \<^bold>\<smile> cl(c)) \<^bold>\<rightarrow> \<^bold>\<omega> = 2)"
-by (metis one_add_one width_add1)
+  by (metis one_add_one width_add1)
 
 
 lemma two_res_no_car: "\<Turnstile>(re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c. ( cl(c) \<^bold>\<or> re(c)) )" 
-by (metis add_eq_self_zero one_neq_zero width_add1)
+  by (metis add_eq_self_zero one_neq_zero width_add1)
 
 lemma two_lanes_no_car:"\<Turnstile>(\<^bold>\<not> \<^bold>\<omega>= 1) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
-by simp
+  by simp
 
 lemma empty_no_car:"\<Turnstile>( \<^bold>\<l> = 0) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
-by simp
+  by simp
 
 lemma car_one_lane_non_empty: "\<Turnstile>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c))) \<^bold>\<rightarrow> ((\<^bold>\<omega> =1) \<^bold>\<and> (\<^bold>\<l> > 0))"
-by blast
+  by blast
 
 
 lemma one_lane_notfree:"\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free) \<^bold>\<rightarrow> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
@@ -775,9 +783,8 @@ proof (rule allI|rule impI)+
 qed
 
 lemma one_lane_empty_or_car:"\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<rightarrow> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-using one_lane_notfree by blast
+  using one_lane_notfree by blast
 
-  
+
 end
 end
-  
