@@ -94,7 +94,7 @@ definition switch :: "view \<Rightarrow> cars \<Rightarrow> view \<Rightarrow> b
                         more v = more w"
 
 
-text{* Most of the lemmas in this theory are direct transferrals of the corrsponding
+text{* Most of the lemmas in this theory are direct transfers of the corresponding
 lemmas on discrete and continuous intervals, which implies rather simple proofs.
 The only exception is 
 the connection between subviews and the chopping operations. This proof is rather lengthy,

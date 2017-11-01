@@ -23,8 +23,8 @@ behaviour to each car. The functions are named as follows.
 \item res: reservations of cars
 \item clm: claims of cars
 \item dyn: current dynamic behaviour of cars
-\item physical_size: the real sizes of cars
-\item braking_distance: braking distance each car needs in emergency
+\item physical\_size: the real sizes of cars
+\item braking\_distance: braking distance each car needs in emergency
 \end{itemize}
 *}
 
@@ -277,7 +277,7 @@ where "  (ts \<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow> ts')  == (pos ts')
 text {* 
 The following two transitions concern the dynamical behaviour of the cars. 
 Similar to the spatial properties, a car may change its dynamics, by setting
-it to a new function f:real \<Rightarrow> real. Observe that this function is indeed 
+it to a new function \(f\) from real to real. Observe that this function is indeed 
 arbitrary and does not constrain the possible behaviour in any way. However,
 this transition allows a car to change the function determining their braking
 distance (in fact, all cars are allowed to change this function, if a car changes

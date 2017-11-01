@@ -6,10 +6,27 @@ the physical size and braking distance of all other cars.
 *)
 
 section\<open> Sensors for Cars\<close>
+text{* 
+This section presents the abstract definition of a function
+determining the sensor capabilities of cars. Such a function
+takes a car \(e\), a traffic snapshot \(ts\) and another
+car \(c\), and returns the length of \(c\) as perceived
+by \(e\) at the situation determined by \(ts\). The 
+only restriction we impose is that this length is always
+greater than zero.
+
+With such a function, we define a derived notion of the
+\emph{space} the car \(c\) occupies as perceived by \(e\).
+However, this does not define the lanes \(c\) occupies, but
+only a continuous interval. The lanes occupied by \(c\) 
+are given by the reservation and claim functions of 
+the traffic snapshot \(ts\).
+*}
   
 theory Sensors
   imports "Traffic" "Views"
 begin 
+
 locale sensors = traffic + view +
   fixes sensors::"(cars) \<Rightarrow> traffic \<Rightarrow> (cars) \<Rightarrow> real" 
   assumes sensors_ge:"(sensors e ts c) > 0"
