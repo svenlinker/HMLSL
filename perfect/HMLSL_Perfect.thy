@@ -1,11 +1,11 @@
-(*  Title:      HMLSL_Perfect.thy
+(*  Title:      perfect/HMLSL_Perfect.thy
     Author:     Sven Linker
 
 Defines HMLSL with perfect sensors for cars. Cars can perceive both
 the physical size and braking distance of all other cars.
 *)
 
-section\<open>HMLSL for perfect sensors\<close>
+section\<open>HMLSL for Perfect Sensors\<close>
 text {* 
 Within this section, we instantiate HMLSL for cars with 
 perfect sensors.
@@ -83,7 +83,7 @@ lemmas corresponding to the activity and stability rules of the
 proof system for MLSL \cite{Linker2015a}.
 
 Observe that we were not able to prove these rules for basic HMLSL, since 
-its generic sensor function allows for instantiation,s where the perceived length changes
+its generic sensor function allows for instantiations where the perceived length changes
 during spatial transitions.
 *}
   

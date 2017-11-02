@@ -1,4 +1,4 @@
-(*  Title:      imperfect/Safety_Regular.thy
+(*  Title:      regular/Safety_Regular.thy
     Author:     Sven Linker
 
 Distance and Lane change controller for cars with regular sensors.
@@ -8,6 +8,15 @@ into account and correct safety theorem.
 *)
 
 section\<open>Safety for Cars with Regular Sensors\<close>
+text{* 
+This section contains the definition of requirements for
+lane change and distance controllers for cars, with the assumption
+of regular sensors. Using these definitions, we show that safety
+is an invariant along all possible behaviour of cars. 
+However, we need to slightly amend our notion of safety, compared
+to the safety proof for perfect sensors.
+*}
+
 theory Safety_Regular
   imports HMLSL_Regular
 begin
@@ -24,7 +33,14 @@ notation hmlsl.space ("space")
 notation hmlsl.re ("re'(_')")
 notation hmlsl.cl("cl'(_')")
 notation hmlsl.len ("len")
-  
+
+text{*
+First we show that the same "safety" theorem as for perfect senors can be 
+proven. However, we will subsequently show that this theorem does not
+ensure safety from the perspective of each car.
+
+The controller definitions for this "flawed" safety are the same as for perfect sensors.
+*}
   
 abbreviation safe::"cars\<Rightarrow>\<sigma>" 
   where "safe e \<equiv> \<^bold>\<forall> c. \<^bold>\<not>(c \<^bold>= e) \<^bold>\<rightarrow> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>" 
@@ -38,7 +54,12 @@ abbreviation pcc::"cars \<Rightarrow> cars \<Rightarrow> \<sigma>"
 abbreviation LC::"\<sigma>"
   where "LC \<equiv> \<^bold>G ( \<^bold>\<forall>d.( \<^bold>\<exists> c. pcc c d) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom>)  "
     
-    
+
+text{*
+The safety proof is exactly the same as for perfect sensors. Note
+in particular, that we fix a single car \(e\) for which we show
+safety.
+*}
     
 theorem safety_flawed:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)"
 proof (rule allI|rule impI)+  
@@ -219,7 +240,17 @@ proof (rule allI|rule impI)+
     qed 
   qed
 qed
-  
+
+text{*
+As stated above, the flawed safety theorem does not ensure safety for 
+the perspective of each car.
+In particular, we can construct a traffic snapshot and a view, such that
+it satisfies our safety predicate for each car, but if we switch the
+perspective of the view to another car, the situation is unsafe. A
+visualisation of this situation can be found in the publication
+of this work at iFM 2017 \cite{Linker2017}.
+*}
+
 lemma safety_not_invariant_switch:" \<exists>ts v. (ts,v \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and> ( \<^bold>\<exists> c. \<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))"
 proof -
   obtain d c ::cars where assumption:"d \<noteq>c" using cars.at_least_two_cars_exists by best  
@@ -238,8 +269,6 @@ proof -
   have re_leq_two:"\<forall>c. |re c| \<le> 2" using nat_int.card'.rep_eq res_def nat_int.rep_single card'_dict by auto
   have cl_leq_one:"\<forall>c. |cl c| \<le> 1" using nat_int.card_empty_zero clm_def card'_dict by (simp )
   have add_leq_two:"\<forall>c . |re c| + |cl c| \<le> 2"  using nat_int.card_empty_zero clm_def re_leq_two card'_dict by (simp )
-(*  have consec_re:" \<forall>c. |(re c)| =2 \<longrightarrow> (\<exists>n . Rep_nat_int (re c) = {n,n+1})"  
-    by (simp add: Abs_nat_int_inverse nat_int.card'_def res_def card'_dict)*)
   have  clNextRe : "\<forall>c. ((cl c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. Rep_nat_int (re c) \<union> Rep_nat_int (cl c) = {n, n+1}))"
     by (simp add: clm_def)
   from dyn_def have dyn_geq_zero:"\<forall>c. \<forall>x. (dy c x) \<ge> 0" by auto
@@ -252,10 +281,8 @@ proof -
                       (\<forall>c. |(fst (snd ts)) c| \<le> 2) \<and>
                       (\<forall>c. |(fst (snd (snd ts)) c)| \<le> 1) \<and>
                       (\<forall>c. |(fst (snd ts)) c| + |(fst (snd (snd ts))) c| \<le> 2) \<and>
-(*                      (\<forall>c. |(fst (snd ts)) c| =2 \<longrightarrow> (\<exists>n . Rep_nat_int ((fst (snd ts)) c) = {n,n+1})) \<and>*)
                       (\<forall>c. ( (fst(snd(snd (ts)))) c \<noteq> \<emptyset> \<longrightarrow> 
                         (\<exists> n. Rep_nat_int ((fst (snd ts)) c) \<union> Rep_nat_int ((fst (snd (snd ts))) c) = {n, n+1}))) \<and>
-(*                      (\<forall>c t. fst (snd (snd (snd (ts)))) c t \<ge> 0)   \<and> *) 
                       (\<forall>c . fst (snd (snd (snd (snd (ts))))) c > 0) \<and>
                       (\<forall>c.  snd (snd (snd (snd (snd (ts))))) c > 0)
  } " 
@@ -438,15 +465,41 @@ proof -
   from safe and unsafe have "ts,v  \<Turnstile> \<^bold>\<forall>e. safe(e) \<^bold>\<and>  (\<^bold>\<exists> c. (\<^bold>@c  \<^bold>\<not>( \<^bold>\<forall>e. safe(e))))" by blast
   thus ?thesis by blast
 qed
-  
+
+text{*
+Now we show how to amend the controller specifications to gain safety as an invariant
+even with regular sensors.
+
+The distance controller can be strengthened, by requiring that we switch
+to the perspective of one of the cars involved first, before checking
+for the collision. Since all variables are universally quantified, 
+this ensures that no collision exists for the perspective of any car.
+*}
 abbreviation DC'::"\<sigma>"
-  where "DC' \<equiv> \<^bold>G ( \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow> ( \<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> ) \<^bold>\<rightarrow>   \<^bold>\<box>\<^bold>\<tau> \<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>)"
+  where "DC' \<equiv> \<^bold>G ( \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow> 
+                  (\<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>) \<^bold>\<rightarrow> \<^bold>\<box>\<^bold>\<tau> \<^bold>@d \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>)"
     
-    
+text{*
+The amendment to the lane change controller is slightly different. Instead
+of checking the potential collision only from the perspective of the
+car \(d\) trying to change lanes, we require that also no other car may
+perceive a potential collision. Note that the restriction to \(d\)'s
+behaviour can only be enforced within \(d\), if the information from
+the other car is somehow passed to \(d\). Hence, we require the 
+cars to communicate in some way. However, we do not need to specifiy,
+\emph{how} this communication is implemented. 
+*}
 abbreviation LC'::"\<sigma>"
   where "LC' \<equiv> \<^bold>G ( \<^bold>\<forall>d. (\<^bold>\<exists> c.  (\<^bold>@c (pcc c d)) \<^bold>\<or> (\<^bold>@d (pcc c d))) \<^bold>\<rightarrow> \<^bold>\<box>r(d) \<^bold>\<bottom> ) "
     
-    
+
+text{*
+With these new controllers, we can prove a stronger theorem than before. Instead
+of proving safety from the perspective of a single car as previously, we now
+only consider a traffic situation to be safe, if it satisfies the safety
+predicate from the perspective of \emph{all} cars. Note that this immediately
+implies the safety invariance theorem proven for perfect sensors.
+*}
 theorem safety:"\<Turnstile> (\<^bold>\<forall>e. \<^bold>@e ( safe e ) ) \<^bold>\<and> DC' \<^bold>\<and> LC' \<^bold>\<rightarrow>  \<^bold>G(\<^bold>\<forall> e.  \<^bold>@ e (safe e))"
 proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
   fix ts v ts' e
