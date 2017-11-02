@@ -1,4 +1,4 @@
-(*  Title:      perfect/MLSL_p.thy
+(*  Title:      HMLSL.thy
     Author:     Sven Linker
 
 Definition of HMLSL syntax over traffic snapshots and views for cars
@@ -7,11 +7,24 @@ and view as parameters, and evaluates to True or False.
 *)
 
 section\<open>Basic HMLSL\<close>
+text{* 
+In this section, we define the basic formulas of HMLSL. 
+All of these basic formulas and theorems are independent 
+of the choice of sensor function. However, they show how
+the general operators (chop, changes in perspective, 
+atomic formulas) work. 
+*}
+
 theory HMLSL
   imports   "Restriction" "Move" Length
 begin
 
-text {* the type of formulas  *}
+subsection{*Syntax of Basic HMLSL*}
+
+text {* 
+Formulas are functions associating a traffic snapshot
+and a view with a Boolean value.
+*}
 type_synonym \<sigma> = " traffic \<Rightarrow> view \<Rightarrow> bool"
 
 locale hmlsl = restriction+
@@ -24,6 +37,15 @@ sublocale hmlsl<sensors
 
 context hmlsl
 begin
+text{* 
+All formulas are defined as abbreviations. As a consequence,
+proofs will directly refer to the semantics of HMLSL, i.e.,
+traffic snapshots and views.
+*}
+
+text{*
+The first-order operators are direct translations into HOL operators.
+*}
 
 abbreviation mtrue  :: "\<sigma>" ("\<^bold>\<top>")
   where "\<^bold>\<top> \<equiv> \<lambda> ts w. True" 
@@ -54,7 +76,13 @@ abbreviation meq    :: "'a\<Rightarrow>'a\<Rightarrow>\<sigma>" (infixr"\<^bold>
 abbreviation mgeq :: "('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>\<ge>" 60)
   where "x \<^bold>\<ge> y \<equiv> \<lambda> ts w. x \<ge> y" 
 abbreviation mge ::"('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>>" 60)
-  where "x \<^bold>> y \<equiv> \<lambda> ts w. x > y" 
+  where "x \<^bold>> y \<equiv> \<lambda> ts w. x > y"
+
+text{*
+For the spatial modalities, we use the chopping operations
+defined on views. Observe that our chop modalities are existential.
+*}
+
 abbreviation hchop   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr "\<^bold>\<frown>" 53)
   where "\<phi> \<^bold>\<frown> \<psi> \<equiv> \<lambda> ts w.\<exists>v u. (w=v\<parallel>u) \<and> \<phi>(ts)(v)\<and>\<psi>(ts)(u)"
 abbreviation vchop   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr "\<^bold>\<smile>" 53)
@@ -63,6 +91,21 @@ abbreviation somewhere ::"\<sigma>\<Rightarrow>\<sigma>" ( "\<^bold>\<langle>_\<
   where "\<^bold>\<langle>\<phi>\<^bold>\<rangle> \<equiv> \<^bold>\<top> \<^bold>\<frown> (\<^bold>\<top>\<^bold>\<smile>\<phi> \<^bold>\<smile>\<^bold>\<top>)\<^bold>\<frown>\<^bold>\<top>"
 abbreviation everywhere::"\<sigma>\<Rightarrow>\<sigma>" ("\<^bold>[_\<^bold>]" 55)
   where "\<^bold>[\<phi>\<^bold>] \<equiv> \<^bold>\<not>\<^bold>\<langle>\<^bold>\<not>\<phi>\<^bold>\<rangle>"
+
+text{*
+To change the perspective of a view, we use 
+an operator in the fashion of Hybrid Logic.
+*}
+abbreviation at :: "cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma> " ("\<^bold>@ _ _" 56)
+  where "\<^bold>@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
+
+text{*
+The behavioural modalities are defined as usual modal
+box-like modalities, where the accessibility relations
+are given by the different types of transitions between
+traffic snapshots.
+*}
+
 abbreviation res_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>r'(_') _" 55)
   where "\<^bold>\<box>r(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)" 
 abbreviation clm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>c'(_') _" 55)
@@ -75,21 +118,37 @@ abbreviation time_box::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>\<^bold
   where "\<^bold>\<box>\<^bold>\<tau> \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts\<^bold>\<leadsto>ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)" 
 abbreviation globally::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>G _" 55)
   where "\<^bold>G \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts \<^bold>\<Rightarrow> ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)"
-abbreviation at :: "cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma> " ("\<^bold>@ _ _" 56)
-  where "\<^bold>@c \<phi> \<equiv> \<lambda>ts w .  \<forall>v'. (w=c>v') \<longrightarrow> \<phi>(ts)(v')"
+
+
+text{*
+The spatial atoms to refer to reservations, claims
+and free space are direct translations of the original
+definitions of MLSL \cite{Hilscher2011} into the Isabelle implementation.
+*}
 
 abbreviation re:: "cars \<Rightarrow> \<sigma>" ("re'(_')" 70)
   where 
-    "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> restrict v (res ts) c = lan v \<and>  |lan v|=1" 
+    "re(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> 
+                      restrict v (res ts) c = lan v \<and> |lan v|=1" 
 
 abbreviation cl:: "cars \<Rightarrow> \<sigma>" ("cl'(_')" 70)
   where 
-    "cl(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> restrict v (clm ts) c = lan v \<and> |lan v| = 1" 
+    "cl(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> 
+                      restrict v (clm ts) c = lan v \<and> |lan v| = 1" 
 
 abbreviation free:: "\<sigma>" ("free")
   where 
     "free == \<lambda> ts v. \<parallel>ext v\<parallel> > 0 \<and> |lan v| = 1 \<and>
-                  (\<forall>c.  \<parallel>len v ts c\<parallel> = 0 \<or> (restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>))"  
+                  (\<forall>c.  \<parallel>len v ts c\<parallel> = 0 \<or> 
+                    (restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>))"  
+
+text{*
+Even though we do not need them for the subsequent proofs of safety,
+we define ways to measure the number of lanes (width) and the
+size of the extension (length) of a view. This allows us 
+to connect the atomic formulas for reservations and claims
+with the atom denoting free space \cite{Linker2015a}.
+*}
 
 abbreviation width_eq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> = _ " 60)
   where "\<^bold>\<omega> = n == \<lambda>  ts v. |lan v| = n"  
@@ -109,13 +168,21 @@ abbreviation length_ge:: "real \<Rightarrow> \<sigma>" ("\<^bold>\<l> > _" 60)
 abbreviation length_geq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> \<ge> _" 60)
   where "\<^bold>\<l> \<ge> r == (\<^bold>\<l> = r) \<^bold>\<or> (\<^bold>\<l> > r)"
 
+
+text{*
+For convenience, we use abbreviations for 
+the validity and satisfiability of formulas. While
+the former gives a nice way to express theorems, 
+the latter is useful within proofs.
+*}
+
 abbreviation valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
   where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>v. \<phi>(ts)(v)"
 
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
   where "ts,v \<Turnstile> \<phi> == \<phi>(ts)(v)"
 
-text {* Some general theorems about MLSL *}
+subsection {* Theorems about Basic HMLSL *}
 
 lemma hchop_weaken1: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) " 
   using horizontal_chop_empty_right  by fastforce
@@ -258,7 +325,6 @@ lemma spatial_weaken: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<lang
 lemma spatial_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<psi>) \<^bold>\<rightarrow> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<psi>\<^bold>\<rangle>)"
   using spatial_weaken horizontal_chop_empty_left horizontal_chop_empty_right 
     vertical_chop_empty_down vertical_chop_empty_up by blast 
-
 
 lemma somewhere_distr: "\<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle>" 
   by blast
@@ -418,26 +484,48 @@ proof (rule allI|rule notI)+
     by (metis (no_types, lifting) chop consec_vn_v2 nat_int.consec_def nat_int.chop_min vchop_def)
   hence lesser_con:"\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan v2) \<longrightarrow> n < m)" using consec_v1_vn consec_vn_v2 nat_int.consec_trans_lesser 
     using el_dict by auto
-  have p_in_v1:"p \<^bold>\<in> lan v1"  
+  have p_in_v1:"p \<^bold>\<in> lan v1" 
   proof (rule ccontr)
     assume "\<not> p \<^bold>\<in> lan v1"
     then have "p \<^bold>\<notin> lan v1" using el_dict not_in_dict by (simp )
     hence "p \<^bold>\<notin> restrict v1 (res ts) c"  using chop  by (simp add: chop )
-    then have "p+1 \<^bold>\<in> restrict v1 (res ts) c" using p_def res_two_lanes el_dict not_in_dict consec_dict using   card'_dict   el_dict not_in_dict 
-      by (metis (no_types, lifting) chop consec_v1_v' equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
+    then have "p+1 \<^bold>\<in> restrict v1 (res ts) c"  
+    proof -
+       have "{p, p + 1} \<inter> (Rep_nat_int (res ts c) \<inter> Rep_nat_int (lan v1)) \<noteq> {}"
+        by (metis chop Rep_nat_int_inject bot_nat_int.rep_eq consec_v1_v' inf_nat_int.rep_eq nat_int.consec_def p_def restriction.restrict_def)
+      then have "p + 1 \<in> Rep_nat_int (lan v1)"
+        using \<open>p \<^bold>\<notin> restrict v1 (res ts) c\<close> inf_nat_int.rep_eq not_in.rep_eq restriction.restrict_def by force
+      then show ?thesis
+        using chop el.rep_eq by presburger
+    qed
     hence suc_p:"p+1 \<^bold>\<in> lan v1" using chop by (simp add: chop)
     hence "p+1 \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq not_in_dict el_dict by auto
-    then have "p \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes res_def el_dict not_in_dict consec_dict using   card'_dict  
-        (* SLOW! *)
-      by (metis (no_types, lifting) chop  consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
+    then have "p \<^bold>\<in> restrict v2 (res ts) c"
+    proof -
+      have f1: "minimum (lan v2) \<in> Rep_nat_int (lan v2)"
+        using consec_vn_v2 el.rep_eq minimum_in nat_int.consec_def by blast
+      have "lan v2 \<sqsubseteq> res ts c"
+        by (metis (no_types) chop restriction.restrict_res)
+      then have "minimum (lan v2) = p" 
+        using \<open>p + 1 \<^bold>\<notin> lan v2\<close> f1 less_eq_nat_int.rep_eq not_in.rep_eq p_def by auto
+      then show ?thesis
+        using f1 by (metis chop el.rep_eq)
+    qed
     hence p:"p \<^bold>\<in> lan v2" using p_def restrict_def 
       using chop by auto
     show False using lesser_con suc_p p by blast
   qed
-  hence "p \<^bold>\<notin> lan v2" using p_def restrict_def using lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
-  then have "p+1 \<^bold>\<in> restrict v2 (res ts) c" using p_def res_two_lanes consec_dict el_dict not_in_dict using   card'_dict  
-      (* SLOW! *)
-    by (metis (no_types, lifting) chop consec_vn_v2 equals0D nat_int.consec_def nat_int.el.rep_eq nat_int.not_in.rep_eq less_eq_nat_int.rep_eq nat_int.non_empty_elem_in restrict_res singletonI subset_insert subset_singletonD)
+  hence p_not_in_v2:"p \<^bold>\<notin> lan v2" using p_def restrict_def lesser_con nat_int.el.rep_eq nat_int.not_in.rep_eq el_dict not_in_dict by auto
+  then have "p+1 \<^bold>\<in> restrict v2 (res ts) c"
+  proof -
+    have f1: "minimum (lan v2) \<^bold>\<in> lan v2"
+      using consec_vn_v2 minimum_in nat_int.consec_def by blast
+    obtain x where mini:"x = minimum (lan v2)" by blast
+    have "x = p + 1"  
+      by (metis IntD1 p_not_in_v2  chop el.rep_eq f1 inf_nat_int.rep_eq insertE mini not_in.rep_eq p_def restriction.restrict_def singletonD)
+    then show ?thesis 
+      using chop f1 mini by auto
+  qed
   hence suc_p_in_v2:"p+1 \<^bold>\<in> lan v2" using p_def restrict_def using chop by auto
   have lesser_con1: "\<forall>n m. (n \<^bold>\<in> (lan v1) \<and> m \<^bold>\<in> (lan vn) \<longrightarrow> n < m)" using consec_v1_vn nat_int.consec_lesser el_dict by auto
   have lesser_con2: "\<forall>n m. (n \<^bold>\<in> (lan vn) \<and> m \<^bold>\<in> (lan v2) \<longrightarrow> n < m)" using consec_vn_v2 nat_int.consec_lesser el_dict by auto
@@ -637,6 +725,11 @@ lemma free_dense:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<fro
 lemma free_dense2:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
   using horizontal_chop_empty_left horizontal_chop_empty_right  by fastforce
 
+text {*
+The next lemmas show the connection between the spatial. In particular,
+if the view consists of one lane and a non-zero extension, where neither
+a reservation nor a car resides, the view satisfies free (and vice versa). 
+*}
 
 lemma no_cars_means_free:"\<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free" 
 proof (rule allI|rule impI)+

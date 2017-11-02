@@ -1,3 +1,18 @@
+(*  Title:      perfect/Perfect_Sensors.thy
+    Author:     Sven Linker
+
+Instantiation of the sensor function to model "perfect sensors". That is,
+each car can perceive both the physical size as well as the concrete
+braking distance of all other cars.
+*)
+
+section {*Perfect Sensors*}
+text{*
+This section contains an instantiations of the sensor function for 
+"perfect sensors". That is, each car can perceive both the physical
+size as well as the braking distance of each other car. 
+*}
+
 theory Perfect_Sensors
   imports  "../Length"
 begin
@@ -7,6 +22,7 @@ definition perfect::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow>
     
 locale perfect_sensors = traffic+view
 begin
+
 interpretation perfect_sensors : sensors "perfect :: cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
 proof unfold_locales
   fix e ts c
@@ -16,23 +32,14 @@ qed
   
 notation perfect_sensors.space ("space")
 notation perfect_sensors.len ("len")
-  
-lemma "pos ts = pos ts' \<and> braking_distance ts = braking_distance ts' \<and> physical_size ts= physical_size ts' 
-        \<longrightarrow> space ts v c = space ts' v c"  
-proof
-  assume assm:"pos ts = pos ts' \<and> braking_distance ts = braking_distance ts' \<and> physical_size ts= physical_size ts'"  
-  then have left:"left (space ts v c) = left (space ts' v c)" using  perfect_sensors.space_nonempty Abs_real_int_inverse   perfect_def
-    by (simp add: perfect_sensors.space_def )
-  from assm have "\<forall>e. perfect e ts c = perfect e ts' c" using perfect_def pos_def braking_distance_def physical_size_def 
-    by (simp add:  )
-  hence " perfect (own v) ts c = perfect (own v) ts' c" by simp
-  then have "pos ts c  + perfect (own v) ts c = pos ts' c + perfect (own v) ts' c" using assm by simp
-  with assm have right:"right (space ts v c) = right (space ts' v c)" using Abs_real_int_inverse fst_conv snd_conv perfect_sensors.space_def  right.rep_eq
-    by (simp add: perfect_sensors.space_def )
-  from left and right show "space ts v c = space ts' v c" 
-    by (simp add: dual_order.antisym less_eq_real_int_def)
-qed
-  
+
+text{* 
+With this sensor definition, we can show that the perceived length of a car
+is independent of the spatial transitions between traffic snapshots. The 
+length may only change during evolutions, in particular if the car changes its dynamical
+behaviour.
+*}
+
 lemma create_reservation_length_stable:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts') \<longrightarrow> (len v ts c) = len v ts' c"
 proof
   assume assm:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts')"
@@ -154,6 +161,12 @@ proof
     qed
   qed
 qed
+
+text{*
+The following lemma shows that the perceived length is independent from
+the owner of the view. That is, as long as two views consist of the same 
+extension, the perceived length of each car is the same in both views.
+*}
   
 lemma all_own_ext_eq_len_eq:"ext v = ext v'  \<longrightarrow> len v ( ts) c = len v' ( ts) c"
 proof
@@ -185,14 +198,14 @@ proof
     qed
   qed
 qed
-  (* switch lemmas *)
-lemma switch_length_stable:"(v=c>v') \<longrightarrow> len v ts c = len v' ts c"
-  using all_own_ext_eq_len_eq view.switch_def 
-  by metis
+
+text{* 
+Finally, switching the perspective of a view does not change the
+perceived length.
+*}
     
-    
-lemma arbitrary_switch_length_stable:"(v=d>v') \<longrightarrow> len v ts c = len v' ts c"
+lemma switch_length_stable:"(v=d>v') \<longrightarrow> len v ts c = len v' ts c"
   using all_own_ext_eq_len_eq view.switch_def  by metis
-    
+
 end
 end

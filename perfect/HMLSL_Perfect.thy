@@ -1,12 +1,17 @@
-(*  Title:     HMLSL_Perfect.thy
+(*  Title:      HMLSL_Perfect.thy
     Author:     Sven Linker
 
-Defines perfect sensors for cars. Cars can perceive both
+Defines HMLSL with perfect sensors for cars. Cars can perceive both
 the physical size and braking distance of all other cars.
 *)
 
 section\<open>HMLSL for perfect sensors\<close>
-  
+text {* 
+Within this section, we instantiate HMLSL for cars with 
+perfect sensors.
+*}
+
+
 theory HMLSL_Perfect
   imports "../HMLSL" "Perfect_Sensors"
 begin
@@ -26,10 +31,15 @@ qed
 notation hmlsl.re ("re'(_')")
 notation hmlsl.cl("cl'(_')")
 notation hmlsl.len ("len")
-  
+
+text {*
+ The spatial atoms are independent of the perspective of the view. 
+Hence we can prove several lemmas on the relation between the hybrid modality
+and the spatial atoms.
+ *}
   
 lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. \<^bold>@d re(c))" 
-  by (metis (no_types, lifting) perfect_sensors.arbitrary_switch_length_stable restriction.switch_restrict_stable view.switch_def)
+  by (metis (no_types, lifting) perfect_sensors.switch_length_stable restriction.switch_restrict_stable view.switch_def)
     
 lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d re(c)) \<^bold>\<rightarrow> re(c)" 
   using view.switch_refl by blast
@@ -47,24 +57,16 @@ proof (rule allI|rule impI)+
     by (metis (no_types, lifting) all_own_ext_eq_len_eq)
 qed
   
-  
 lemma at_clm1:"\<Turnstile>cl(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. \<^bold>@d cl(c))"
   by (metis (no_types, lifting)  all_own_ext_eq_len_eq view.switch_def restriction.switch_restrict_stable)
     
-lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c)) \<^bold>\<rightarrow> cl(c)"
-proof (rule allI|rule impI)+
-  fix ts v
-  assume assm:"ts,v \<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c))"
-  obtain v' where v'_def:"(v=(own v)> v') " using view.switch_refl by auto
-  with assm have v':"ts,v' \<Turnstile> cl(c)" by blast
-  have "v = v'" using v'_def view.switch_refl view.switch_unique by blast
-  with v' show "ts,v \<Turnstile>cl(c)" by blast
-qed
+lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c)) \<^bold>\<rightarrow> cl(c)" 
+  using view.switch_def by auto
   
 lemma at_clm:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. \<^bold>@d cl(c))"
   using at_clm1 at_clm2 by blast
     
-lemma at_clm_inst:"\<Turnstile> (\<^bold>@d cl(c)) \<^bold>\<rightarrow>cl(c)"
+lemma at_clm_inst:"\<Turnstile> (\<^bold>@d cl(c)) \<^bold>\<rightarrow>cl(c)" 
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>( \<^bold>@d cl(c))"
@@ -73,9 +75,19 @@ proof (rule allI|rule impI)+
   with v' show "ts,v \<Turnstile>cl(c)" using restriction.switch_restrict_stable switch_length_stable v'_def view.switch_def 
     by (metis (no_types, lifting) all_own_ext_eq_len_eq)
 qed
+
+text{*
+With the definition of sensors, we can also express how the spatial situation
+changes after the different transitions. In particular, we can prove 
+lemmas corresponding to the activity and stability rules of the
+proof system for MLSL \cite{Linker2015a}.
+
+Observe that we were not able to prove these rules for basic HMLSL, since 
+its generic sensor function allows for instantiation,s where the perceived length changes
+during spatial transitions.
+*}
   
-  
-lemma backwards_res_act:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))"
+lemma backwards_res_act:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))" 
 proof
   assume assm:"(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c))"
   from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
@@ -84,7 +96,7 @@ proof
   have "clm ts c \<sqsubseteq> res ts' c" using assm traffic.create_res_subseteq2 by blast
   hence restr_subs_clm:"restrict v (clm ts) c \<sqsubseteq> restrict v (res ts') c" by (simp add: restriction.restrict_view assm)
   have "restrict v (res ts) c = \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>" by simp
-  then show " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
+  then show " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" 
   proof
     assume restr_res_nonempty:"restrict v (res ts) c \<noteq> \<emptyset>"
     hence restrict_one:"|restrict v (res ts) c | = 1" 
@@ -95,34 +107,21 @@ proof
     thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
   next
     assume restr_res_empty:"restrict v (res ts) c = \<emptyset>"
-    have "restrict v (clm ts) c = \<emptyset> \<or> restrict v (clm ts) c \<noteq> \<emptyset>" by simp
-    thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
-    proof
-      assume clm_non_empty:"restrict v (clm ts) c \<noteq> \<emptyset>"
-      hence restrict_one:"|restrict v (clm ts) c | = 1" 
-        using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_clm assm using card'_dict by fastforce
-      have "restrict v (clm ts ) c \<sqsubseteq> lan v" using restr_subs_clm assm by auto
-      hence "restrict v (clm ts)c = lan v" using restriction.restrict_eq_lan_subs using restrict_one assm by auto
-      thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
-    next
-      assume clm_empty:"restrict v (clm ts) c = \<emptyset>"
-      hence "restrict v (clm ts) c \<squnion> restrict v (res ts) c = \<emptyset>" using nat_int.chop_empty nat_int.nchop_def restr_res_empty union_dict by auto                  
-      hence "restrict v (res ts') c \<noteq> restrict v (clm ts) c \<squnion> restrict v (res ts) c"  using assm traffic.create_reservation_def 
-        using nat_int.card_empty_zero assm card'_dict by auto
-      hence False using restriction.create_reservation_restrict_union assm clm_empty restr_res_empty 
-        by metis
-      thus ?thesis by simp
-    qed
+    then have clm_non_empty:" restrict v (clm ts) c \<noteq> \<emptyset>" 
+      by (metis assm inter_empty2 local.hmlsl.free_no_clm restriction.create_reservation_restrict_union restriction.restrict_def' un_empty_absorb1)
+    hence restrict_one:"|restrict v (clm ts) c | = 1" 
+      using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym restr_subs_clm assm using card'_dict by fastforce
+    have "restrict v (clm ts ) c \<sqsubseteq> lan v" using restr_subs_clm assm by auto
+    hence "restrict v (clm ts)c = lan v" using restriction.restrict_eq_lan_subs using restrict_one assm by auto
+    thus " ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" using assm len_eq by auto
   qed
 qed
   
+lemma backwards_res_act_somewhere:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle>) \<longrightarrow> (ts,v \<Turnstile>\<^bold>\<langle> re(c) \<^bold>\<or> cl(c)\<^bold>\<rangle> )"
+  using backwards_res_act by blast 
+
 lemma backwards_res_stab:"(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
-proof
-  assume assm:"(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c))"
-  from assm have len_eq:"len v ts c = len v ts' c" using create_reservation_length_stable by blast
-  have "res ts c = res ts' c" using assm traffic.create_res_subseteq1_neq by blast
-  thus " ts,v \<Turnstile> (re(c))" using assm len_eq restriction.restrict_def by auto
-qed
+  using perfect_sensors.create_reservation_length_stable restriction.restrict_def' traffic.create_res_subseteq1_neq by auto
   
 lemma backwards_c_res_stab:"(ts \<^bold>\<midarrow>c(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
   using create_claim_length_stable traffic.create_clm_eq_res 
@@ -133,47 +132,25 @@ lemma backwards_wdc_res_stab:"(ts \<^bold>\<midarrow>wdc(d) \<^bold>\<rightarrow
   by (metis (mono_tags, lifting) traffic.withdraw_claim_def) 
     
 lemma backwards_wdr_res_stab:"(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))" 
-proof (rule allI| rule impI)+
-  assume assm: "(ts \<^bold>\<midarrow>wdr(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c))"
-  show "ts,v \<Turnstile> re(c)" 
-  proof (cases "c=d")
-    case True
-then have wdr_conseq:"res ts' c = Abs_nat_int{n} \<and> n \<^bold>\<in> res ts c" using withdraw_reservation_def  
-      using assm  by auto
-    then have "lan v =  Abs_nat_int{n}" using assm   Abs_nat_int_inverse  
-      by (metis (no_types, lifting) Rep_nat_int card_subset_less inf_le1 le_less less_irrefl rep_single restriction.restrict_def singleton2)    
-    then show ?thesis 
-      by (metis assm inf.absorb1 perfect_sensors.withdraw_reservation_length_stable restriction.restrict_def' traffic.withdraw_res_subseteq wdr_conseq)
-  next
-    case False
-    then have "res ts c = res ts' c" 
-      using assm withdraw_reservation_def by auto
-    then show ?thesis 
-      using assm perfect_sensors.withdraw_reservation_length_stable restriction.restrict_def by auto
-  qed
-qed
+  by (metis inf.absorb1 order_trans perfect_sensors.withdraw_reservation_length_stable restriction.restrict_def' restriction.restrict_res traffic.withdraw_res_subseteq)
 
+text{*
+We now proceed to prove the \emph{reservation lemma}, which was 
+crucial in the manual safety proof \cite {Hilscher2011}. 
+*}
 lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)"
 proof (rule allI| rule impI)+ 
   fix ts v ts'
   assume assm:"ts,v \<Turnstile>re(c) \<^bold>\<or> cl(c)" and ts'_def:"ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts'"
-  from assm show "ts',v \<Turnstile>  re(c)"
+  from assm show "ts',v \<Turnstile>  re(c)" 
   proof
     assume re:"ts,v \<Turnstile>re(c)"
-    have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
-    have restrict:"restrict v (res ts ) c = restrict v (res ts' ) c" 
-      by (metis (no_types, lifting) inf_absorb2 order_trans re restriction.restrict_def restriction.restrict_res traffic.create_res_subseteq1 ts'_def) 
-    show  re':"ts',v \<Turnstile> re(c)" using len_eq ts'_def restrict 
-      using re by auto
+    show ?thesis 
+      by (metis inf.absorb1 order_trans perfect_sensors.create_reservation_length_stable re restriction.restrict_def' restriction.restrict_subseteq traffic.create_res_subseteq1 ts'_def)
   next
     assume cl:"ts,v \<Turnstile>cl(c)"
-    have len_eq:"len v ts c = len v ts' c" using ts'_def create_reservation_length_stable by blast
-    have "(clm ts) c \<sqsubseteq> res ts' c"     
-      by (simp add: traffic.create_res_subseteq2 ts'_def)
-    then have restrict:"restrict v (clm ts ) c \<sqsubseteq> restrict v (res ts' ) c" using traffic.create_res_subseteq2 ts'_def  less_eq_nat_int.rep_eq 
-      using eq_iff by (metis (no_types) cl inf.orderE inf_commute order_trans restriction.restrict_clm restriction.restrict_def)
-    show  re':"ts',v \<Turnstile> re(c)" using len_eq cl restrict 
-      using  restriction.restrict_def by (simp add: inf_absorb1 inf_commute)
+    show ?thesis 
+      by (metis cl inf.absorb1 order_trans perfect_sensors.create_reservation_length_stable restriction.restrict_def' restriction.restrict_subseteq traffic.create_res_subseteq2 ts'_def)
   qed
 qed
   
@@ -182,10 +159,6 @@ lemma reservation2: "(\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarro
     
 lemma reservation:"\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<leftrightarrow> (re(c) \<^bold>\<or> cl(c))"
   using reservation1 reservation2 by blast
-    
-lemma backwards_res_act_somewhere:"(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle>) \<longrightarrow> (ts,v \<Turnstile>\<^bold>\<langle> re(c) \<^bold>\<or> cl(c)\<^bold>\<rangle> )"
-  using backwards_res_act by blast 
-
 end
 end
   

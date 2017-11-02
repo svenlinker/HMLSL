@@ -52,6 +52,5 @@ qed
 lemma space_nonempty:"left (space ts v c ) < right (space ts v c)" 
   using left_space right_space sensors_ge by simp
     
-    
 end
 end
