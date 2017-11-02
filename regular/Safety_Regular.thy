@@ -498,7 +498,7 @@ With these new controllers, we can prove a stronger theorem than before. Instead
 of proving safety from the perspective of a single car as previously, we now
 only consider a traffic situation to be safe, if it satisfies the safety
 predicate from the perspective of \emph{all} cars. Note that this immediately
-implies the safety invariance theorem proven for perfect sensors.
+implies the safety invariance theorem proven for perfect sensors. 
 *}
 theorem safety:"\<Turnstile> (\<^bold>\<forall>e. \<^bold>@e ( safe e ) ) \<^bold>\<and> DC' \<^bold>\<and> LC' \<^bold>\<rightarrow>  \<^bold>G(\<^bold>\<forall> e.  \<^bold>@ e (safe e))"
 proof (rule allI; rule allI;rule impI; rule allI; rule impI; rule allI)
