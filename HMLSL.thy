@@ -37,6 +37,9 @@ sublocale hmlsl<sensors
 
 context hmlsl
 begin
+
+lemmas[simp] = minimum_dict maximum_dict
+
 text{* 
 All formulas are defined as abbreviations. As a consequence,
 proofs will directly refer to the semantics of HMLSL, i.e.,
@@ -503,7 +506,7 @@ proof (rule allI|rule notI)+
     then have "p \<^bold>\<in> restrict v2 (res ts) c"
     proof -
       have f1: "minimum (lan v2) \<in> Rep_nat_int (lan v2)"
-        using consec_vn_v2 el.rep_eq minimum_in nat_int.consec_def by blast
+        using consec_vn_v2 el.rep_eq minimum_in nat_int.consec_def by simp
       have "lan v2 \<sqsubseteq> res ts c"
         by (metis (no_types) chop restriction.restrict_res)
       then have "minimum (lan v2) = p" 
@@ -519,7 +522,7 @@ proof (rule allI|rule notI)+
   then have "p+1 \<^bold>\<in> restrict v2 (res ts) c"
   proof -
     have f1: "minimum (lan v2) \<^bold>\<in> lan v2"
-      using consec_vn_v2 minimum_in nat_int.consec_def by blast
+      using consec_vn_v2 minimum_in nat_int.consec_def by simp
     obtain x where mini:"x = minimum (lan v2)" by blast
     have "x = p + 1"  
       by (metis IntD1 p_not_in_v2  chop el.rep_eq f1 inf_nat_int.rep_eq insertE mini not_in.rep_eq p_def restriction.restrict_def singletonD)
