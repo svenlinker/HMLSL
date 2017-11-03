@@ -384,7 +384,7 @@ proof
     using consec_def by blast
   have "Rep_nat_int i \<union> Rep_nat_int j =  {minimum i.. maximum j}" 
     by (metis assm nat_int.leq_max_sup nat_int.leq_min_inf nat_int.maximum_def 
-        nat_int.minimum_def nat_int.rep_non_empty_means_seq nat_int.un_consec_seq)          
+        nat_int.minimum_def nat_int.rep_non_empty_means_seq nat_int.un_consec_seq)
   then show "j \<sqsubseteq> i \<squnion> j" using Abs_nat_int_inverse Rep_nat_int
     by (metis (mono_tags, lifting) Un_upper2 less_eq_nat_int.rep_eq mem_Collect_eq
         nat_int.union_def)
@@ -465,7 +465,7 @@ proof
         nat_int.consec_un nat_int.el.rep_eq nat_int.in_not_in_iff1 nat_int.leq_max_sup')
   then show "maximum j = maximum (i \<squnion> j)" 
     by (metis Rep_nat_int_inverse assm atLeastAtMost_iff bot.extremum_uniqueI
-        le_antisym local.consec_def nat_int.consec_un_element2 nat_int.el.rep_eq 
+        le_antisym local.consec_def nat_int.consec_un_element2 nat_int.el.rep_eq
         nat_int.leq_max_sup' nat_int.maximum_in nat_int.un_subset2 rep_non_empty_means_seq)
 qed
 
@@ -715,10 +715,10 @@ proof
   then have "(Rep_nat_int i) \<inter> (Rep_nat_int j) = {}" 
     by (metis bot_nat_int.rep_eq inf_nat_int.rep_eq)
   then have 1: 
-      "card ((Rep_nat_int i) \<union> (Rep_nat_int j)) = card(Rep_nat_int i)+card(Rep_nat_int j)"
-    by (metis Int_iff add.commute add.left_neutral assm card.infinite card_Un_disjoint emptyE
-        le_add1 le_antisym local.consec_def nat_int.card'.rep_eq nat_int.card_min_max
-        nat_int.el.rep_eq nat_int.maximum_in nat_int.minimum_in)
+    "card((Rep_nat_int i)\<union>(Rep_nat_int j))=card(Rep_nat_int i)+card(Rep_nat_int j)"
+    by (metis Int_iff add.commute add.left_neutral assm card.infinite card_Un_disjoint
+        emptyE le_add1 le_antisym local.consec_def nat_int.card'.rep_eq
+        nat_int.card_min_max nat_int.el.rep_eq nat_int.maximum_in nat_int.minimum_in)
   then show "|i \<squnion> j| = |i| + |j|" 
   proof -
     have f1: "i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> maximum i + 1 = minimum j"
@@ -782,9 +782,9 @@ proof (induct x)
         thus False by (simp add: x_neq_0)
       qed
       hence "n \<le> (m-1)" by simp
-      obtain i' where  "i' = Abs_nat_int {n..m-1}" by blast
-      have card_i':"|i'| = x" 
-        using \<open>i' = Abs_nat_int {n..m - 1}\<close> assm_IS card'_dict leq_nat_non_empty n_le_m
+      obtain i' where  i_def:"i' = Abs_nat_int {n..m-1}" by blast
+      then have card_i':"|i'| = x" 
+        using assm_IS card'_dict leq_nat_non_empty n_le_m
           nat_int_class.card_min_max nat_int_class.leq_max_sup' nat_int_class.leq_min_inf'
           seq_def by auto
       hence "Rep_nat_int i' = {} \<or> (\<exists>n. Rep_nat_int i' = {n.. n + (x - 1)})" 
@@ -795,7 +795,7 @@ proof (induct x)
       hence "m = n +x" using n_le_m x_ge_0 by linarith
       hence "( Rep_nat_int i = {n.. n + (Suc x -1) })" using seq_def by (simp )
       hence "\<exists>n. (Rep_nat_int i = {n.. n + (Suc x -1) })" ..
-      then show  "Rep_nat_int i = {} \<or> (\<exists>n. (Rep_nat_int i = {n.. n + (Suc x -1) }))" 
+      then show "Rep_nat_int i = {} \<or> (\<exists>n. Rep_nat_int i ={n.. n + (Suc x-1)})"
         by blast
     qed
   qed
@@ -860,7 +860,7 @@ proof
           "{n+x..n+(x+y)-1} \<in> {S.(\<exists> (m::nat) n . m \<le> n \<and> {m..n }=S) \<or> S={}}"
           by blast
         have consec: "consec j k" 
-          by (metis j_def k_def One_nat_def Suc_leI add.assoc diff_add n_le consec_def 
+          by (metis j_def k_def One_nat_def Suc_leI add.assoc diff_add n_le consec_def
               leq_max_sup' leq_min_inf' leq_nat_non_empty neq0_conv x_le x_neq_0)
         have union:"i = j \<squnion> k" 
           by (metis Rep_nat_int_inverse consec j_def k_def n_def n_le nat_int.consec_un_min_max

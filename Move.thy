@@ -23,7 +23,7 @@ begin
 
 context traffic 
 begin  
-lemmas[simp] = shift_dict
+lemmas[simp] = shift_dict length_dict
 
 definition move::"traffic \<Rightarrow> traffic \<Rightarrow> view \<Rightarrow> view"
   where "move ts ts' v = \<lparr> ext = shift (ext v) ((pos ts' (own v)) - pos ts (own v)), lan = lan v, own =own v \<rparr>"

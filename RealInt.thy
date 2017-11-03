@@ -52,7 +52,8 @@ definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift 
   where "(shift r x) = Abs_real_int(left r +x, right r +x)"
 
 definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop'(_,_,_')" 51)
-  where rchop_def :" R_Chop(r,s,t) ==  left r  = left s \<and> right s = left t \<and> right r =  right t"
+  where rchop_def :
+    "R_Chop(r,s,t) ==  left r  = left s \<and> right s = left t \<and> right r =  right t"
         
 end
 
@@ -70,8 +71,9 @@ proof
   show "(r < s) = (r \<le> s \<and> \<not> s \<le> r)" using less_eq_real_int_def less_real_int_def by auto
   show "r \<le> r" using less_eq_real_int_def by auto
   show "r \<le> s \<Longrightarrow> s \<le> t \<Longrightarrow> r \<le> t" using less_eq_real_int_def by auto
-  show "r \<le> s \<Longrightarrow> s \<le> r \<Longrightarrow> r = s"   
-    by (metis Rep_real_int_inject left.rep_eq less_le less_eq_real_int_def  not_le prod.collapse right.rep_eq) 
+  show "r \<le> s \<Longrightarrow> s \<le> r \<Longrightarrow> r = s"
+    by (metis Rep_real_int_inject left.rep_eq less_le less_eq_real_int_def 
+        not_le prod.collapse right.rep_eq)
 qed
 end
   
@@ -85,7 +87,8 @@ lemma left_leq_right: "left r \<le> right r"
 lemma length_ge_zero :" \<parallel>r\<parallel> \<ge> 0" 
   using Rep_real_int left.rep_eq right.rep_eq length_def by auto
 
-lemma consec_add:"left r = left s \<and> right r = right t \<and> right s = left t \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel> "
+lemma consec_add:
+  "left r = left s \<and> right r = right t \<and> right s = left t \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel>"
   by (simp add:length_def)
     
 lemma length_zero_iff_borders_eq:"\<parallel>r\<parallel> = 0 \<longleftrightarrow> left r = right r"
@@ -95,25 +98,31 @@ lemma shift_left_eq_right:"left (shift r x) \<le> right (shift r x)"
   using left_leq_right .
     
 lemma shift_keeps_length:"\<parallel>r\<parallel> = \<parallel> shift r x\<parallel>" 
-  using Abs_real_int_inverse left.rep_eq real_int.length_def length_ge_zero shift_def right.rep_eq by auto
+  using Abs_real_int_inverse left.rep_eq real_int.length_def length_ge_zero shift_def 
+    right.rep_eq by auto
     
 lemma shift_zero:"(shift r 0) = r"
   by (simp add: Rep_real_int_inverse shift_def )
     
 lemma shift_additivity:"(shift r (x+y)) = shift (shift r x) y"
-proof-
-  have 1:"(shift r (x+y)) = Abs_real_int ((left r) +(x+y), (right r)+(x+y))" using shift_def
-    by auto
-  have 2:"(left r) +(x+y) \<le> (right r)+(x+y)" using left_leq_right by auto
-  hence left:"left (shift r (x+y)) = (left r) +(x+y)" by (simp add: Abs_real_int_inverse 1 )
-  from 2 have right:"right (shift r (x+y)) = (right r) +(x+y)" by (simp add: Abs_real_int_inverse 1 )
-  have 3:"(shift (shift r x) y) = Abs_real_int(left (shift r x) +y, right(shift r x)+y) " 
+proof -
+  have 1:"(shift r (x+y)) = Abs_real_int ((left r) +(x+y), (right r)+(x+y))"
     using shift_def by auto
-  have l1:"left (shift r x) = left r + x" using shift_def  Abs_real_int_inverse 
-    using "2" fstI mem_Collect_eq prod.sel(2) left.rep_eq by auto
-  have r1:"right (shift r x) = right r + x" using shift_def  Abs_real_int_inverse 
-    using "2" fstI mem_Collect_eq prod.sel(2) right.rep_eq by auto
-  from 3 and l1 and r1 have "(shift (shift r x) y) = Abs_real_int(left  r+  x +y, right  r + x+y) " 
+  have 2:"(left r) +(x+y) \<le> (right r)+(x+y)" using left_leq_right by auto
+  hence left:"left (shift r (x+y)) = (left r) +(x+y)" 
+    by (simp add: Abs_real_int_inverse 1)
+  from 2 have right:"right (shift r (x+y)) = (right r) +(x+y)" 
+    by (simp add: Abs_real_int_inverse 1)
+  have 3:"(shift (shift r x) y) = Abs_real_int(left (shift r x) +y, right(shift r x)+y)"
+    using shift_def by auto
+  have l1:"left (shift r x) = left r + x"
+    using shift_def  Abs_real_int_inverse "2" fstI mem_Collect_eq prod.sel(2) left.rep_eq
+    by auto
+  have r1:"right (shift r x) = right r + x" 
+    using shift_def Abs_real_int_inverse "2" fstI mem_Collect_eq prod.sel(2) right.rep_eq
+    by auto
+  from 3 and l1 and r1 have 
+    "(shift (shift r x) y) = Abs_real_int(left  r+x+y, right  r+x+y)"
     by auto
   with 1 show ?thesis by (simp add: add.assoc)
 qed
@@ -190,20 +199,28 @@ proof
   thus "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" by blast
 qed  
   
-lemma chop_assoc1: "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4) \<longrightarrow> (R_Chop(r, Abs_real_int(left r1, right r3), r4) \<and> R_Chop(Abs_real_int(left r1, right r3), r1,r3))"
+lemma chop_assoc1:
+  "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4) 
+     \<longrightarrow> R_Chop(r, Abs_real_int(left r1, right r3), r4) 
+        \<and> R_Chop(Abs_real_int(left r1, right r3), r1,r3)"
 proof 
   assume assm: "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4)"
   let ?y1 = " Abs_real_int(left r1, right r3)" 
   have l1:"left r1 = left ?y1" 
-    by (metis  Abs_real_int_inverse assm fst_conv left.rep_eq mem_Collect_eq order_trans real_int.left_leq_right real_int.rchop_def snd_conv)
+    by (metis  Abs_real_int_inverse assm fst_conv left.rep_eq mem_Collect_eq
+        order_trans real_int.left_leq_right real_int.rchop_def snd_conv)
   have r1:"right ?y1 = right r3" 
-    by (metis  Rep_real_int_cases Rep_real_int_inverse assm fst_conv mem_Collect_eq order_trans real_int.left_leq_right real_int.rchop_def right.rep_eq snd_conv)    
+    by (metis  Rep_real_int_cases Rep_real_int_inverse assm fst_conv mem_Collect_eq
+        order_trans real_int.left_leq_right real_int.rchop_def right.rep_eq snd_conv)    
   have g1:"R_Chop(r, ?y1, r4)" using assm  rchop_def r1 l1 by simp
   have g2:"R_Chop(?y1, r1,r3)" using assm  rchop_def r1 l1 by simp
   show "R_Chop(r, ?y1, r4) \<and> R_Chop(?y1, r1,r3)" using g1 g2 by simp
 qed
   
-lemma chop_assoc2: "R_Chop(r,r1,r2) \<and> R_Chop(r1,r3,r4) \<longrightarrow> R_Chop(r,r3, Abs_real_int(left r4, right r2)) \<and> R_Chop(Abs_real_int(left r4, right r2), r4,r2)"
+lemma chop_assoc2: 
+  "R_Chop(r,r1,r2) \<and> R_Chop(r1,r3,r4) 
+    \<longrightarrow> R_Chop(r,r3, Abs_real_int(left r4, right r2)) 
+      \<and> R_Chop(Abs_real_int(left r4, right r2), r4,r2)"
 proof 
   assume assm: "R_Chop(r,r1,r2) \<and> R_Chop(r1,r3,r4)"
   let ?y1 = " Abs_real_int(left r4, right r2)" 
@@ -213,7 +230,7 @@ proof
     using assm real_int.rchop_def by force
   then have right:"right r3 \<le> right r2"
     by (metis (no_types) assm order_trans real_int.left_leq_right real_int.rchop_def)
-  then have l1:"left ?y1 = left r4"       using f1 by (simp add: Abs_real_int_inverse)
+  then have l1:"left ?y1 = left r4" using f1 by (simp add: Abs_real_int_inverse)
   have r1:"right ?y1 = right r2" 
     using Abs_real_int_inverse right f1 by auto
   have g1:"R_Chop(r, r3, ?y1)" using assm  rchop_def r1 l1 by simp
@@ -228,12 +245,14 @@ lemma chop_leq2:"R_Chop(r,s,t) \<longrightarrow> t \<le> r"
   by (metis (full_types) less_eq_real_int_def order_refl real_int.left_leq_right real_int.rchop_def)
     
 lemma chop_empty1:"R_Chop(r,s,t) \<and> \<parallel>s\<parallel> = 0 \<longrightarrow> r = t " 
-  by (metis (no_types, hide_lams) Rep_real_int_inject left.rep_eq prod.collapse real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq)
+  by (metis (no_types, hide_lams) Rep_real_int_inject left.rep_eq prod.collapse
+      real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq)
 
 lemma chop_empty2:"R_Chop(r,s,t) \<and> \<parallel>t\<parallel> = 0 \<longrightarrow> r = s " 
-  by (metis (no_types, hide_lams) Rep_real_int_inject left.rep_eq prod.collapse real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq)
+  by (metis (no_types, hide_lams) Rep_real_int_inject left.rep_eq prod.collapse
+      real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq)
     
 end
-lemmas[simp] = length_dict 
+(*lemmas[simp] = length_dict *)
   
 end
