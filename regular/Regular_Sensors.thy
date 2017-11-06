@@ -20,8 +20,9 @@ theory Regular_Sensors
 begin
   
 definition regular::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real"
-  where "regular e ts c \<equiv> if (e = c) then traffic.physical_size ts c + traffic.braking_distance ts c 
-                                    else traffic.physical_size ts c "  
+  where "regular e ts c \<equiv> 
+    if (e = c) then traffic.physical_size ts c + traffic.braking_distance ts c 
+               else traffic.physical_size ts c "  
     
 locale regular_sensors = traffic + view
 begin
@@ -30,7 +31,8 @@ interpretation regular_sensors: sensors "regular :: cars \<Rightarrow> traffic \
 proof unfold_locales
   fix e ts c
   show " 0 < regular e ts c" 
-    by (metis (no_types, hide_lams) less_add_same_cancel2 less_trans regular_def traffic.psGeZero traffic.sdGeZero)
+    by (metis (no_types, hide_lams) less_add_same_cancel2 less_trans regular_def
+        traffic.psGeZero traffic.sdGeZero)
 qed        
   
 notation regular_sensors.space ("space")
@@ -43,12 +45,13 @@ length may only change during evolutions, in particular if the car changes its d
 behaviour.
 *}
 
-lemma create_reservation_length_stable:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
+lemma create_reservation_length_stable:
+  "(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
 proof
   assume assm:"(ts\<^bold>\<midarrow>r(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
     using traffic.create_reservation_def sensors.space_def regular_def 
-    by (simp add:  regular_sensors.sensors_axioms)
+    by (simp add: regular_sensors.sensors_axioms)
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -73,7 +76,8 @@ proof
   qed
 qed
   
-lemma create_claim_length_stable:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
+lemma create_claim_length_stable:
+  "(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
 proof
   assume assm:"(ts\<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
@@ -103,13 +107,13 @@ proof
   qed
 qed
   
-lemma withdraw_reservation_length_stable:"(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
+lemma withdraw_reservation_length_stable:
+  "(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
 proof
   assume assm:"(ts\<^bold>\<midarrow>wdr(d,n)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c"
     using traffic.withdraw_reservation_def sensors.space_def regular_def
-    by (simp add: regular_sensors.sensors_axioms)
-      
+    by (simp add: regular_sensors.sensors_axioms)      
   show "len v ( ts) c = len v ( ts') c"   
   proof (cases "left ((space ts v) c) > right (ext v)")
     assume outside_right:"left ((space ts v) c) > right (ext v)"
@@ -134,7 +138,8 @@ proof
   qed
 qed
   
-lemma withdraw_claim_length_stable:"(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
+lemma withdraw_claim_length_stable:
+  "(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow>ts') \<longrightarrow> len v ts c = len v ts' c"
 proof
   assume assm:"(ts\<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow>ts')"
   hence eq:"space ts v c = space ts' v c" 
@@ -192,9 +197,10 @@ proof
     using regular_sensors.right_space  by auto      
   have r2:"right (space ts v' c ) = pos ts c + regular (own v') ts c" 
     using regular_sensors.right_space  by auto      
-  then have "right (space ts v c) < right( space ts v' c)" using r1 r2 le by auto       
+  then have "right (space ts v c) < right( space ts v' c)" 
+    using r1 r2 le by auto
   then have "left (space ts v' c) \<ge> left (space ts v c)  
-              \<and> (right (space ts v c) \<le> right( space ts v' c))                                   
+              \<and> (right (space ts v c) \<le> right( space ts v' c)) 
               \<and>  \<not>(left (space ts v c) \<ge> left (space ts v' c)  
                     \<and> right (space ts v' c) \<le> right (space ts v c))" 
     using regular_sensors.left_space left_eq by auto
@@ -203,6 +209,6 @@ proof
 qed
   
 lemma switch_space_leq:"(v=c>v') \<longrightarrow> space ts v c \<le> space ts v' c"
-  by (metis less_imp_le order_refl switch_space_le view.switch_refl view.switch_unique)        
+  by (metis less_imp_le order_refl switch_space_le view.switch_refl view.switch_unique)
 end
-end  
+end
