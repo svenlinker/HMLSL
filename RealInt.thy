@@ -16,7 +16,7 @@ sub-intervals s and t.
 
 section \<open>Closed Real-valued Intervals\<close>
 
-text{* We define a type for real-valued intervals. It consists of pairs of real numbers, where
+text\<open>We define a type for real-valued intervals. It consists of pairs of real numbers, where
 the first is lesser or equal to the second. Both endpoints are understood to be part of
 the interval, i.e., the intervals are closed. This also implies that we do not
 consider empty intervals. 
@@ -27,10 +27,10 @@ a real value \(x\). Finally, an interval \(r\) can be chopped into \(s\) and
 \(t\), if the left endpoint of \(r\) and \(s\) as well as the right endpoint
 of \(r\) and \(t\) coincides, and if the right endpoint of \(s\) is 
 the left endpoint of \(t\).
- *}
+\<close>
 
 theory RealInt
-  imports Main HOL.Real
+  imports HOL.Real
 begin
   
 typedef real_int = "{r::(real*real) . fst r \<le> snd r}"
@@ -42,7 +42,10 @@ lift_definition right::"real_int \<Rightarrow> real" is snd proof - qed
   
 lemmas[simp] = left.rep_eq right.rep_eq  
   
-class real_int
+locale real_int
+interpretation real_int_class?: real_int .
+
+context real_int
 begin
   
 definition length :: "real_int \<Rightarrow> real" ("\<parallel>_\<parallel>" 70)
@@ -57,8 +60,8 @@ definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<R
         
 end
 
-text {* The intervals defined in this way allow for the definition of an order: 
-the subinterval relation.*}
+text \<open>The intervals defined in this way allow for the definition of an order: 
+the subinterval relation.\<close>
   
 instantiation real_int :: order
 begin
@@ -180,8 +183,8 @@ proof
     using Rep_real_int by auto      
   obtain x where  x_def:" x  = (left r + right r) / 2" 
     by blast
-  have x_gr:"x > left r" using ff1 real_less_half_sum x_def by blast
-  have x_le:"x < right r" using ff1 x_def by (simp add: real_sum_of_halves)
+  have x_gr:"x > left r" using ff1 field_less_half_sum x_def by blast
+  have x_le:"x < right r" using ff1 x_def by (simp add: field_sum_of_halves)
   obtain s where s_def:"s = Abs_real_int(left r, x)"  by simp
   obtain t where t_def:"t = Abs_real_int(x, right r)"  by simp
   have s_in_type:"(left r, x) \<in> {r :: real*real . fst r \<le> snd r }" 
