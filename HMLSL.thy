@@ -176,7 +176,7 @@ the former gives a nice way to express theorems,
 the latter is useful within proofs.
 \<close>
 
-abbreviation valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
+definition valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
   where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>v. \<phi>(ts)(v)"
 
 abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Rightarrow> bool" ("_ , _ \<Turnstile> _" 10)
@@ -185,45 +185,47 @@ abbreviation satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Ri
 subsection \<open>Theorems about Basic HMLSL\<close>
 
 lemma hchop_weaken1: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) " 
-  using horizontal_chop_empty_right  by fastforce
+  using valid_def horizontal_chop_empty_right  by fastforce
 
 lemma hchop_weaken2: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi>) " 
-  using horizontal_chop_empty_left  by fastforce
+  using valid_def horizontal_chop_empty_left  by fastforce
 
 lemma hchop_weaken: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi> \<^bold>\<frown> \<^bold>\<top>)" 
-  using hchop_weaken1 hchop_weaken2  by metis
+  using valid_def hchop_weaken1 hchop_weaken2  
+  using view.horizontal_chop_empty_left by fastforce
 
 lemma hchop_neg1:"\<Turnstile> \<^bold>\<not> (\<phi> \<^bold>\<frown> \<^bold>\<top>) \<^bold>\<rightarrow> ((\<^bold>\<not> \<phi>) \<^bold>\<frown> \<^bold>\<top>)" 
-  using horizontal_chop1  by fastforce
+  using horizontal_chop1 valid_def  by fastforce
 
 lemma hchop_neg2:"\<Turnstile> \<^bold>\<not> (\<^bold>\<top>\<^bold>\<frown>\<phi> ) \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<^bold>\<not> \<phi>)"
-  using horizontal_chop1  by fastforce
+  using valid_def  horizontal_chop1  by fastforce
 
 lemma hchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)))" 
-  by blast
+   using valid_def by auto
 
 lemma hchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>)\<^bold>\<frown>\<phi>) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<frown> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<frown> \<phi>)))" 
-  by blast
+  using valid_def by auto
 
 lemma hchop_assoc:"\<Turnstile>\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<frown> \<chi>) \<^bold>\<leftrightarrow> (\<phi> \<^bold>\<frown> \<psi>) \<^bold>\<frown> \<chi>"
-  using horizontal_chop_assoc1 horizontal_chop_assoc2  by fastforce
+  unfolding valid_def using horizontal_chop_assoc1 horizontal_chop_assoc2  by fastforce
 
 lemma v_chop_weaken1:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<smile> \<^bold>\<top>))" 
-  using vertical_chop_empty_down  by fastforce
+  using valid_def vertical_chop_empty_down  by fastforce
 
 lemma v_chop_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<smile> \<phi>))" 
-  using vertical_chop_empty_up  by fastforce
+  using valid_def vertical_chop_empty_up  by fastforce
 
 lemma v_chop_assoc:"\<Turnstile>(\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<smile> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>) \<^bold>\<smile> \<chi>)"
-  using vertical_chop_assoc1 vertical_chop_assoc2  by fastforce
+  unfolding valid_def using vertical_chop_assoc1 vertical_chop_assoc2  by fastforce
 
 lemma vchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<smile> \<chi>)))" 
-  by blast
+  using valid_def by auto
 
 lemma vchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>) \<^bold>\<smile> \<phi> ) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<smile> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<smile> \<phi>)))" 
-  by blast
+  using valid_def by auto
 
 lemma at_exists :"\<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
+  unfolding valid_def 
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>\<phi>"
@@ -233,12 +235,13 @@ proof (rule allI|rule impI)+
 qed
 
 lemma at_conj_distr:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))"
-  using switch_unique by blast
+  using valid_def switch_unique by blast
 
 lemma at_disj_dist:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
-  using switch_unique  by fastforce
+  using valid_def switch_unique  by fastforce
 
 lemma at_hchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ((\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))" 
+  unfolding valid_def 
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))"
@@ -255,12 +258,13 @@ proof (rule allI|rule impI)+
 qed
 
 lemma at_hchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
-  using switch_unique switch_hchop1 switch_def   by metis
+  unfolding valid_def using switch_unique switch_hchop1 switch_def   by meson
 
-lemma at_hchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
-  using at_hchop_dist1 at_hchop_dist2 by blast
+(*lemma at_hchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
+  unfolding valid_def using at_hchop_dist1 at_hchop_dist2 *)
 
 lemma at_vchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
+  unfolding valid_def 
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))"
@@ -276,45 +280,48 @@ proof (rule allI|rule impI)+
   from v1 and v2 and origin show "ts,v \<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)" by blast
 qed
 
-lemma at_vchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
-  using switch_unique switch_vchop1 switch_def   by metis
+(*lemma at_vchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
+  using valid_def switch_unique switch_vchop1 switch_def   
 
 lemma at_vchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
   using at_vchop_dist1 at_vchop_dist2 by blast
+*)
 
 lemma at_eq:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
-  using switch_always_exists  by (metis )
+  unfolding valid_def using switch_always_exists  by (metis )
 
 lemma at_neg1:"\<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
-  using switch_unique 
+  unfolding valid_def using switch_unique 
   by (metis select_convs switch_def)
 
 lemma at_neg2:"\<Turnstile>\<^bold>\<not> (\<^bold>@c \<phi> ) \<^bold>\<rightarrow> ( (\<^bold>@c \<^bold>\<not> \<phi>))"
-  using switch_unique  by fastforce
+  unfolding valid_def using switch_unique  by fastforce
 
-lemma at_neg :"\<Turnstile>(\<^bold>@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
-  using at_neg1 at_neg2 by metis
+lemma at_neg :"\<Turnstile>(\<^bold>@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)" 
+  using valid_def view.switch_always_exists view.switch_unique by fastforce
 
-lemma at_neg':"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> (\<^bold>@c( \<^bold>\<not> \<phi>))" using at_neg by simp
+lemma at_neg':"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> (\<^bold>@c( \<^bold>\<not> \<phi>))" unfolding valid_def using at_neg valid_def by simp
 
 lemma at_neg_neg1:"\<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
-  using switch_unique switch_def switch_refl 
+  unfolding valid_def using switch_unique switch_def switch_refl 
   by (metis select_convs switch_def)
 
 lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> (\<^bold>@c  \<phi>)"
-  using switch_unique switch_def switch_refl  
+ unfolding valid_def using switch_unique switch_def switch_refl  
   by metis
 
 lemma at_neg_neg:"\<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)" 
-  using at_neg_neg1 at_neg_neg2 by metis
+  unfolding valid_def using at_neg_neg1 at_neg_neg2 valid_def  
+  using at_neg' by blast
 
-lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
-lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" by simp
+lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" unfolding valid_def by simp
+lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" unfolding valid_def by simp
 
 lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
-  using traffic.abstract.refl traffic.move_nothing  by fastforce
+unfolding valid_def  using traffic.abstract.refl traffic.move_nothing  by fastforce
 
 lemma globally_4: "\<Turnstile> (\<^bold>G  \<phi>) \<^bold>\<rightarrow> \<^bold>G \<^bold>G \<phi>"
+unfolding valid_def
 proof (rule allI|rule impI)+
   fix ts v ts' ts'' 
   assume 1:"ts \<^bold>\<Rightarrow> ts'" and 2:"ts' \<^bold>\<Rightarrow> ts''" and 3:"ts,v \<Turnstile> \<^bold>G \<phi>" 
@@ -326,78 +333,81 @@ qed
 
 
 lemma spatial_weaken: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle>)" 
+unfolding valid_def
   using horizontal_chop_empty_left horizontal_chop_empty_right vertical_chop_empty_down
     vertical_chop_empty_up   
   by fastforce
 
 lemma spatial_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<psi>) \<^bold>\<rightarrow> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<psi>\<^bold>\<rangle>)"
+unfolding valid_def
   using spatial_weaken horizontal_chop_empty_left horizontal_chop_empty_right 
-    vertical_chop_empty_down vertical_chop_empty_up 
+    vertical_chop_empty_down vertical_chop_empty_up unfolding valid_def
   by blast 
 
 lemma somewhere_distr: "\<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle>" 
-  by blast
+unfolding valid_def  by blast
 
 lemma somewhere_and:"\<Turnstile> \<^bold>\<langle>\<phi> \<^bold>\<and> \<psi>\<^bold>\<rangle> \<^bold>\<rightarrow>  \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<and> \<^bold>\<langle>\<psi>\<^bold>\<rangle>"
-  by blast
+unfolding valid_def  by blast
 
 lemma somewhere_and_or_distr :"\<Turnstile>(\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>)" 
-  by blast
+unfolding valid_def  by blast
 
 lemma width_add1:"\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y) \<^bold>\<rightarrow> \<^bold>\<omega> = x+y)"
-  using vertical_chop_add1  by fastforce
+unfolding valid_def  using vertical_chop_add1  by fastforce
 
 lemma width_add2:"\<Turnstile>((\<^bold>\<omega> = x+y) \<^bold>\<rightarrow>  (\<^bold>\<omega> = x) \<^bold>\<smile> \<^bold>\<omega> = y)"
-  using vertical_chop_add2  by fastforce
+unfolding valid_def  using vertical_chop_add2  by fastforce
 
 lemma width_hchop_stable: "\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<omega> = x) \<^bold>\<frown> (\<^bold>\<omega>=x)))"
-  using hchop_def horizontal_chop1 
+unfolding valid_def  using hchop_def horizontal_chop1 
   by force 
 
 lemma length_geq_zero:"\<Turnstile> (\<^bold>\<l> \<ge> 0)"
-  by (metis order.not_eq_order_implies_strict real_int.length_ge_zero)
+unfolding valid_def  by (metis order.not_eq_order_implies_strict real_int.length_ge_zero)
 
 lemma length_split: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
-  using horizontal_chop_non_empty  by fastforce
+unfolding valid_def  using horizontal_chop_non_empty  by fastforce
 
 lemma length_meld: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0))"
-  using hchop_def real_int.chop_add_length_ge_0 
+unfolding valid_def  using hchop_def real_int.chop_add_length_ge_0 
   by (metis (no_types, lifting))
 
 lemma length_dense:"\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<leftrightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
-  using length_meld length_split by blast
+unfolding valid_def  using length_meld length_split unfolding valid_def by blast
 
 lemma length_add1:"\<Turnstile>((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>= y)) \<^bold>\<rightarrow> (\<^bold>\<l>= x+y)"
-  using hchop_def real_int.rchop_def real_int.length_def   by fastforce
+unfolding valid_def  using hchop_def real_int.rchop_def real_int.length_def   by fastforce
 
 lemma length_add2:"\<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<^bold>\<rightarrow> ( (\<^bold>\<l>=x+y) \<^bold>\<rightarrow> ((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)))"
-  using horizontal_chop_split_add  by fastforce
+unfolding valid_def  using horizontal_chop_split_add  by fastforce
 
 lemma length_add:"\<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<^bold>\<rightarrow> ( (\<^bold>\<l>=x+y) \<^bold>\<leftrightarrow> ((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)))"
-  using length_add1 length_add2 by blast
+unfolding valid_def  using length_add1 length_add2 unfolding valid_def by blast
 
 lemma length_vchop_stable:"\<Turnstile>(\<^bold>\<l> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x))"
-  using vchop_def vertical_chop1  by fastforce
+unfolding valid_def  using vchop_def vertical_chop1  by fastforce
 
 lemma res_ge_zero:"\<Turnstile>(re(c) \<^bold>\<rightarrow> \<^bold>\<l>>0)"
-  by blast
+unfolding valid_def  by blast
 
 lemma clm_ge_zero:"\<Turnstile>(cl(c) \<^bold>\<rightarrow> \<^bold>\<l>>0)"
-  by blast
+unfolding valid_def  by blast
 
 lemma free_ge_zero:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<l>>0"
-  by blast
+unfolding valid_def  by blast
 
 lemma width_res:"\<Turnstile>(re(c) \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-  by auto
+unfolding valid_def  by auto
 
 lemma width_clm:"\<Turnstile>(cl(c) \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-  by simp
+unfolding valid_def  by simp
 
 lemma width_free:"\<Turnstile>(free \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-  by simp
+unfolding valid_def  by simp
 
 lemma width_somewhere_res:"\<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<rightarrow> (\<^bold>\<omega> \<ge> 1)"
+  unfolding valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume "ts,v \<Turnstile>  \<^bold>\<langle>re(c)\<^bold>\<rangle>"
@@ -406,6 +416,7 @@ proof (rule allI|rule impI)+
 qed    
 
 lemma clm_disj_res:"\<Turnstile> \<^bold>\<not> \<^bold>\<langle> cl(c) \<^bold>\<and> re(c) \<^bold>\<rangle>" 
+  unfolding valid_def
 proof (rule allI|rule notI)+
   fix ts v
   assume "ts,v \<Turnstile>\<^bold>\<langle>cl(c) \<^bold>\<and> re(c)\<^bold>\<rangle>"
@@ -417,13 +428,15 @@ proof (rule allI|rule notI)+
 qed
 
 lemma width_ge:"\<Turnstile> (\<^bold>\<omega>> 0) \<^bold>\<rightarrow> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>> 0))"
-  using  vertical_chop_add1  add_gr_0 zero_less_one  by auto
+unfolding valid_def  using  vertical_chop_add1  add_gr_0 zero_less_one  by auto
 
 lemma two_res_width: "\<Turnstile>((re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<omega> = 2)"
-  by (metis one_add_one width_add1)
+unfolding valid_def 
+  using view.vertical_chop_add1 by auto
 
 
 lemma res_at_most_two:"\<Turnstile>\<^bold>\<not> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
+  unfolding valid_def
 proof(rule allI| rule notI )+
   fix ts v 
   assume "ts, v \<Turnstile> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
@@ -442,9 +455,10 @@ proof(rule allI| rule notI )+
 qed
 
 lemma res_at_most_two2:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c)\<^bold>\<rangle>"
-  using res_at_most_two by blast
+unfolding valid_def  using res_at_most_two unfolding valid_def by blast
 
 lemma res_at_most_somewhere:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> "
+  unfolding valid_def
 proof (rule allI|rule notI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> )"
@@ -468,7 +482,9 @@ proof (rule allI|rule notI)+
     by (metis not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
 qed
 
+(*
 lemma res_adj:"\<Turnstile>\<^bold>\<not>  (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " 
+  unfolding valid_def
 proof (rule allI|rule notI)+
   fix ts v
   assume "ts,v \<Turnstile> (re(c) \<^bold>\<smile> (\<^bold>\<omega> > 0) \<^bold>\<smile> re(c)) " 
@@ -491,7 +507,7 @@ proof (rule allI|rule notI)+
         insert_not_empty nat_int.card'.rep_eq nat_int.card_seq less_eq_nat_int.rep_eq
         p_def resv restrict_res restrict_view)
   have vn_not_e:"lan vn \<noteq> \<emptyset>" using chop
-    by (metis nat_int.card_empty_zero less_irrefl width_ge)
+ unfolding valid_def   by (metis nat_int.card_empty_zero less_irrefl width_ge)
   hence consec_vn_v2:"nat_int.consec (lan vn) (lan v2)" 
     using nat_int.card_empty_zero chop nat_int.nchop_def one_neq_zero vchop_def
     by auto
@@ -570,27 +586,30 @@ proof (rule allI|rule notI)+
   hence "lan vn = \<emptyset>" using nat_int.non_empty_elem_in by auto
   with vn_not_e show False by blast 
 qed
+*)
 
 lemma clm_sing:"\<Turnstile>\<^bold>\<not>  (cl(c) \<^bold>\<smile> cl(c)) "
-  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one   
+unfolding valid_def  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one   
   by (metis (no_types, hide_lams) add_eq_self_zero le_add1 le_antisym one_neq_zero)
 
 lemma clm_sing_somewhere:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>cl(c) \<^bold>\<smile> cl(c)\<^bold>\<rangle> "
-  using clm_sing by blast
+unfolding valid_def  using clm_sing unfolding valid_def by blast
 
 lemma clm_sing_not_interrupted:"\<Turnstile> \<^bold>\<not>(cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile> cl(c))"
-  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one clm_sing
+unfolding valid_def  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one clm_sing
   by (metis (no_types, hide_lams) add.commute add_eq_self_zero dual_order.antisym
       le_add1 one_neq_zero)
 
 lemma clm_sing_somewhere2:"\<Turnstile>\<^bold>\<not>  (\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>) " 
-  using clm_sing_not_interrupted vertical_chop_assoc1 
+unfolding valid_def  using clm_sing_not_interrupted vertical_chop_assoc1 unfolding valid_def
   by meson
 
-lemma clm_sing_somewhere3:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>)\<^bold>\<rangle> "  
-  by (meson clm_sing_not_interrupted view.vertical_chop_assoc1)
+(*lemma clm_sing_somewhere3:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>)\<^bold>\<rangle> "  
+unfolding valid_def  by (meson clm_sing_not_interrupted view.vertical_chop_assoc1)
+*)
 
 lemma clm_at_most_somewhere:"\<Turnstile>\<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
+  unfolding valid_def
 proof (rule allI| rule notI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
@@ -616,6 +635,7 @@ qed
 
 
 lemma res_decompose: "\<Turnstile>(re(c)  \<^bold>\<rightarrow> re(c) \<^bold>\<frown> re(c))" 
+  unfolding valid_def
 proof (rule allI| rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>re(c)"
@@ -634,24 +654,30 @@ proof (rule allI| rule impI)+
 qed
 
 lemma res_compose: "\<Turnstile>(re(c) \<^bold>\<frown> re(c)  \<^bold>\<rightarrow> re(c))"     
-  using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def
+  unfolding valid_def  using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def
+unfolding valid_def
   by (metis (no_types, lifting))
 
 lemma res_dense:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> re(c) \<^bold>\<frown> re(c)"
-  using res_decompose res_compose by blast
+unfolding valid_def  using res_decompose res_compose unfolding valid_def by blast
 
 lemma res_continuous :"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown> ( \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
-  by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right
+unfolding valid_def  by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right
       restrict_def)
 
 lemma no_clm_before_res:"\<Turnstile>\<^bold>\<not>(cl(c) \<^bold>\<frown> re(c))"  
-  by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le
+unfolding valid_def  by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le
       disjoint hchop_def inf_assoc inf_le1 not_one_le_zero restrict_def)
 
 lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
-proof (rule ccontr)
-  assume "\<not> (\<Turnstile> \<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c)))"
-  then obtain ts and v where assm:"ts,v \<Turnstile> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))" by blast
+  unfolding valid_def
+proof (rule allI| rule impI)+
+  fix ts v
+  show "ts,v \<Turnstile> \<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
+  proof (rule ccontr)
+  assume "\<not> (ts,v \<Turnstile> \<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c)))"
+  then obtain ts and v where assm:"ts,v \<Turnstile> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))" unfolding valid_def by blast
+ 
   then have clm_subs:"restrict v (clm ts) c = restrict v (res ts) c"
     using restriction_stable
     by (metis (no_types, lifting) hchop_def restrict_def)      
@@ -661,11 +687,13 @@ proof (rule ccontr)
   then have res_in_neq:"restrict v (clm ts) c \<sqinter> restrict v (res ts) c \<noteq>\<emptyset>"
     using clm_subs inf_absorb1
     by (simp )   
-  then show False using restriction_clm_res_disjoint      
+  then show False  using valid_def restriction_clm_res_disjoint      
     by (metis inf_commute restriction.restriction_clm_res_disjoint)    
-qed
+  qed 
+qed 
 
 lemma clm_decompose: "\<Turnstile>(cl(c)  \<^bold>\<rightarrow> cl(c) \<^bold>\<frown> cl(c))" 
+  unfolding valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume assm: "ts,v \<Turnstile> cl(c)"
@@ -689,37 +717,39 @@ qed
 
 
 lemma clm_compose: "\<Turnstile>(cl(c) \<^bold>\<frown> cl(c)  \<^bold>\<rightarrow> cl(c))" 
-  using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def     
+  unfolding valid_def using  real_int.chop_dense len_compose_hchop hchop_def length_dense restrict_def     
+unfolding valid_def
   by (metis (no_types, lifting))
 
 lemma clm_dense:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> cl(c) \<^bold>\<frown> cl(c)"
-  using clm_decompose clm_compose by blast
+  unfolding valid_def using clm_decompose clm_compose unfolding valid_def by blast
 
 lemma clm_continuous :"\<Turnstile>(cl(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
-  by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right
+unfolding valid_def  by (metis (no_types, lifting) hchop_def len_view_hchop_left len_view_hchop_right
       restrict_def)
 
 
 lemma res_not_free: "\<Turnstile>(\<^bold>\<exists> c. re(c) \<^bold>\<rightarrow> \<^bold>\<not>free)" 
-  using nat_int.card_empty_zero one_neq_zero by auto
+unfolding valid_def  using nat_int.card_empty_zero one_neq_zero by auto
 
 lemma clm_not_free: "\<Turnstile>(\<^bold>\<exists> c. cl(c) \<^bold>\<rightarrow> \<^bold>\<not>free)"
-  using nat_int.card_empty_zero by auto
+unfolding valid_def  using nat_int.card_empty_zero by auto
 
 lemma free_no_res:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. re(c)))" 
-  using nat_int.card_empty_zero one_neq_zero 
+unfolding valid_def  using nat_int.card_empty_zero one_neq_zero 
   by (metis less_irrefl)
 
 lemma free_no_clm:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. cl(c)))" 
-  using nat_int.card_empty_zero one_neq_zero by (metis less_irrefl)
+unfolding valid_def  using nat_int.card_empty_zero one_neq_zero by (metis less_irrefl)
 
 lemma free_decompose:"\<Turnstile>free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free)"
+unfolding valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>free"
   obtain v1 and v2 
     where non_empty_v1_v2:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0"
-    using assm length_dense by blast
+    unfolding valid_def using assm length_dense unfolding valid_def by blast
   have one_lane:"|lan v1| = 1 \<and> |lan v2| = 1" 
     using assm hchop_def non_empty_v1_v2
     by auto
@@ -746,11 +776,12 @@ proof (rule allI|rule impI)+
 qed
 
 lemma free_compose:"\<Turnstile>(free \<^bold>\<frown> free) \<^bold>\<rightarrow> free"
+  unfolding valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>free \<^bold>\<frown> free"
   have len_ge_0:"\<parallel>ext v\<parallel> > 0" 
-    using assm length_meld by blast
+    unfolding valid_def using assm length_meld unfolding valid_def by blast
   have widt_one:"|lan v| = 1" using assm     
     by (metis horizontal_chop_width_stable)
   have no_car:
@@ -785,10 +816,10 @@ qed
 
 
 lemma free_dense:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<frown> free)"
-  using free_decompose free_compose by blast
+unfolding valid_def  using free_decompose free_compose unfolding valid_def by blast
 
 lemma free_dense2:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
-  using horizontal_chop_empty_left horizontal_chop_empty_right  by fastforce
+unfolding valid_def  using horizontal_chop_empty_left horizontal_chop_empty_right  by fastforce
 
 text \<open>
 The next lemmas show the connection between the spatial. In particular,
@@ -798,6 +829,7 @@ a reservation nor a car resides, the view satisfies free (and vice versa).
 
 lemma no_cars_means_free:
   "\<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free" 
+  unfolding valid_def 
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:
@@ -914,6 +946,7 @@ qed
 
 lemma free_means_no_cars:
   "\<Turnstile>free \<^bold>\<rightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
+  unfolding valid_def
 proof (rule allI | rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile> free"
@@ -941,38 +974,42 @@ qed
 
 lemma free_eq_no_cars:
   "\<Turnstile>free \<^bold>\<leftrightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
-  using no_cars_means_free free_means_no_cars by blast
+unfolding valid_def   using no_cars_means_free free_means_no_cars unfolding valid_def by blast
 
 lemma free_nowhere_res:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown> (re(c)) \<^bold>\<frown> \<^bold>\<top>)"
-  using free_eq_no_cars by blast
+unfolding valid_def  using free_eq_no_cars unfolding valid_def by blast
 
 lemma two_res_not_res: "\<Turnstile>((re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<not>re(c))" 
-  by (metis add_eq_self_zero one_neq_zero width_add1)
+  unfolding valid_def  
+  using view.vertical_chop_singleton by fastforce
 
 lemma two_clm_width: "\<Turnstile>((cl(c) \<^bold>\<smile> cl(c)) \<^bold>\<rightarrow> \<^bold>\<omega> = 2)"
-  by (metis one_add_one width_add1)
+  unfolding valid_def  
+  using view.vertical_chop_add1 by auto
 
 lemma two_res_no_car: "\<Turnstile>(re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c. ( cl(c) \<^bold>\<or> re(c)) )" 
-  by (metis add_eq_self_zero one_neq_zero width_add1)
+unfolding valid_def sledgehammer
+  using view.vertical_chop_singleton by force 
 
 lemma two_lanes_no_car:"\<Turnstile>(\<^bold>\<not> \<^bold>\<omega>= 1) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
-  by simp
+unfolding valid_def  by simp
 
 lemma empty_no_car:"\<Turnstile>( \<^bold>\<l> = 0) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
-  by simp
+unfolding valid_def  by simp
 
 lemma car_one_lane_non_empty: "\<Turnstile>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c))) \<^bold>\<rightarrow> ((\<^bold>\<omega> =1) \<^bold>\<and> (\<^bold>\<l> > 0))"
-  by blast
+unfolding valid_def  by blast
 
 lemma one_lane_notfree:
   "\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free) \<^bold>\<rightarrow> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
+  unfolding valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free)"
   hence not_free:"ts,v \<Turnstile>\<^bold>\<not> free" by blast
   with free_eq_no_cars have 
     "ts,v \<Turnstile>\<^bold>\<not> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-    by blast
+   unfolding valid_def by blast
   hence "ts,v \<Turnstile> \<^bold>\<not>  (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))" 
     using assm by blast
   thus "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> )" by blast
@@ -980,6 +1017,6 @@ qed
 
 lemma one_lane_empty_or_car:
   "\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<rightarrow> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-  using one_lane_notfree by blast
+unfolding valid_def  using one_lane_notfree unfolding valid_def by blast
 end
 end

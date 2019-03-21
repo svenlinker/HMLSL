@@ -40,16 +40,17 @@ and the spatial atoms.
 \<close>
   
 lemma at_res1:"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<forall>d. \<^bold>@d re(c))" 
-  by (metis (no_types, lifting) perfect_sensors.switch_length_stable 
+unfolding hmlsl.valid_def  by (metis (no_types, lifting) perfect_sensors.switch_length_stable 
       restriction.switch_restrict_stable view.switch_def)
     
 lemma at_res2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d re(c)) \<^bold>\<rightarrow> re(c)" 
-  using view.switch_refl by blast
+unfolding hmlsl.valid_def  using view.switch_refl by blast
     
 lemma at_res:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. \<^bold>@d re(c))"
-  using at_res1 at_res2 by blast
+unfolding hmlsl.valid_def  using at_res1 at_res2 unfolding hmlsl.valid_def by blast
     
 lemma at_res_inst:"\<Turnstile> (\<^bold>@d re(c)) \<^bold>\<rightarrow>re(c)"
+  unfolding hmlsl.valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>( \<^bold>@d re(c))"
@@ -63,16 +64,18 @@ proof (rule allI|rule impI)+
 qed
   
 lemma at_clm1:"\<Turnstile>cl(c) \<^bold>\<rightarrow> (\<^bold>\<forall>d. \<^bold>@d cl(c))"
+  unfolding hmlsl.valid_def
   by (metis (no_types, lifting)  all_own_ext_eq_len_eq view.switch_def 
       restriction.switch_restrict_stable)
     
 lemma at_clm2:"\<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c)) \<^bold>\<rightarrow> cl(c)" 
-  using view.switch_def by auto
+unfolding hmlsl.valid_def  using view.switch_def by auto
   
 lemma at_clm:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> (\<^bold>\<forall>d. \<^bold>@d cl(c))"
-  using at_clm1 at_clm2 by blast
+unfolding hmlsl.valid_def  using at_clm1 at_clm2 unfolding hmlsl.valid_def by blast
     
 lemma at_clm_inst:"\<Turnstile> (\<^bold>@d cl(c)) \<^bold>\<rightarrow>cl(c)" 
+  unfolding hmlsl.valid_def
 proof (rule allI|rule impI)+
   fix ts v
   assume assm:"ts,v \<Turnstile>( \<^bold>@d cl(c))"
@@ -123,9 +126,7 @@ proof
   next
     assume restr_res_empty:"restrict v (res ts) c = \<emptyset>"
     then have clm_non_empty:" restrict v (clm ts) c \<noteq> \<emptyset>" 
-      by (metis assm inter_empty2 local.hmlsl.free_no_clm 
-          restriction.create_reservation_restrict_union restriction.restrict_def' 
-          un_empty_absorb1)
+      using assm card_empty_zero restriction.create_reservation_restrict_union un_empty_absorb1 by auto
     hence restrict_one:"|restrict v (clm ts) c | = 1" 
       using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym
         restr_subs_clm assm by fastforce
@@ -168,6 +169,7 @@ We now proceed to prove the \emph{reservation lemma}, which was
 crucial in the manual safety proof \cite {Hilscher2011}. 
 \<close>
 lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)"
+  unfolding hmlsl.valid_def
 proof (rule allI| rule impI)+ 
   fix ts v ts'
   assume assm:"ts,v \<Turnstile>re(c) \<^bold>\<or> cl(c)" and ts'_def:"ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts'"
@@ -188,10 +190,10 @@ proof (rule allI| rule impI)+
 qed
   
 lemma reservation2: "\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c))" 
-  using backwards_res_act traffic.always_create_res by blast
+unfolding hmlsl.valid_def  using backwards_res_act traffic.always_create_res by blast
     
 lemma reservation:"\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<leftrightarrow> (re(c) \<^bold>\<or> cl(c))"
-  using reservation1 reservation2 by blast
+unfolding hmlsl.valid_def  using reservation1 reservation2 unfolding hmlsl.valid_def by blast
 end
 end
   

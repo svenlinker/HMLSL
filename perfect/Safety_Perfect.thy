@@ -79,6 +79,7 @@ all reachable traffic snapshots are also safe.
 \<close>
     
 theorem safety:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)"
+  unfolding hmlsl.valid_def
 proof (rule allI|rule impI)+
   fix ts v ts' 
   fix e c::cars
@@ -99,7 +100,7 @@ proof (rule allI|rule impI)+
       "ts',move ts ts' v \<Turnstile> \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow>
                                \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> \<^bold>\<rightarrow> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>"
       using "evolve.hyps" DC by simp
-    show ?case 
+    show ?case  
     proof 
       assume e_def:" (ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>)"
       from "evolve.IH"  and nequals have 
@@ -304,6 +305,7 @@ the resulting situation is also safe.
 \<close>
   
 lemma safety_switch_invariant:"\<Turnstile>(\<^bold>\<forall>e. safe(e)) \<^bold>\<rightarrow>  \<^bold>@c (\<^bold>\<forall>e. safe(e))"
+  unfolding hmlsl.valid_def
 proof (rule allI|rule impI)+
   fix ts v v' 
   fix e d :: cars
@@ -322,10 +324,10 @@ proof (rule allI|rule impI)+
       using v'_def v'sub_def view.switch_leq by blast
     from v'sub_def and vsub have "ts,vsub \<Turnstile> \<^bold>@c re(d)" 
       by (metis view.switch_unique)
-    hence vsub_re_d:"ts,vsub \<Turnstile> re(d)" using at_res_inst by blast
+    hence vsub_re_d:"ts,vsub \<Turnstile> re(d)" unfolding hmlsl.valid_def using at_res_inst unfolding hmlsl.valid_def by blast
     from v'sub_def and vsub have "ts,vsub \<Turnstile> \<^bold>@c re(e)" 
       by (metis view.switch_unique)
-    hence vsub_re_e:"ts,vsub \<Turnstile> re(e)" using at_res_inst by blast
+    hence vsub_re_e:"ts,vsub \<Turnstile> re(e)" using at_res_inst unfolding hmlsl.valid_def by blast
     hence "ts,vsub\<Turnstile>re(d) \<^bold>\<and> re(e)" using vsub_re_e vsub_re_d by blast
     hence "ts,v \<Turnstile>\<^bold>\<langle> re(d) \<^bold>\<and> re(e) \<^bold>\<rangle>" 
       using vsub view.somewhere_leq by fastforce
