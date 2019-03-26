@@ -130,8 +130,8 @@ proof -
   with 1 show ?thesis by (simp add: add.assoc)
 qed
   
-lemma chop_always_possible: "\<forall>r .\<exists> s t. R_Chop(r,s,t)"  
-proof
+lemma chop_always_possible: "\<exists> s t. R_Chop(r,s,t)"  
+proof -
   fix x
   obtain s where l:"left x \<le> s  \<and> s \<le> right x" 
     using left_leq_right by auto
@@ -150,8 +150,8 @@ proof
   then show "\<exists>x1 x2. R_Chop(x,x1,x2)" by blast
 qed
   
-lemma chop_singleton_right: "\<forall>r.\<exists> s. R_Chop(r,r,s)" 
-proof
+lemma chop_singleton_right: "\<exists> s. R_Chop(r,r,s)" 
+proof -
   fix x 
   obtain y where  "y =  Abs_real_int(right x, right x)" by simp
   then have "R_Chop(x,x,y)" 
@@ -159,8 +159,8 @@ proof
   then show "\<exists>y. R_Chop(x,x,y)" by blast
 qed
   
-lemma chop_singleton_left: "\<forall>r.\<exists> s. R_Chop(r,s,r)"  
-proof
+lemma chop_singleton_left: "\<exists> s. R_Chop(r,s,r)"  
+proof -
   fix x 
   obtain y where  "y =  Abs_real_int(left x, left x)" by simp
   then have "R_Chop(x,y,x)" 
