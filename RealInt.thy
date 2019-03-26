@@ -57,7 +57,7 @@ definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift 
 definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop'(_,_,_')" 51)
   where rchop_def :
     "R_Chop(r,s,t) ==  left r  = left s \<and> right s = left t \<and> right r =  right t"
-        
+
 end
 
 text \<open>The intervals defined in this way allow for the definition of an order: 
