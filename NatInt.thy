@@ -334,7 +334,8 @@ next
     using Abs_nat_int_inverse assm el.rep_eq bot_nat_int_def 
     using bot_nat_int.rep_eq by auto
 qed
-  
+
+(*
 lemma leq_nat_non_empty:"(m::nat) \<le> n \<longrightarrow> Abs_nat_int{m..n} \<noteq> \<emptyset>"  
 proof
   assume assm:"m \<le>n"
@@ -367,7 +368,7 @@ proof
   from assm have "Max {m..n} = n" using leq_max_sup by blast
   with simp_max show "maximum(Abs_nat_int{m..n}) = n" by simp
 qed
-
+*)
 lemma continuos_atLeastAtMost:"continuous i  \<longleftrightarrow> ( \<exists>m n. \<forall>l. l \<in> {n..m} \<longleftrightarrow> l \<^bold>\<in> i)"
 proof
   assume "continuous i"
@@ -400,7 +401,8 @@ next
     then have 1:"n = minimum i"  
       by (metis Min_le Rep_nat_int \<open>\<forall>l. (l \<in> {n..m}) = (l \<^bold>\<in> i)\<close> antisym atLeastAtMost_iff bot_nat_int.rep_eq el.rep_eq emptyE mem_Collect_eq minimum.rep_eq minimum_in not_less order_refl)
     from False have 2:" m = maximum i" 
-      by (metis Max_ge Max_in Rep_nat_int \<open>\<forall>l. (l \<in> {n..m}) = (l \<^bold>\<in> i)\<close> antisym el.rep_eq emptyE finite_atLeastAtMost leq_max_sup maximum.rep_eq mem_Collect_eq not_less)
+      by (metis Max_ge Rep_nat_int \<open>\<forall>l. (l \<in> {n..m}) = (l \<^bold>\<in> i)\<close> antisym atLeastAtMost_iff bot_nat_int.rep_eq emptyE linorder_not_less local.el.rep_eq local.maximum.rep_eq maximum_in mem_Collect_eq order_refl)
+(*      by (metis Max_ge Max_in Rep_nat_int \<open>\<forall>l. (l \<in> {n..m}) = (l \<^bold>\<in> i)\<close> antisym el.rep_eq emptyE finite_atLeastAtMost leq_max_sup maximum.rep_eq mem_Collect_eq not_less)*)
     from 1 and 2 show ?thesis 
       by (metis \<open>\<forall>l. (l \<in> {n..m}) = (l \<^bold>\<in> i)\<close> atLeastAtMost_iff continuous_def dual_order.strict_trans linorder_not_less) 
   qed
@@ -408,6 +410,20 @@ qed
 
 lemma continuous_nonE_atLeastAtMost:"i \<noteq>\<emptyset> \<longrightarrow> (continuous i  \<longleftrightarrow> (  \<forall>l. l \<in> {minimum i..maximum i} \<longleftrightarrow> l \<^bold>\<in> i))"
   by (metis Max_ge Min_le Rep_nat_int atLeastAtMost_iff continuos_atLeastAtMost  el.rep_eq maximum.rep_eq maximum_in mem_Collect_eq minimum.rep_eq minimum_in order_trans)
+
+lemma atLeastAtMost_rep : "\<exists>j. \<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> j"
+proof -
+  obtain j where "j = Abs_nat_int {m..n}" by simp
+  then have " \<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> j" 
+    by (simp add: Abs_nat_int_inverse)
+  then show ?thesis by blast
+qed
+
+lemma nat_int_atLeastAtMost_min:"i \<noteq> \<emptyset> \<longrightarrow> (\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> i) \<longrightarrow> minimum i = m" 
+  by (metis antisym atLeastAtMost_iff atLeastatMost_empty_iff continuos_atLeastAtMost continuous_nonE_atLeastAtMost equals0D  le_eq_less_or_eq  minimum_in non_empty_elem_in)
+
+lemma nat_int_atLeastAtMost_max:"i \<noteq> \<emptyset> \<longrightarrow> (\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> i) \<longrightarrow> maximum i = n"
+  by (metis antisym atLeastAtMost_iff atLeastatMost_empty_iff continuos_atLeastAtMost continuous_nonE_atLeastAtMost equals0D  le_eq_less_or_eq  minimum_in non_empty_elem_in)
 
 lemma nchop_cont:" N_Chop(i,j,k) \<longrightarrow> continuous i" 
 proof
@@ -447,11 +463,11 @@ proof
   qed
 qed
 
-lemma leq_min_inf':"(m::nat) \<le> n \<longrightarrow> minimum(Abs_nat_int{m..n}) = m" 
+(*lemma leq_min_inf':"(m::nat) \<le> n \<longrightarrow> minimum(Abs_nat_int{m..n}) = m" 
 proof 
   assume assm:"m \<le> n"
   hence in_type:"{m..n} \<in> {S . (\<exists> (m::nat) n . m \<le> n \<and> {m..n }=S) \<or> S={} }" by blast
-  from assm have "Abs_nat_int{m..n} \<noteq> \<emptyset>" using leq_nat_non_empty by blast
+  from assm have "Abs_nat_int{m..n} \<noteq> \<emptyset>"  using leq_nat_non_empty by blast
   hence min:"minimum(Abs_nat_int{m..n}) = Min(Rep_nat_int (Abs_nat_int {m..n}))"
     using  minimum.rep_eq by blast
   from in_type have " (Rep_nat_int (Abs_nat_int {m..n})) = {m..n}" 
@@ -469,15 +485,15 @@ proof -
   then show "n \<^bold>\<in> Abs_nat_int {n}" 
     by (simp add: Abs_nat_int_inverse el_def)
 qed
-  
-lemma in_singleton:" m \<^bold>\<in> Abs_nat_int{n} \<longrightarrow> m = n"
+  *)
+(*lemma in_singleton:" m \<^bold>\<in> Abs_nat_int{n} \<longrightarrow> m = n"
 proof
   assume assm:" m \<^bold>\<in> Abs_nat_int{n}"
   have "(n::nat) \<le> n" by simp
   hence "{n} \<in> {S . (\<exists> (m::nat) n . m \<le> n \<and> {m..n }=S) \<or> S={} }" by auto
   with assm show "m=n" by (simp add: Abs_nat_int_inverse el_def)
 qed
-
+*)
 subsection \<open>Algebraic properties of intersection and union.\<close>
   
 lemma inter_empty1:"(i::nat_int) \<sqinter> \<emptyset> = \<emptyset>" 
@@ -942,12 +958,28 @@ lemma card_un_add: " continuous i \<and> continuous j \<and> consec i j \<longri
 qed
 *)
 
-lemma singleton:"|i| = 1 \<longrightarrow> (\<exists>n. Rep_nat_int i = {n})"
+lemma singleton: "|i| = 1 \<longleftrightarrow> (\<exists>n. \<forall>l. l \<in> {n} \<longleftrightarrow> l \<^bold>\<in> i)"
+proof
+  assume "|i| = 1"
+  obtain s where "s = Rep_nat_int i" 
+    by simp
+  then obtain m where "s = {m}" 
+    using \<open>|i| = 1\<close> card_1_singletonE by auto
+  then show " (\<exists>n. \<forall>l. l \<in> {n} \<longleftrightarrow> l \<^bold>\<in> i)" 
+    using \<open>s = Rep_nat_int i\<close> by auto
+next
+  assume "(\<exists>n. \<forall>l. l \<in> {n} \<longleftrightarrow> l \<^bold>\<in> i)"
+  then obtain n where "\<forall>l. l \<in> {n} \<longleftrightarrow> l \<^bold>\<in> i" by blast
+  then show "|i| = 1" using card'.rep_eq 
+    by (metis all_not_in_conv el.rep_eq insertI1 is_singletonI' is_singleton_altdef singletonD)
+qed
+
+(*lemma singleton:"|i| = 1 \<longrightarrow> (\<exists>n. Rep_nat_int i = {n})"
   using card_1_singletonE card'.rep_eq by fastforce
     
 lemma singleton2:" (\<exists>n. Rep_nat_int i = {n}) \<longrightarrow> |i| = 1"
   using card_1_singletonE card'.rep_eq by fastforce
-    
+*)    
     
 (*
 lemma card_seq:"
@@ -1010,10 +1042,10 @@ proof (induct x)
   qed
 qed
 *)
-
+(*
 lemma rep_single: "Rep_nat_int (Abs_nat_int {m..m}) = {m}"
   by (simp add: Abs_nat_int_inverse)
-
+*)
 lemma chop_empty_right: "continuous i \<longrightarrow> N_Chop(i,i,\<emptyset>)"  
   using bot_nat_int.abs_eq nat_int.inter_empty1 nat_int.nchop_def 
   by (metis continuous_def non_empty_elem_in sup_bot_right) 
@@ -1056,6 +1088,59 @@ proof
           using assm nat_int.card_empty_zero nat_int.chop_empty_right by auto
       next
         assume y_neq_0:"y \<noteq> 0"
+         have "\<forall>l. l \<in> {minimum i .. maximum i} \<longleftrightarrow> l \<^bold>\<in> i" 
+           using continuous_nonE_atLeastAtMost \<open>x + y \<noteq> 0\<close> assm card_empty_zero by force
+         then have "|i| = card {minimum i..maximum i}" 
+           by (metis antisym card'.rep_eq el.rep_eq subsetI)
+         then have max_i:"maximum i = minimum i + x + y -1" 
+           using \<open>x + y \<noteq> 0\<close> assm by auto
+         obtain j where 1:"\<forall>l. l \<in> {minimum i.. minimum i+x-1} \<longleftrightarrow> l \<^bold>\<in> j" 
+           using atLeastAtMost_rep by blast
+         have "card {minimum i.. minimum i+x-1} = x" 
+           using x_neq_0 by auto
+         from 1 have "|j| = card {minimum i.. minimum i+x-1} " 
+           by (metis antisym card'.rep_eq el.rep_eq subsetI)
+         then have 2:"|j| = x" 
+           using \<open>card {minimum i..minimum i + x - 1} = x\<close> by linarith
+         have cj:"continuous j" 
+           using "1" continuos_atLeastAtMost by blast
+         obtain k where 3:"\<forall>l. l \<in> {minimum i+x.. minimum i+x+y-1} \<longleftrightarrow> l \<^bold>\<in> k" 
+           using atLeastAtMost_rep by blast
+         have "card {minimum i+x.. minimum i+x+y-1} = y" 
+           using x_neq_0 y_neq_0 by auto
+         from 3 have "|k| = card {minimum i+x.. minimum i+x+y-1} " 
+           by (metis antisym card'.rep_eq el.rep_eq subsetI)
+         then have 4: "|k| = y" 
+           using \<open>card {minimum i + x..minimum i + x + y - 1} = y\<close> by linarith
+         have ck:"continuous k" 
+           using "3" continuos_atLeastAtMost by blast
+         have consec:"consec j k" 
+         proof -
+           have "j \<noteq> \<emptyset>" using 1 
+             using bot_nat_int.rep_eq x_neq_0 by auto
+           have "k \<noteq> \<emptyset>" using 3 
+             using bot_nat_int.rep_eq y_neq_0 by auto
+           have 1:"maximum j = minimum i + x -1 " using 1 
+             by (simp add: \<open>j \<noteq> bot\<close> nat_int_atLeastAtMost_max)
+           have 2:"minimum k = minimum i + x" using 3 
+             by (simp add: \<open>k \<noteq> bot\<close> nat_int_atLeastAtMost_min)
+           have "maximum j + 1 = minimum k" using 1 2 
+             using x_neq_0 by linarith
+           then show "consec j k" 
+             using \<open>j \<noteq> bot\<close> \<open>k \<noteq> bot\<close> consec_def by blast
+         qed
+         have "minimum i = minimum j" using 1 
+           using consec consec_def nat_int_atLeastAtMost_min by auto
+         have "maximum i = maximum k" using 3 max_i 
+           by (metis "4"  card_empty_zero nat_int_atLeastAtMost_max    y_neq_0)
+         then have "i = j \<squnion> k" 
+           by (metis \<open>minimum i = minimum j\<close> \<open>x + y \<noteq> 0\<close> assm card_empty_zero cj ck consec consec_un_equality consec_un_max consec_un_min)
+         then have " N_Chop(i,j,k)" using consec 2 4 cj ck 
+           using nchop_def by blast
+         then show ?thesis 
+           using "2" "4" by blast
+ (*       obtain m and n where "\<forall>l. l \<in> {n..m} \<longleftrightarrow> l \<^bold>\<in> i" 
+          using assm continuos_atLeastAtMost by blast*)
 (*        have rep_i:"\<exists>n. Rep_nat_int i = {n..n + (x+y)-1}" 
           using assm card'.rep_eq  x_neq_0 
         obtain n where n_def:"Rep_nat_int i = {n..n + (x+y) -1}" 
@@ -1084,7 +1169,6 @@ proof
           using Abs_nat_int_inverse k_def x_le card'.rep_eq x_neq_0 y_neq_0 by auto
         have "N_Chop(i,j,k) \<and> |j| = x \<and> |k| = y" using chop card_j card_k by blast
 *)
-         show "\<exists> j k. N_Chop(i,j,k) \<and> |j|=x \<and> |k|=y" sorry
       qed
     qed
   qed
