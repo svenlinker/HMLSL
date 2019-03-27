@@ -31,37 +31,64 @@ type_synonym lanes = nat_int
 type_synonym extension = real_int
   
   
-record view = 
+record basic_view = 
   ext::extension 
   lan ::lanes  
   own ::cars
+
+print_record basic_view
+print_theorems
+typedef view = "{v::basic_view. continuous (lan v) \<and> more v = ()}" 
+proof -
+  obtain e where "e = Abs_real_int (1,1)" by simp
+  obtain l where "l = \<emptyset>" by simp
+  obtain c where "c = Abs_cars 0" by simp
+  obtain v where "v = \<lparr> ext = e, lan = l, own = c\<rparr>" by simp
+  have "continuous l"   
+    by (simp add: \<open>l = bot\<close> empty_continuous) 
+  then show ?thesis 
+    by (metis (mono_tags, lifting) all_not_in_conv  cases mem_Collect_eq   select_convs(2) select_convs(4) )
+qed
+
+setup_lifting type_definition_view 
+
+lift_definition lan::"view \<Rightarrow> lanes" is basic_view.lan .
+lift_definition ext::"view \<Rightarrow> extension" is basic_view.ext .
+lift_definition own::"view \<Rightarrow> cars" is basic_view.own .
+
 
 text \<open>
 The orders on discrete and continuous intervals induce an order on views. 
 For two views \(v\) and \(v^\prime\) with \(v \leq v^\prime\), we call \(v\)
 a \emph{subview} of \(v^\prime\).\<close>
 
-instantiation  view_ext:: (order) order
+instantiation  view::  order
 begin  
-definition "less_eq_view_ext (V:: 'a view_ext)  (V':: 'a view_ext)  \<equiv>
-     (ext V \<le> ext V') \<and> (lan V \<sqsubseteq>  lan V') \<and> own V = own V'
-   \<and> more V \<le> more V'"  
-definition "less_view_ext (V :: 'a view_ext) (V':: 'a view_ext)  \<equiv> 
+definition "less_eq_view (V:: view)  (V'::  view)  \<equiv>
+     (ext V \<le> ext V') \<and> (lan V \<sqsubseteq>  lan V') \<and> own V = own V'"
+definition "less_view (V :: view) (V'::  view)  \<equiv> 
      (ext V \<le> ext V') \<and> (lan V \<sqsubseteq>  lan V') \<and> own V' = own V
-    \<and> more V \<le> more V' \<and>
-     \<not>((ext V' \<le> ext V) \<and> (lan V' \<sqsubseteq>  lan V) \<and> own V' = own V
-      \<and> more V' \<le> more V)" 
+ \<and>
+     \<not>((ext V' \<le> ext V) \<and> (lan V' \<sqsubseteq>  lan V) \<and> own V' = own V)"
 instance   
 proof
-  fix v v' v''::  "'a view_ext" 
-  show "v \<le> v"  
-    using less_eq_view_ext_def less_eq_nat_int.rep_eq by auto
+  fix v v' v''::  "view" 
+  show "v \<le> v" 
+    by (simp add: less_eq_view_def) 
   show " (v < v') = (v \<le> v' \<and> \<not> v' \<le> v)" 
-    using less_eq_view_ext_def less_view_ext_def by auto
+    using less_eq_view_def less_view_def by auto
   show "v \<le> v' \<Longrightarrow> v' \<le> v'' \<Longrightarrow> v \<le> v''" 
-    using less_eq_view_ext_def less_eq_nat_int.rep_eq order_trans by auto
-  show "v \<le> v' \<Longrightarrow> v' \<le> v \<Longrightarrow> v = v'"  
-    using less_eq_view_ext_def by auto  
+    using less_eq_view_def less_eq_nat_int.rep_eq order_trans by auto
+  show "v \<le> v' \<Longrightarrow> v' \<le> v \<Longrightarrow> v = v'" 
+  proof -
+    assume "v \<le> v'" and "v' \<le> v" 
+    have "lan v = lan v'" 
+      using \<open>v \<le> v'\<close> \<open>v' \<le> v\<close> less_eq_view_def by auto
+    have "ext v = ext v'" 
+      using \<open>v \<le> v'\<close> \<open>v' \<le> v\<close> less_eq_view_def by auto
+    then show "v = v'" 
+      using Rep_view_inject \<open>Views.lan v = Views.lan v'\<close> \<open>v' \<le> v\<close> ext.rep_eq lan.rep_eq less_eq_view_def own.rep_eq by fastforce
+  qed
 qed  
 end 
   
@@ -81,17 +108,13 @@ definition       hchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightar
                     lan v=lan u \<and> 
                     lan v=lan w \<and> 
                     own v = own u \<and> 
-                    own v = own w \<and> 
-                    more v = more w \<and>
-                    more v = more u  "
+                    own v = own w "
 definition   vchop :: "view \<Rightarrow> view \<Rightarrow>  view \<Rightarrow> bool" ("_=_--_")
   where "(v=u--w) == nat_int.N_Chop(lan v)(lan u)( lan w) \<and> 
                      ext v = ext u \<and> 
                      ext v = ext w \<and> 
                      own v = own u \<and> 
-                     own  v = own w \<and>
-                     more v = more w \<and>
-                     more v = more u "
+                     own  v = own w"
 
 text\<open>We can also switch the perspective of a view to the car \(c\). That is,
 we substitute \(c\) for the original owner of the view.\<close>
@@ -99,9 +122,7 @@ we substitute \(c\) for the original owner of the view.\<close>
 definition switch :: "view \<Rightarrow> cars \<Rightarrow> view \<Rightarrow> bool" ("_ = _ > _")
   where   "  (v=c>w) == ext v = ext w \<and> 
                         lan v = lan w \<and>  
-                        own w = c \<and> 
-                        more v = more w"
-
+                        own w = c "
 
 text\<open>Most of the lemmas in this theory are direct transfers of the corresponding
 lemmas on discrete and continuous intervals, which implies rather simple proofs.
@@ -124,20 +145,33 @@ proof -
   obtain x1 and x2 where x1_x2_def:" R_Chop(ext v, x1,x2)" 
     using real_chop by force
   obtain V1 and V2 
-    where v1:"V1 = \<lparr> ext = x1, lan = lan v, own = own v\<rparr>" 
-    and v2:"V2 = \<lparr> ext = x2,lan= lan v, own = own v\<rparr> "  by blast
-  from v1 and v2 have "v=V1\<parallel>V2" 
-    using hchop_def x1_x2_def by (simp)
+    where v1:"V1 = \<lparr> basic_view.ext = x1, lan = lan v, own = own v\<rparr>" 
+    and v2:"V2 = \<lparr> basic_view.ext = x2,lan= lan v, own = own v\<rparr> "  by blast
+  from v1 and v2 have "v= (Abs_view V1)\<parallel> (Abs_view V2)" 
+    using hchop_def x1_x2_def 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq by auto 
   thus ?thesis by blast
 qed
   
-lemma horizontal_chop_empty_right :"\<forall>v. \<exists> u. (v=v\<parallel>u)" 
-  using hchop_def real_int.chop_singleton_right 
-  by (metis (no_types, hide_lams) select_convs) 
-    
-lemma horizontal_chop_empty_left :"\<forall>v. \<exists>u. (v=u\<parallel>v)" 
-  using hchop_def real_int.chop_singleton_left 
-  by (metis (no_types, hide_lams) select_convs) 
+lemma horizontal_chop_empty_right :" \<exists> u. (v=v\<parallel>u)" 
+proof -
+  obtain u where 1:"u = Abs_view (\<lparr>basic_view.ext = (Abs_real_int (right( ext v),right (ext v))), lan = lan v, own = own v\<rparr>)" by simp
+  then have "R_Chop(ext v, ext v, ext u)" 
+    using Abs_real_int_inverse Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq rchop_def by auto
+  then have "v = v\<parallel>u" 
+    using "1" Abs_view_inverse Rep_view lan.rep_eq own.rep_eq view.hchop_def by auto 
+  then show ?thesis by blast  
+qed
+
+lemma horizontal_chop_empty_left :"\<exists>u. (v=u\<parallel>v)" 
+proof -
+  obtain u where 1:"u = Abs_view (\<lparr>basic_view.ext = (Abs_real_int (left( ext v),left (ext v))), lan = lan v, own = own v\<rparr>)" by simp
+  then have "R_Chop(ext v, ext u, ext v)" 
+    using Abs_real_int_inverse Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq rchop_def by auto
+  then have "v = u\<parallel>v" 
+    using "1" Abs_view_inverse Rep_view lan.rep_eq own.rep_eq view.hchop_def by auto 
+  then show ?thesis by blast  
+qed
     
 lemma horizontal_chop_non_empty:
   "\<parallel>ext v\<parallel> > 0 \<longrightarrow> (\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> > 0 \<and> \<parallel>ext w\<parallel>>0)"
@@ -146,12 +180,14 @@ proof
   then obtain l1 and l2 
     where chop:" R_Chop(ext v, l1,l2) \<and> \<parallel>l1\<parallel> > 0 \<and> \<parallel>l2\<parallel> > 0" 
     using real_int.chop_dense by force
-  obtain V1 where v1_def:"V1 = \<lparr> ext = l1, lan = lan v, own = own v \<rparr>" 
+  obtain v1 where v1_def:"v1 = \<lparr> basic_view.ext = l1, lan = lan v, own = own v \<rparr>" 
     by simp
-  obtain V2 where v2_def:"V2 = \<lparr> ext = l2, lan = lan v, own = own v \<rparr>" 
+  obtain v2 where v2_def:"v2 = \<lparr> basic_view.ext = l2, lan = lan v, own = own v \<rparr>" 
     by simp
-  then have  "(v=V1\<parallel>V2) \<and> \<parallel>ext V1\<parallel> > 0 \<and> \<parallel>ext V2\<parallel>>0" 
-   using  chop hchop_def v1_def by (simp)
+  then obtain V1 and V2 where "V1 = Abs_view v1" and "V2 = Abs_view v2" by simp 
+  then have  "(v=(V1)\<parallel>( V2)) \<and> \<parallel>ext V1\<parallel> > 0 \<and> \<parallel>ext V2\<parallel>>0" 
+   using  chop hchop_def v1_def  
+   using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq v2_def by auto
   then show " (\<exists>V1 V2. (v=V1\<parallel>V2) \<and> \<parallel>ext V1\<parallel> > 0 \<and> \<parallel>ext V2\<parallel>>0)"
     by blast
 qed
@@ -161,26 +197,26 @@ lemma horizontal_chop_split_add:
   "x \<ge> 0 \<and> y \<ge> 0 \<longrightarrow> \<parallel>ext v\<parallel> = x+y \<longrightarrow> (\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y)"
 proof (rule impI)+
   assume geq_0:"x \<ge> 0 \<and> y \<ge> 0" and len_v:"\<parallel>ext v\<parallel> = x+y"
-  obtain u 
+  obtain v1 
     where v1_def: 
-      "u = \<lparr> ext = Abs_real_int (left (ext v), left (ext v) + x), lan = lan v, own = (own v) \<rparr>"
+      "v1 = \<lparr> basic_view.ext = Abs_real_int (left (ext v), left (ext v) + x), lan = lan v, own = (own v) \<rparr>"
     by simp
   have v1_in_type:"(left (ext v), left (ext v) + x) \<in> {r::(real*real) . fst r \<le> snd r}" 
     by (simp add: geq_0)
-  obtain w 
+  obtain v2 
     where v2_def:
-      "w = \<lparr> ext = Abs_real_int (left (ext v)+x, left (ext v) + (x+y)), 
+      "v2 = \<lparr> basic_view.ext = Abs_real_int (left (ext v)+x, left (ext v) + (x+y)), 
              lan = (lan v), own = (own v) \<rparr>" by simp
   have v2_in_type:
     "(left (ext v)+x, left (ext v) + (x+y)) \<in> {r::(real*real) . fst r \<le> snd r}" 
     by (simp add: geq_0)
+  obtain u and w where "u = Abs_view v1" and "w = Abs_view v2" by simp
   from v1_def and geq_0 have len_v1:"\<parallel>ext u\<parallel> = x" using v1_in_type 
-    by (simp add: Abs_real_int_inverse  real_int.length_def) 
+    using Abs_real_int_inverse Abs_view_inverse Rep_view \<open>u = Abs_view v1\<close> ext.rep_eq lan.rep_eq real_int.length_def by auto
   from v2_def and geq_0 have len_v2:"\<parallel>ext w\<parallel>= y" using v2_in_type 
-    by (simp add: Abs_real_int_inverse  real_int.length_def) 
+    using Abs_real_int_inverse Abs_view_inverse Rep_view \<open>w = Abs_view v2\<close> ext.rep_eq lan.rep_eq real_int.length_def by auto
   from v1_def and v2_def have "(v=u\<parallel>w)" 
-    using Abs_real_int_inverse fst_conv hchop_def len_v prod.collapse real_int.rchop_def
-      real_int.length_def snd_conv v1_in_type v2_in_type by auto
+    using Abs_real_int_inverse Abs_view_inverse Rep_view \<open>u = Abs_view v1\<close> \<open>w = Abs_view v2\<close> ext.rep_eq lan.rep_eq len_v own.rep_eq rchop_def real_int.length_def v1_in_type v2_in_type view.hchop_def by auto
   with len_v1 and len_v2 have "(v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y" by simp
   thus "(\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y)" by blast
 qed
@@ -189,14 +225,17 @@ lemma horizontal_chop_assoc1:
   "(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4) \<longrightarrow> (\<exists>v'. (v=v'\<parallel>v4) \<and> (v'=v1\<parallel>v3))"
 proof
   assume assm:"(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4)"
-  obtain v' 
+  obtain u' 
     where v'_def:
-      "v' =\<lparr> ext = Abs_real_int(left (ext v1), right (ext v3)),
+      "u' =\<lparr> basic_view.ext = Abs_real_int(left (ext v1), right (ext v3)),
              lan = (lan v), own = (own v) \<rparr>"
     by simp
+  then obtain "v'" where "v' = Abs_view u'" by simp
   hence 1:"v=v'\<parallel>v4" 
-    using assm real_int.chop_assoc1 hchop_def by auto
-  have 2:"v'=v1\<parallel>v3" using v'_def assm real_int.chop_assoc1 hchop_def by auto
+    using assm real_int.chop_assoc1 hchop_def v'_def 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq by auto
+  have 2:"v'=v1\<parallel>v3" using v'_def assm real_int.chop_assoc1 hchop_def 
+    using "1" rchop_def by auto
   from 1 and 2 have "(v=v'\<parallel>v4) \<and>  (v'=v1\<parallel>v3)" by best
   thus "(\<exists>v'. (v=v'\<parallel>v4)  \<and> (v'=v1\<parallel>v3))" ..
 qed
@@ -205,21 +244,27 @@ lemma horizontal_chop_assoc2:
   "(v=v1\<parallel>v2) \<and> (v1=v3\<parallel>v4) \<longrightarrow> (\<exists>v'. (v=v3\<parallel>v') \<and> (v'=v4\<parallel>v2))"
 proof
   assume assm:"(v=v1\<parallel>v2) \<and> (v1=v3\<parallel>v4)"
-  obtain v' 
+  obtain u 
     where v'_def:
-      "v'=\<lparr> ext = Abs_real_int(left (ext v4),right (ext v2)),
+      "u=\<lparr> basic_view.ext = Abs_real_int(left (ext v4),right (ext v2)),
             lan = (lan v), own = (own v) \<rparr>"  
     by simp
+  then obtain v' where "v' = Abs_view u" by simp
   hence 1:"v=v3\<parallel>v'" 
-    using assm fst_conv real_int.chop_assoc2 snd_conv hchop_def by auto
+    using assm fst_conv real_int.chop_assoc2 snd_conv hchop_def 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq v'_def by auto
   have 2: "v'=v4\<parallel>v2" 
-    using assm real_int.chop_assoc2 v'_def hchop_def by auto
+    using assm real_int.chop_assoc2 v'_def hchop_def 
+    using "1" rchop_def by auto
   from 1 and 2 have "(v=v3\<parallel>v') \<and> (v'=v4\<parallel>v2)" by best
   thus "(\<exists>v'. (v=v3\<parallel>v') \<and> (v'=v4\<parallel>v2))" ..
 qed
   
-  
-  
+lemma horizontal_chop_lanes_continuous:"(v=u\<parallel>w) \<longrightarrow> continuous (lan u) \<and> continuous (lan w)" 
+  using Rep_view lan.rep_eq by auto   
+
+lemma horizontal_chop_lanes_stable:"(v=u\<parallel>w) \<longrightarrow> lan v = lan u \<and> lan v = lan w" 
+  using view.hchop_def by blast
   
 lemma horizontal_chop_width_stable:"(v=u\<parallel>w)\<longrightarrow>|lan v|=|lan u|\<and>|lan v|=|lan w|"
   using hchop_def by auto
@@ -227,31 +272,60 @@ lemma horizontal_chop_width_stable:"(v=u\<parallel>w)\<longrightarrow>|lan v|=|l
 lemma horizontal_chop_own_trans:"(v=u\<parallel>w) \<longrightarrow> own u = own w" 
   using hchop_def by auto    
     
-lemma vertical_chop1:"\<forall>v. \<exists> u w. (v=u--w)"
-  using vchop_def  nat_int.chop_always_possible
-  by (metis (no_types, hide_lams) select_convs)
+lemma vertical_chop1:" \<exists> u w. (v=u--w)"
+proof -
+  have nat_chop:"\<exists>x1 x2.  N_Chop(lan v, x1,x2)" 
+    using Rep_view chop_empty_right lan.rep_eq by auto
+  then obtain x1 and x2 where x1_x2_def:" N_Chop(lan v, x1,x2)" 
+    by force
+  obtain V1 and V2 
+    where v1:"V1 = \<lparr> basic_view.ext = ext v, lan = x1, own = own v\<rparr>" 
+    and v2:"V2 = \<lparr> basic_view.ext = ext v,lan= x2, own = own v\<rparr> "  by blast
+  from v1 and v2 have "v= (Abs_view V1)-- (Abs_view V2)" 
+    using vchop_def x1_x2_def 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq 
+    by (simp add: nat_int.nchop_def) 
+  thus ?thesis by blast
+qed
+      
+lemma vertical_chop_empty_down:"\<exists> u.(v=v--u)" 
+proof -
+  obtain u where "u = Abs_view \<lparr>basic_view.ext = ext v, lan = \<emptyset>, own = own v\<rparr>" by simp
+  then have "v=v--u" 
+    using Abs_view_inverse Rep_view chop_empty_right empty_continuous ext.rep_eq lan.rep_eq own.rep_eq view.vchop_def by auto
+  then show ?thesis by blast
+qed
     
-lemma vertical_chop_empty_down:"\<forall>v.\<exists> u.(v=v--u)"
-  using vchop_def nat_int.chop_empty_right 
-  by (metis (no_types, hide_lams) select_convs)
-    
-    
-lemma vertical_chop_empty_up:"\<forall>v.\<exists>u.(v=u--v)"
-  using vchop_def nat_int.chop_empty_left 
-  by (metis (no_types, hide_lams) select_convs)
+lemma vertical_chop_empty_up:"\<exists>u.(v=u--v)"
+proof -
+  obtain u where "u = Abs_view \<lparr>basic_view.ext = ext v, lan = \<emptyset>, own = own v\<rparr>" by simp
+  then have "v=u--v" 
+    using Abs_view_inverse Rep_view chop_empty_left empty_continuous ext.rep_eq lan.rep_eq own.rep_eq view.vchop_def by auto
+  then show ?thesis by blast
+qed
     
     
 lemma vertical_chop_assoc1:
   "(v=v1--v2) \<and> (v2=v3--v4) \<longrightarrow> (\<exists>v'. (v=v'--v4) \<and> (v'=v1--v3))"
 proof
   assume assm:"(v=v1--v2) \<and> (v2=v3--v4)"
-  obtain v' 
-    where v'_def:"v' =\<lparr> ext = ext v, lan=(lan v1) \<squnion> (lan v3), own = (own v) \<rparr>"
+  obtain u' 
+    where v'_def:"u' = \<lparr> basic_view.ext = ext v, lan=(lan v1) \<squnion> (lan v3), own = (own v) \<rparr>"
     by simp
+  then obtain v' where "v' = Abs_view u'" by simp
+  have "continuous (lan v')" 
+    using nchop_def view.vchop_def view.vertical_chop_empty_down by auto
+  then have "N_Chop(basic_view.lan u',lan v1,lan v3)" 
+        using v'_def assm nat_int.chop_assoc1 nchop_def Abs_view_inverse  
+        by (meson select_convs(2) view.vchop_def view.vertical_chop_empty_down)
+  then have 2:"v'=v1--v3" 
+    using v'_def assm nat_int.chop_assoc1 vchop_def 
+    using Abs_view_inverse \<open>v' = Abs_view u'\<close> ext.rep_eq lan.rep_eq nchop_cont own.rep_eq by auto
+  have "N_Chop(lan v, basic_view.lan u', lan v4)" 
+    using assm nat_int_class.chop_assoc1 v'_def view.vchop_def by auto
   then have 1:"v=v'--v4" 
-    using assm nat_int.chop_assoc1 vchop_def by auto
-  have 2:"v'=v1--v3" 
-    using v'_def assm nat_int.chop_assoc1 vchop_def by auto
+    using assm nat_int.chop_assoc1 vchop_def Abs_view_inverse 
+    by (metis (mono_tags, lifting) "2" Quotient_to_Domainp Quotient_view \<open>N_Chop(basic_view.lan u',Views.lan v1,Views.lan v3)\<close> \<open>v' = Abs_view u'\<close> lan.abs_eq nchop_cont select_convs(4) v'_def view.domain)
   from 1 and 2 have "(v=v'--v4) \<and>  (v'=v1--v3)" by best
   then show "(\<exists>v'. (v=v'--v4)  \<and> (v'=v1--v3))" ..
 qed
@@ -260,13 +334,21 @@ lemma vertical_chop_assoc2:
   "(v=v1--v2) \<and> (v1=v3--v4) \<longrightarrow> (\<exists>v'. (v=v3--v') \<and> (v'=v4--v2))" 
 proof
   assume assm:"(v=v1--v2) \<and> (v1=v3--v4)"
-  obtain v' 
-    where v'_def:"v'=\<lparr> ext = ext v, lan =(lan v4) \<squnion> (lan v2), own = (own v) \<rparr>"  
+  obtain u' 
+    where v'_def:"u'=\<lparr> basic_view.ext = ext v, lan =(lan v4) \<squnion> (lan v2), own = (own v) \<rparr>"  
     by simp
-  then have 1:"v=v3--v'" 
-    using assm fst_conv nat_int.chop_assoc2 snd_conv vchop_def by auto
-  have 2: "v'=v4--v2" 
-    using assm nat_int.chop_assoc2 v'_def vchop_def by auto
+  then obtain v' where "v' = Abs_view u'" by simp
+  have "N_Chop(lan v, lan v3, basic_view.lan u')" 
+    using assm nat_int_class.chop_assoc2 v'_def view.vchop_def by auto 
+  then have 1:"v=v3--v'"  
+    using Abs_view_inverse \<open>v' = Abs_view u'\<close> assm ext.rep_eq lan.rep_eq nchop_def own.rep_eq v'_def view.vchop_def by auto
+  have "continuous (basic_view.lan u')" 
+    using \<open>N_Chop(Views.lan v,Views.lan v3,basic_view.lan u')\<close> nchop_def by blast
+  have "N_Chop(basic_view.lan u', lan v4, lan v2)" 
+    using assm nat_int_class.chop_assoc2 v'_def view.vchop_def by auto
+  then have 2: "v'=v4--v2"
+    using assm nat_int.chop_assoc2 v'_def vchop_def 
+    using "1" Abs_view_inverse \<open>continuous (basic_view.lan u')\<close> \<open>v' = Abs_view u'\<close> lan.rep_eq by auto
   from 1 and 2 have "(v=v3--v') \<and> (v'=v4--v2)" by best
   then show "(\<exists>v'. (v=v3--v') \<and> (v'=v4--v2))" ..
 qed
@@ -285,14 +367,15 @@ lemma vertical_chop_add2:
 proof
   assume assm:"|lan v| = x+y"
   hence add:"\<exists>i j. N_Chop(lan v, i,j) \<and> |i| = x \<and> |j| = y"
-    using chop_add2 by blast
+    using chop_add2 
+    using nat_int.nchop_def view.vchop_def view.vertical_chop_empty_down by auto
   obtain i and j where l1_l2_def:"N_Chop(lan v, i,j) \<and> |i| = x \<and> |j| = y"
     using add by blast
-  obtain u and w where "u=\<lparr>ext =  ext v, lan = i, own = (own v) \<rparr>"
-    and "w = \<lparr> ext = ext v, lan = j, own = (own v) \<rparr> " by blast
+  obtain u and w where "u=Abs_view \<lparr>basic_view.ext =  ext v, lan = i, own = (own v) \<rparr>"
+    and "w = Abs_view \<lparr> basic_view.ext = ext v, lan = j, own = (own v) \<rparr> " by blast
   hence "(v=u--w) \<and> |lan u|=x \<and> |lan w|=y" 
-    using l1_l2_def view.vchop_def
-    by (simp)
+    using l1_l2_def view.vchop_def 
+    by (simp add: Abs_view_inverse ext.rep_eq lan.rep_eq nat_int.nchop_def own.rep_eq)
   thus "(\<exists> u w.  (v=u--w) \<and> |lan u| = x \<and> |lan w| = y)" by blast
 qed
   
@@ -308,34 +391,248 @@ lemma vertical_chop_width_mon:
   by (metis le_add1 trans_le_add2 vertical_chop_add1)
     
 lemma horizontal_chop_leq1:"(v=u\<parallel>w) \<longrightarrow> u \<le> v"
-  using real_int.chop_leq1 hchop_def less_eq_view_ext_def order_refl by fastforce
+  using real_int.chop_leq1 hchop_def less_eq_view_def order_refl by fastforce
     
 lemma horizontal_chop_leq2:"(v=u\<parallel>w) \<longrightarrow> w \<le> v"
-  using real_int.chop_leq2 hchop_def less_eq_view_ext_def order_refl by fastforce
+  using real_int.chop_leq2 hchop_def less_eq_view_def order_refl by fastforce
     
 lemma vertical_chop_leq1:"(v=u--w) \<longrightarrow> u \<le> v"
-  using nat_int.chop_subset1 vchop_def less_eq_view_ext_def order_refl by fastforce
+  using nat_int.chop_subset1 vchop_def less_eq_view_def order_refl by fastforce
     
 lemma vertical_chop_leq2:"(v=u--w) \<longrightarrow> w \<le> v"
-  using nat_int.chop_subset2 vchop_def less_eq_view_ext_def order_refl by fastforce
-    
-    
+  using nat_int.chop_subset2 vchop_def less_eq_view_def order_refl by fastforce
+
+
+lemma "ext v \<le> ext v' \<and> lan v = lan v' \<and> own v = own v' \<longrightarrow> (\<exists>v1 v2 vl vr. (v'=vl\<parallel>v1) \<and> (v1=v\<parallel>vr))"
+proof
+  assume assm_exp:"(ext v \<le> ext v') \<and> (lan v = lan v') \<and> (own v = own v')" 
+  obtain vl v1  vr 
+    where 
+      vl:"vl=Abs_view \<lparr>basic_view.ext=Abs_real_int(left(ext v'),left(ext v)), lan=lan v', own=own v'\<rparr>"
+    and 
+      v1:"v1=Abs_view \<lparr>basic_view.ext=Abs_real_int(left(ext v),right(ext v')), lan=lan v', own=own v'\<rparr>"
+    and 
+      vr:"vr=Abs_view \<lparr>basic_view.ext=Abs_real_int(right(ext v),right(ext v')), lan=lan v', own=own v'\<rparr>"
+    by blast
+  have vl_in_type:"(left (ext v'), left (ext v)) \<in> {r::(real*real) . fst r \<le> snd r}" 
+    using less_eq_real_int_def assm_exp real_int.left_leq_right snd_conv 
+      fst_conv mem_Collect_eq by simp
+  have v1_in_type:"(left (ext v), right (ext v')) \<in> {r::(real*real) . fst r \<le> snd r}" 
+    using less_eq_real_int_def assm_exp real_int.left_leq_right snd_conv fst_conv
+      mem_Collect_eq order_trans by fastforce
+  have vr_in_type:"(right (ext v), right (ext v')) \<in> {r::(real*real) . fst r \<le> snd r}" 
+    using less_eq_real_int_def assm_exp real_int.left_leq_right snd_conv fst_conv
+      mem_Collect_eq order_trans by fastforce
+  have "R_Chop(ext v', ext vl, ext v1)" using Abs_view_inverse vl v1 
+    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2) select_convs(4) snd_conv v1_in_type vl_in_type)
+  then have hchop1: "v'=vl\<parallel>v1" 
+    using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq v1 view.hchop_def vl by auto 
+  have "R_Chop(ext v1, ext v, ext vr)" using Abs_view_inverse v1  vr 
+    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2) select_convs(4) snd_conv  vr_in_type v1_in_type)
+  then have hchop2: "v1=v\<parallel>vr" 
+    using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq v1  vr view.hchop_def  
+    using assm_exp by auto 
+  from hchop1 and hchop2 have hchops:"(v'=vl\<parallel>v1)\<and> (v1=v\<parallel>vr)" by simp
+  then show "(\<exists>v1 v2 vl vr. (v'=vl\<parallel>v1) \<and> (v1=v\<parallel>vr))" by blast
+qed
+
+lemma "ext v = ext v' \<and> (lan v \<sqsubseteq> lan v') \<and> own v = own v' \<longrightarrow> (\<exists>v1 vu vd. (v'=vd--v1) \<and> (v1=v--vu))"
+proof
+  assume assm:"ext v = ext v' \<and> (lan v \<sqsubseteq> lan v') \<and> own v = own v'"
+  show " \<exists>v1 vu vd. (v'=vd--v1) \<and> (v1=v--vu)"
+  proof (cases "lan v = \<emptyset>")
+    case True
+    then have "(v'=v'--v) \<and> (v=v--v)" 
+      using assm chop_empty chop_empty_right horizontal_chop_empty_right horizontal_chop_lanes_continuous view.vchop_def by fastforce
+    then show ?thesis by blast
+  next
+    case False
+    let ?lanv = "lan v" 
+    let ?lanv' = "lan v'"
+    have v'_notE:"?lanv' \<noteq> \<emptyset>" 
+      using False assm bot.extremum_unique by fastforce
+    have 1:"minimum ?lanv \<ge> minimum ?lanv'" 
+      by (simp add: False assm subset_min v'_notE)
+    have 2:"maximum ?lanv \<le> maximum ?lanv'" 
+      by (simp add: False assm subset_max v'_notE)
+    let ?diff_min = "minimum ?lanv - minimum ?lanv'" 
+    let ?diff_max = "maximum ?lanv' - maximum ?lanv" 
+    have max_rel:"maximum ?lanv' = maximum ?lanv + ?diff_max" 
+      by (simp add: "2")
+    have min_rel:"minimum ?lanv'= minimum ?lanv - ?diff_min" by (simp add:1) 
+    obtain m and n where atLAM_v':"\<forall>l. l \<^bold>\<in> ?lanv' \<longleftrightarrow> l \<in> {m..n}" 
+      using continuos_atLeastAtMost view.horizontal_chop_empty_left view.horizontal_chop_lanes_continuous by blast
+    from min_rel have min:"m = minimum ?lanv - ?diff_min" 
+      using atLAM_v' nat_int_atLeastAtMost_min v'_notE by blast
+    from max_rel have max:"n = maximum ?lanv + ?diff_max"
+      using atLAM_v' nat_int_atLeastAtMost_max v'_notE by blast
+    have v'_rep:"\<forall>l. l \<^bold>\<in> ?lanv' \<longleftrightarrow> l \<in> { minimum ?lanv - ?diff_min .. maximum ?lanv + ?diff_max}" using min max atLAM_v' by blast 
+    obtain lan1 where lan1_rep:"\<forall>l. l\<in>{minimum ?lanv  .. maximum ?lanv + ?diff_max} \<longleftrightarrow> l \<^bold>\<in> lan1" using atLeastAtMost_rep
+      by blast
+    obtain lanu where lanu_rep:"\<forall>l. l\<in>{maximum ?lanv+1 .. maximum ?lanv + ?diff_max} \<longleftrightarrow> l \<^bold>\<in> lanu" using  atLeastAtMost_rep 
+      by blast
+    obtain land where land_rep:"\<forall>l. l\<in>{minimum ?lanv' .. minimum ?lanv' + ?diff_min - 1} \<longleftrightarrow> l \<^bold>\<in> land" using atLeastAtMost_rep 
+      by blast
+      have cont1: "continuous (lan1)" using   lan1_rep continuos_atLeastAtMost by blast
+      have contu: "continuous lanu" using lanu_rep  continuos_atLeastAtMost by blast
+      have contd: "continuous land" using land_rep  continuos_atLeastAtMost by blast
+      have contv: "continuous ?lanv" 
+        using Rep_view lan.rep_eq by auto
+    consider (a) "?diff_min = 0 \<and> ?diff_max = 0" | (b) "?diff_min \<noteq> 0 \<and> ?diff_max = 0" | (c) "?diff_min = 0 \<and> ?diff_max \<noteq> 0" | (d) "?diff_min \<noteq> 0 \<and> ?diff_max \<noteq> 0"
+      by blast
+    then show ?thesis
+    proof (cases)
+      case a  
+      then have "?lanv = ?lanv'" 
+        by (meson "1" False assm diff_is_0_eq leD less_max order.not_eq_order_implies_strict v'_notE view.horizontal_chop_empty_left view.horizontal_chop_lanes_continuous)
+      then have "\<exists>vu vd. (v'=vd--v) \<and> (v=v--vu)" 
+        by (metis assm less_eq_view_def less_view_def order.order_iff_strict order_refl  view.vertical_chop_empty_down view.vertical_chop_empty_up)
+      then show ?thesis by blast
+    next
+      case b
+      then have ge:\<open>?diff_min > 0\<close> using 2 by blast
+      have min_less:"minimum ?lanv' + ?diff_min > minimum ?lanv' " 
+        using ge by linarith
+      have land_notE:"land \<noteq> \<emptyset>" using min_less land_rep 
+        by (metis "1"  Suc_diff_1  all_not_in_conv b  card_atLeastAtMost card_empty diff_is_0_eq' le_add_diff_inverse less_imp_diff_less min min_rel non_empty_elem_in  )
+      then have 3:"minimum land = minimum ?lanv'" using land_rep nat_int_atLeastAtMost_min 
+        by (metis One_nat_def )
+      have "maximum land = minimum ?lanv' + ?diff_min -1" using land_rep land_notE nat_int_atLeastAtMost_max 
+        by blast
+      then have 4:"maximum land + 1= minimum ?lanv" using ge by linarith
+      have consec:"consec land ?lanv" using 4 
+        by (simp add: False consec_def land_notE)
+      have cont1: "continuous land" using land_notE land_rep 
+        by (simp add: "3" \<open>maximum land = minimum (Views.lan v') + (minimum (Views.lan v) - minimum (Views.lan v')) - 1\<close> continuous_nonE_atLeastAtMost)
+      have "?lanv' = land \<squnion> ?lanv" using consec cont1 False land_notE 
+        by (metis (mono_tags, lifting) "3" Rep_view add.right_neutral b consec_un_max consec_un_min lan.rep_eq max_rel mem_Collect_eq nat_int.consec_un_equality v'_notE)
+      then have "N_Chop(?lanv', land, ?lanv)" 
+        using consec cont1 nchop_def view.horizontal_chop_empty_left view.horizontal_chop_lanes_continuous by blast
+      obtain vd where "vd =  \<lparr> basic_view.ext = ext v, lan = land, own =own v\<rparr>"
+        by blast
+      then have "v'=(Abs_view vd)--v" 
+        using Abs_view_inverse \<open>N_Chop(Views.lan v',land,Views.lan v)\<close> assm cont1 ext.rep_eq lan.rep_eq own.rep_eq view.vchop_def by auto
+      show ?thesis 
+        using \<open>v'=Abs_view vd--v\<close> view.vertical_chop_empty_down by blast
+    next
+      case c
+      then have ge:\<open>?diff_max > 0\<close> using 2 by blast
+      have max_less:"maximum ?lanv < maximum ?lanv + ?diff_max" 
+        using ge by linarith
+      have 3: "minimum ?lanv = minimum lan1" using lan1_rep nat_int_atLeastAtMost_min 
+        by (metis "1" c diff_is_0_eq in_eq le_antisym  max min v'_rep)
+      have 4:"maximum ?lanv + 1 = minimum lanu" using lanu_rep  nat_int_atLeastAtMost_max nat_int_atLeastAtMost_min 
+        by (metis  Suc_eq_plus1 Suc_leI    atLeastAtMost_iff     le_eq_less_or_eq max_less max_rel  non_empty_elem_in  order_trans  )
+      have "maximum lan1 = maximum ?lanv + ?diff_max" using lan1_rep nat_int_atLeastAtMost_max  
+        by (metis "3" c max  min min_rel minus_nat.diff_0 non_empty_elem_in v'_notE v'_rep)
+      have "maximum lanu = maximum ?lanv + ?diff_max" using lanu_rep nat_int_atLeastAtMost_max
+        by (metis "4" Max_in Suc_eq_plus1 add_diff_cancel_right card_atLeastAtMost card_empty finite_atLeastAtMost ge max max_rel non_empty_elem_in not_gr_zero)
+      have 5:"maximum lan1 = maximum lanu" 
+        by (simp add: \<open>maximum lan1 = maximum (Views.lan v) + (maximum (Views.lan v') - maximum (Views.lan v))\<close> \<open>maximum lanu = maximum (Views.lan v) + (maximum (Views.lan v') - maximum (Views.lan v))\<close>) 
+      have "lanu \<noteq> \<emptyset>" using lanu_rep max_less 
+        using bot_nat_int.rep_eq  by auto
+      have "consec ?lanv lanu" 
+        using "4" False \<open>lanu \<noteq> bot\<close> consec_def by blast
+      have "lan1 = lan v \<squnion> lanu" using lan1_rep lanu_rep v'_rep 3 4 5 
+        by (metis \<open>consec (Views.lan v) lanu\<close> \<open>continuous (Views.lan v)\<close> \<open>continuous lan1\<close> \<open>continuous lanu\<close> bot_nat_int.rep_eq c consec_un_equality consec_un_max consec_un_min  el.rep_eq emptyE maximum_in minus_nat.diff_0 v'_notE) 
+      have "N_Chop(lan1, ?lanv, lanu)" 
+        by (simp add: \<open>consec (Views.lan v) lanu\<close> \<open>continuous (Views.lan v)\<close> \<open>continuous lanu\<close> \<open>lan1 = Views.lan v \<squnion> lanu\<close> nchop_def)
+      obtain vu where vu:"vu= \<lparr> basic_view.ext = ext v, lan = lanu, own =own v\<rparr>"
+        by blast
+      obtain v1 where v1:"v1 = \<lparr> basic_view.ext = ext v, lan = lan1, own = own v\<rparr>"
+        by blast
+      have chop1:"(Abs_view v1)=v--(Abs_view vu)" 
+        using Abs_view_inverse \<open>N_Chop(lan1,Views.lan v,lanu)\<close> \<open>continuous lan1\<close> \<open>continuous lanu\<close> ext.rep_eq lan.rep_eq own.rep_eq v1 view.vchop_def vu by auto
+      have "minimum lan1 = minimum ?lanv'" using lan1_rep 
+        using "1" "3" c by linarith
+      have chop2:"N_Chop(?lanv', \<emptyset>, lan1)" 
+        by (metis \<open>\<And>thesis. (\<And>m n. \<forall>l. (l \<^bold>\<in> Views.lan v') = (l \<in> {m..n}) \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> \<open>consec (Views.lan v) lanu\<close> \<open>continuous (Views.lan v)\<close> \<open>continuous lanu\<close> \<open>lan1 = Views.lan v \<squnion> lanu\<close> \<open>maximum lan1 = maximum (Views.lan v) + (maximum (Views.lan v') - maximum (Views.lan v))\<close> \<open>minimum lan1 = minimum (Views.lan v')\<close> consec_un_equality continuos_atLeastAtMost empty_continuous max_rel nchop_def sup_bot.left_neutral v'_notE) 
+      then show ?thesis using chop1 chop2 
+        by (metis (mono_tags, hide_lams) Rep_view_inverse assm equality ext.rep_eq lan.rep_eq nat_int.nchop_def old.unit.exhaust own.rep_eq select_convs(1) select_convs(2) select_convs(3) sup_bot.left_neutral v1 vertical_chop_empty_up)
+    next
+      case d
+      then have ge:\<open>?diff_min > 0\<close> using 2 by blast
+      have min_less:"minimum ?lanv' + ?diff_min > minimum ?lanv' " 
+        using ge by linarith
+      have ge2:\<open>?diff_max > 0\<close> using 2 d by blast
+      have max_less:"maximum ?lanv < maximum ?lanv + ?diff_max" 
+        using ge2 by linarith
+      have land_notE:"land \<noteq> \<emptyset>" using min_less land_rep 
+        by (metis "1"  Suc_diff_1  all_not_in_conv d  card_atLeastAtMost card_empty diff_is_0_eq' le_add_diff_inverse less_imp_diff_less min min_rel non_empty_elem_in  )
+      then have 3:"minimum land = minimum ?lanv'" using land_rep nat_int_atLeastAtMost_min 
+        by (metis One_nat_def )
+      have lan1_notE: "lan1 \<noteq> \<emptyset>" using lan1_rep False  
+        using False assm bot_nat_int.rep_eq lan1_rep less_eq_nat_int.rep_eq nat_int.minimum_in v'_rep by fastforce 
+      have lanu_notE: "lanu \<noteq> \<emptyset>" using lanu_rep max_less 
+        using bot_nat_int.rep_eq  by auto
+      have "maximum land = minimum ?lanv' + ?diff_min -1" using land_rep land_notE nat_int_atLeastAtMost_max 
+        by blast
+      then have 4:"maximum land + 1= minimum ?lanv" using ge by linarith
+      have consec:"consec land ?lanv" using 4 
+        by (simp add: False consec_def land_notE)
+      have 3: "minimum ?lanv = minimum lan1" using lan1_rep nat_int_atLeastAtMost_min lan1_notE   
+        by simp
+      have 4:"maximum ?lanv + 1 = minimum lanu" using lanu_rep  nat_int_atLeastAtMost_max nat_int_atLeastAtMost_min 
+        by (metis  Suc_eq_plus1 Suc_leI    atLeastAtMost_iff     le_eq_less_or_eq max_less max_rel  non_empty_elem_in  order_trans  )
+      have "maximum lan1 = maximum ?lanv + ?diff_max" using lan1_rep nat_int_atLeastAtMost_max  
+        by (metis "3" "4" False atLeastAtMost_iff       consec_def consec_lesser     lanu_rep  less_imp_le_nat less_not_refl max  minimum_in non_empty_elem_in    order_refl order_trans  )
+      have "maximum lanu = maximum ?lanv' " using lanu_rep nat_int_atLeastAtMost_max 
+        using lanu_notE max_rel by auto
+      have 5:"maximum lan1 = maximum lanu" 
+        using \<open>maximum lan1 = maximum (Views.lan v) + (maximum (Views.lan v') - maximum (Views.lan v))\<close> \<open>maximum lanu = maximum (Views.lan v')\<close> max_rel by auto
+      have 6:"maximum lan1 = maximum ?lanv'" 
+        using \<open>maximum lan1 = maximum (Views.lan v) + (maximum (Views.lan v') - maximum (Views.lan v))\<close> max_rel by auto
+     
+      have "consec ?lanv lanu" 
+        using "4" False \<open>lanu \<noteq> bot\<close> consec_def by blast
+      have "lan1 = lan v \<squnion> lanu" using lan1_rep lanu_rep v'_rep 3 4 5 
+        by (metis \<open>consec (Views.lan v) lanu\<close>  cont1 contu contv consec_un_equality consec_un_max consec_un_min lan1_notE)
+      have cont_un1:"continuous (lan v \<squnion> lanu)" 
+        using \<open>lan1 = Views.lan v \<squnion> lanu\<close> cont1 by auto
+      have chop1:"N_Chop(lan1, ?lanv, lanu)" 
+        using \<open>consec (Views.lan v) lanu\<close> \<open>continuous (Views.lan v)\<close> \<open>continuous lanu\<close> \<open>lan1 = Views.lan v \<squnion> lanu\<close> nchop_def by blast
+      have consec2:"consec land lan1" 
+        using "3" \<open>lan1 = Views.lan v \<squnion> lanu\<close> consec consec_def by auto 
+      then have "continuous (land \<squnion> lan1)" 
+        using  cont1 contd nchop_cont nchop_def by blast
+      then have "?lanv' = land \<squnion> lan1" using consec2 cont1 v'_rep 3 5 6 v'_notE continuous_min_max
+         by (metis (no_types, hide_lams) \<open>maximum lan1 = maximum (Views.lan v) + (maximum (Views.lan v') - maximum (Views.lan v))\<close> bot_eq_sup_iff consec_un_max consec_un_min continuous_nonE_atLeastAtMost land_notE land_rep nat_int_atLeastAtMost_min)
+      then have chop2:"N_Chop(?lanv', land, lan1)" 
+        using  cont1 contd nchop_def view.horizontal_chop_empty_left view.horizontal_chop_lanes_continuous 
+        consec2 by blast
+      obtain vu where vu:"vu= \<lparr> basic_view.ext = ext v, lan = lanu, own =own v\<rparr>"
+        by blast
+      obtain v1 where v1:"v1 = \<lparr> basic_view.ext = ext v, lan = lan1, own = own v\<rparr>"
+        by blast
+      obtain vd where vd:"vd =  \<lparr> basic_view.ext = ext v, lan = land, own =own v\<rparr>"
+        by blast
+      have 7:"(Abs_view v1)=v--(Abs_view vu)" using chop1 vu v1 Abs_view_inverse vchop_def ext.rep_eq own.rep_eq 
+        by (simp add: cont1 contu lan.rep_eq)
+      have 8:"v'=(Abs_view vd)-- (Abs_view v1)" using chop2 v1 vd 
+        by (simp add: Abs_view_inverse assm eq_onp_same_args ext.abs_eq lan.rep_eq nchop_def own.abs_eq view.vchop_def) 
+      then have "(v'=(Abs_view vd)--(Abs_view v1)) \<and> ((Abs_view v1)=v--(Abs_view vu))" 
+        using "7" by blast
+      then show ?thesis by blast
+    qed
+  qed
+qed
+
 lemma somewhere_leq:
   "v \<le> v' \<longleftrightarrow> (\<exists>v1 v2 v3 vl vr vu vd. 
                 (v'=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v--vu))" 
 proof
   assume "v \<le> v'"
   hence assm_exp:"(ext v \<le> ext v') \<and> (lan v \<sqsubseteq> lan v') \<and> (own v = own v')" 
-    using less_eq_view_ext_def by auto
+    using less_eq_view_def by auto
   obtain vl v1 v2 vr 
     where 
-      vl:"vl=\<lparr>ext=Abs_real_int(left(ext v'),left(ext v)), lan=lan v', own=own v'\<rparr>"
+      vl:"vl=Abs_view \<lparr>basic_view.ext=Abs_real_int(left(ext v'),left(ext v)), lan=lan v', own=own v'\<rparr>"
     and 
-      v1:"v1=\<lparr>ext=Abs_real_int(left(ext v),right(ext v')), lan=lan v', own=own v'\<rparr>"
+      v1:"v1=Abs_view \<lparr>basic_view.ext=Abs_real_int(left(ext v),right(ext v')), lan=lan v', own=own v'\<rparr>"
     and 
-      v2:"v2=\<lparr>ext=Abs_real_int(left(ext v),right(ext v)), lan=lan v', own=own v'\<rparr>"
+      v2:"v2=Abs_view \<lparr>basic_view.ext=Abs_real_int(left(ext v),right(ext v)), lan=lan v', own=own v'\<rparr>"
     and 
-      vr:"vr=\<lparr>ext=Abs_real_int(right(ext v),right(ext v')), lan=lan v', own=own v'\<rparr>"
+      vr:"vr=Abs_view \<lparr>basic_view.ext=Abs_real_int(right(ext v),right(ext v')), lan=lan v', own=own v'\<rparr>"
     by blast
   have vl_in_type:"(left (ext v'), left (ext v)) \<in> {r::(real*real) . fst r \<le> snd r}" 
     using less_eq_real_int_def assm_exp real_int.left_leq_right snd_conv 
@@ -349,25 +646,34 @@ proof
   have vr_in_type:"(right (ext v), right (ext v')) \<in> {r::(real*real) . fst r \<le> snd r}" 
     using less_eq_real_int_def assm_exp real_int.left_leq_right snd_conv fst_conv
       mem_Collect_eq order_trans by fastforce
-  then have hchops:"(v'=vl\<parallel>v1)\<and> (v1=v2\<parallel>vr)" 
-    using vl v1 v2 vr less_eq_real_int_def hchop_def real_int.rchop_def 
-     vl_in_type  v1_in_type  v2_in_type vr_in_type Abs_real_int_inverse by auto     
-  have lanes_v2:"lan v2 = lan v'" using v2 by auto
-  have own_v2:"own v2 = own v'" using v2 by auto
+  have "R_Chop(ext v', ext vl, ext v1)" using Abs_view_inverse vl v1 
+    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2) select_convs(4) snd_conv v1_in_type vl_in_type)
+  then have hchop1: "v'=vl\<parallel>v1" 
+    using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq v1 view.hchop_def vl by auto 
+  have "R_Chop(ext v1, ext v2, ext vr)" using Abs_view_inverse v1 v2 vr 
+    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2) select_convs(4) snd_conv v2_in_type vr_in_type v1_in_type)
+  then have hchop2: "v1=v2\<parallel>vr" 
+    using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq v1 v2 vr view.hchop_def  by auto 
+  from hchop1 and hchop2 have hchops:"(v'=vl\<parallel>v1)\<and> (v1=v2\<parallel>vr)" by simp
+  have lanes_v2:"lan v2 = lan v'" using v2 
+    using hchops view.hchop_def by fastforce
+  have own_v2:"own v2 = own v'" using v2 using hchops view.hchop_def by fastforce
   have ext_v2:"ext v2 =ext v" 
-    using v2 v2_in_type Abs_real_int_inverse  by (simp add: Rep_real_int_inverse)   
+    using v2 v2_in_type Abs_real_int_inverse  
+    using Abs_view_inverse Rep_real_int_inverse Rep_view ext.rep_eq lan.rep_eq by auto   
   show 
     "\<exists>v1 v2 v3 vl vr vu vd. (v'=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v--vu)"
   proof (cases "lan v' = lan v")
     case True
     obtain vd v3 vu 
-      where vd:"vd = \<lparr> ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
-      and v3:"v3 = \<lparr> ext = ext v2, lan = lan v', own = own v' \<rparr>"
-      and vu:"vu = \<lparr> ext = ext v2, lan = \<emptyset>, own = own v' \<rparr>" by blast
+      where vd:"vd = Abs_view \<lparr> basic_view.ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
+      and v3:"v3 =  Abs_view \<lparr> basic_view.ext = ext v2, lan = lan v', own = own v' \<rparr>"
+      and vu:"vu =  Abs_view \<lparr> basic_view.ext = ext v2, lan = \<emptyset>, own = own v' \<rparr>" by blast
     hence "(v2=vd--v3) \<and> (v3=v--vu)" 
-      using vd v3 vu True vchop_def nat_int.nchop_def nat_int.un_empty_absorb1 
-        nat_int.un_empty_absorb2 nat_int.inter_empty1 nat_int.inter_empty2 lanes_v2
-        own_v2 ext_v2 assm_exp by auto
+      using vd v3 vu True vchop_def nat_int.nchop_def  
+         nat_int.inter_empty1 nat_int.inter_empty2 lanes_v2
+        own_v2 ext_v2 assm_exp 
+      using Abs_view_inverse Rep_view chop_empty_right ext.rep_eq lan.rep_eq own.rep_eq by fastforce
     then show ?thesis using hchops by blast
   next
     case False
@@ -377,54 +683,90 @@ proof
     show ?thesis 
     proof (cases "lan v \<noteq> \<emptyset>")
       case False
-      obtain vd v3 vu where vd:"vd = \<lparr> ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
-        and v3:"v3 = \<lparr> ext = ext v2, lan = lan v', own = own v' \<rparr>"
-        and vu:"vu = \<lparr> ext = ext v2, lan = lan v', own = own v' \<rparr>" by blast   
-      then have "(v2=vd--v3) \<and> (v3=v--vu)" 
-        using vd v3 vu False vchop_def nat_int.nchop_def
-          nat_int.un_empty_absorb1 nat_int.un_empty_absorb2
-          nat_int.inter_empty1 nat_int.inter_empty2 lanes_v2 own_v2 ext_v2 assm_exp
-        by auto
+      obtain vd v3 vu where vd:"vd = Abs_view\<lparr> basic_view.ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
+        and v3:"v3 =  Abs_view\<lparr> basic_view.ext = ext v2, lan = lan v', own = own v' \<rparr>"
+        and vu:"vu =  Abs_view\<lparr> basic_view.ext = ext v2, lan = lan v', own = own v' \<rparr>" by blast   
+      have 1:"N_Chop(lan v2, lan vd, lan v3)" 
+        using Abs_view_inverse Rep_view chop_empty_left empty_continuous lan.rep_eq v2 v3 vd by auto
+      have 2:"N_Chop(lan v3, lan v, lan vu)" 
+        using "1" False chop_empty_left nchop_def v3 vu by auto
+      from 1 and 2 have "(v2=vd--v3) \<and> (v3=v--vu)" 
+        using Abs_view_inverse False Rep_real_int_inverse assm_exp ext.rep_eq ext_v2 nat_int.nchop_def own.rep_eq own_v2 v2 v3 vd view.vchop_def vu by auto
       then show ?thesis 
         using hchops by blast
     next
       case True
-      show ?thesis
+      show ?thesis 
       proof (cases "(minimum (lan v)) = minimum(lan v')")
         assume min:"minimum ( lan v) = minimum (lan v')"
+        have "lan v \<sqsubseteq> lan v'" 
+          using assm_exp by blast
+        have "lan v \<noteq> lan v'" 
+          using False by auto
         hence max:"maximum (lan v) <maximum (lan v')" 
-          by (metis Rep_nat_int_inverse assm_exp atLeastatMost_subset_iff leI le_antisym
-              nat_int.leq_max_sup nat_int.leq_min_inf nat_int.maximum_def nat_int.minimum_def
-              nat_int.rep_non_empty_means_seq less_eq_nat_int.rep_eq False True 
-              v'_neq_empty)
-        obtain vd v3 vu 
-          where vd:"vd = \<lparr> ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
-          and v3:"v3 = \<lparr> ext = ext v2, lan = lan v', own = own v' \<rparr>"
-          and vu:"vu = \<lparr> ext = ext v2, lan = 
+          using Rep_view True \<open>Views.lan v \<le> Views.lan v'\<close> lan.rep_eq less_max min v'_neq_empty by auto
+        then have notE:"{maximum(lan v)+1..maximum(lan v')} \<noteq> {}" 
+          by (simp add: Suc_leI)
+        obtain vd v3 vu'
+          where vd:"vd = Abs_view \<lparr> basic_view.ext = ext v2, lan = \<emptyset>, own = own v'\<rparr>" 
+          and v3:"v3 = Abs_view \<lparr> basic_view.ext = ext v2, lan = lan v', own = own v' \<rparr>"
+          and vu':"vu' =  \<lparr> basic_view.ext = ext v2, lan = 
             Abs_nat_int({maximum(lan v)+1..maximum(lan v')}), own = own v' \<rparr>" 
           by blast
-        have vu_in_type:
+        obtain vu where vu:"vu = Abs_view vu'" by simp
+(*        have vu_in_type:
           "{maximum(lan v)+1 ..maximum(lan v')} \<in> {S.(\<exists> (m::nat) n.{m..n }=S)}"
-          using max by auto
+          using max by auto*)
+        have "continuous (lan vu)" using vu max 
+          using Rep_view lan.rep_eq by auto
+        obtain m and n where "\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> (lan vu)" 
+          using \<open>continuous (Views.lan vu)\<close> continuos_atLeastAtMost by blast
+        have "lan vu \<noteq> \<emptyset>" 
+        proof (rule ccontr)
+          assume "\<not>lan vu \<noteq> \<emptyset>"
+          then have a:"lan vu = \<emptyset>" by simp
+          have "basic_view.lan vu' = Abs_nat_int({maximum(lan v)+1..maximum(lan v')})" 
+            by (simp add: vu')
+          have b:"basic_view.lan vu' \<noteq> \<emptyset>" 
+            by (metis Abs_nat_int_inverse \<open>basic_view.lan vu' = Abs_nat_int {maximum (Views.lan v) + 1..maximum (Views.lan v')}\<close> bot_nat_int.rep_eq finite_atLeastAtMost local.notE mem_Collect_eq)
+          have c:"lan vu = basic_view.lan vu'" using vu Abs_view_inverse 
+            by (metis (mono_tags, lifting) Abs_nat_int_inverse Quotient_to_Domainp Quotient_view \<open>basic_view.lan vu' = Abs_nat_int {maximum (Views.lan v) + 1..maximum (Views.lan v')}\<close> atLeastAtMost_iff continuous_def el.rep_eq finite_atLeastAtMost lan.abs_eq less_imp_le_nat mem_Collect_eq order_trans select_convs(4) view.domain vu')
+          show False using a b c by simp
+        qed
+        then have "m = minimum (lan vu)" using vu max 
+          using \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> Views.lan vu)\<close> nat_int_atLeastAtMost_min by blast
+        from \<open>lan vu \<noteq> \<emptyset>\<close>  have "n = maximum (lan vu)" using vu max
+          using \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> Views.lan vu)\<close> nat_int_atLeastAtMost_max by blast
+        then have "\<forall>l. l \<in> {maximum (lan v) +1 .. maximum (lan v')} \<longleftrightarrow> l \<^bold>\<in> (lan vu)" using max vu Abs_view_inverse Abs_nat_int_inverse 
+          Rep_view sorry
         have consec:"consec (lan v) (lan vu)" using max 
-          by (simp add:  Suc_leI   nat_int.consec_def nat_int.leq_min_inf' 
-              nat_int.leq_nat_non_empty True  vu)
+          using True \<open>Views.lan vu \<noteq> bot\<close> \<open>\<forall>l. (l \<in> {maximum (Views.lan v) + 1..maximum (Views.lan v')}) = (l \<^bold>\<in> Views.lan vu)\<close> consec_def nat_int_atLeastAtMost_min by auto
         have disjoint:" lan v \<sqinter>  lan vu = \<emptyset>" 
           by (simp add: consec nat_int.consec_inter_empty)
-        have union:"lan v' = lan v \<squnion> lan vu"
-          by (metis Suc_eq_plus1 Suc_leI consec leq_max_sup' max min
-              nat_int.consec_un_equality nat_int.consec_un_max nat_int.consec_un_min 
-              select_convs(2) v'_neq_empty vu)
+        have union:"lan v' = lan v \<squnion> lan vu" 
+        proof -
+          have f1: "\<And>v. continuous (Views.lan v)"
+            using Rep_view lan.rep_eq by auto
+          have f2: "maximum (Views.lan v') \<^bold>\<in> Views.lan vu"
+            by (meson \<open>\<forall>l. (l \<in> {maximum (Views.lan v) + 1..maximum (Views.lan v')}) = (l \<^bold>\<in> Views.lan vu)\<close> atLeastAtMost_iff atLeastatMost_empty_iff local.notE order_refl)
+          then have "n \<le> maximum (Views.lan v')"
+            by (metis (no_types) \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> Views.lan vu)\<close> \<open>\<forall>l. (l \<in> {maximum (Views.lan v) + 1..maximum (Views.lan v')}) = (l \<^bold>\<in> Views.lan vu)\<close> atLeastAtMost_iff atLeastatMost_empty_iff order_refl)
+          then show ?thesis
+            using f2 f1 by (metis (no_types) \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> Views.lan vu)\<close> \<open>n = maximum (Views.lan vu)\<close> antisym_conv atLeastAtMost_iff consec consec_un_equality consec_un_max consec_un_min min v'_neq_empty)
+        qed
+        then have "N_Chop(lan v2, lan vd, lan v3)" 
+          by (metis (mono_tags, lifting) Abs_view_inverse Rep_view empty_continuous lan.rep_eq mem_Collect_eq nchop_def select_convs(2) select_convs(4) sup_bot.left_neutral v2 v3 vd)
+        then have nchop1: "(v2=vd--v3)" 
+          using Abs_view_inverse Rep_real_int_inverse empty_continuous ext.rep_eq ext_v2 own.rep_eq own_v2 v2 v3 vd view.vchop_def by auto
+        have   "N_Chop(lan v3, lan v, lan vu)" 
+          using Rep_real_int_inverse Rep_view consec ext_v2 lan.rep_eq lanes_v2 nchop_def union v2 v3 by auto
+        then have nchop2:"v3=v--vu" sorry
         then have "(v2=vd--v3) \<and> (v3=v--vu)"
-          using vd v3 vu vchop_def nat_int.nchop_def nat_int.un_empty_absorb1 
-            nat_int.un_empty_absorb2 nat_int.inter_empty1 nat_int.inter_empty2
-            lanes_v2 own_v2 ext_v2 assm_exp vu_in_type  Abs_nat_int_inverse
-            consec union disjoint select_convs
-          by force
+          using  nchop1 nchop2 by blast
         then show ?thesis using hchops by blast
       next
         assume "(minimum (lan v)) \<noteq> minimum (lan v')"         
-        then have  min:"minimum ( lan v) > minimum (lan v')"
+        then have  min:"minimum ( lan v) > minimum (lan v')" 
           by (metis Min_le True assm_exp finite_atLeastAtMost le_neq_implies_less 
               less_eq_nat_int.rep_eq nat_int.el.rep_eq nat_int.minimum_def 
               nat_int.minimum_in rep_non_empty_means_seq subsetCE v'_neq_empty)
@@ -540,14 +882,20 @@ such that \(u^\prime\) is reachable from \(u\) (and respectively for \(w^\prime\
 \<close>
   (* switch lemmas *)
 lemma switch_unique:"(v =c> u) \<and> (v =c> w) \<longrightarrow>u = w"
-  using switch_def by auto
+  using switch_def 
+  using Rep_view_inject ext.rep_eq lan.rep_eq own.rep_eq by fastforce
     
 lemma switch_exists:"\<exists>c u.( v=c>u)"
   using switch_def by auto
     
-lemma switch_always_exists:"\<forall>c. \<exists>u. (v=c>u)"
-  by (metis select_convs switch_def)
-    
+lemma switch_always_exists:" \<exists>u. (v=c>u)" 
+proof - 
+  obtain u where "u = Abs_view \<lparr> basic_view.ext = ext v, lan = lan v, own = c\<rparr>" by simp
+  then have "v=c>u" 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq view.switch_def by auto
+  then show ?thesis by blast
+qed
+
 lemma switch_origin:" \<exists>u. (u=(own v)>v)" 
   using switch_def  by auto
     
@@ -565,7 +913,7 @@ lemma switch_triangle:"(v=c>u) \<and> (v=d>w) \<longrightarrow> (u=d>w)"
     
 lemma switch_hchop1:
   "(v=v1\<parallel>v2) \<and> (v=c>v') \<longrightarrow>
-     (\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'\<parallel>v2'))" 
+     (\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'\<parallel>v2'))"  
   by (metis (no_types, hide_lams) select_convs view.hchop_def view.switch_def)
     
 lemma switch_hchop2:
@@ -586,20 +934,20 @@ lemma switch_vchop2:
 lemma switch_leq:"u' \<le> u \<and> (v=c>u) \<longrightarrow> (\<exists>v'. (v'=c>u') \<and> v' \<le> v)" 
 proof 
   assume assm: "u' \<le> u \<and> (v=c>u)"
-  then have more_eq:"more v = more u" 
-    using view.switch_def by blast
-  then obtain v' where v'_def:"v'= \<lparr> ext =ext u', lan = lan u', own = own v\<rparr>"
+(*  then have more_eq:"more v = more u" 
+    using view.switch_def by blast*)
+  then obtain v' where v'_def:"v'= Abs_view \<lparr> basic_view.ext =ext u', lan = lan u', own = own v\<rparr>"
     by blast
   have ext:"ext v' \<le> ext v" using assm switch_def 
-    by (simp add: less_eq_view_ext_def v'_def)
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq less_eq_view_def v'_def by auto 
   have lan:"lan v' \<le> lan v" using assm switch_def 
-    by (simp add: less_eq_view_ext_def v'_def)
-  have more:"more v' \<le> more v" using more_eq assm by simp
-  have less: "v' \<le> v" using less_eq_view_ext_def ext lan more v'_def 
-    by (simp add: less_eq_view_ext_def)
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq less_eq_view_def v'_def by auto 
+  have less: "v' \<le> v" using less_eq_view_def ext lan  v'_def 
+    using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq by auto 
   have switch:"v' =c> u'" using v'_def switch_def assm 
-    by (simp add: less_eq_view_ext_def)     
-  show  "(\<exists>v'. ( v' = c > u') \<and> v' \<le> v)" using switch less by blast
+    using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq 
+    by (simp add: ext.rep_eq less_eq_view_def)
+    show  "(\<exists>v'. ( v' = c > u') \<and> v' \<le> v)" using switch less by blast
 qed
 end
 end

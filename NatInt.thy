@@ -223,6 +223,8 @@ context nat_int
 begin
 abbreviation subseteq :: "nat_int \<Rightarrow> nat_int\<Rightarrow> bool" (infix "\<sqsubseteq>" 30)
   where  "i \<sqsubseteq> j == i \<le> j "
+abbreviation subset :: "nat_int \<Rightarrow> nat_int \<Rightarrow> bool" (infix "\<sqsubset>" 30)
+  where "i \<sqsubset> j == i < j" 
 abbreviation empty :: "nat_int" ("\<emptyset>")
   where "\<emptyset> \<equiv> bot"
     
@@ -425,6 +427,12 @@ lemma nat_int_atLeastAtMost_min:"i \<noteq> \<emptyset> \<longrightarrow> (\<for
 lemma nat_int_atLeastAtMost_max:"i \<noteq> \<emptyset> \<longrightarrow> (\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> i) \<longrightarrow> maximum i = n"
   by (metis antisym atLeastAtMost_iff atLeastatMost_empty_iff continuos_atLeastAtMost continuous_nonE_atLeastAtMost equals0D  le_eq_less_or_eq  minimum_in non_empty_elem_in)
 
+lemma singleton_continuous: "(\<forall>l. l \<in> {m} \<longleftrightarrow> l \<^bold>\<in> i) \<longrightarrow> continuous i" 
+  by (metis continuous_def leD less_imp_le_nat singletonD)
+
+lemma empty_continuous :"i = \<emptyset> \<longrightarrow> continuous i" 
+  using continuous_def non_empty_elem_in by blast
+
 lemma nchop_cont:" N_Chop(i,j,k) \<longrightarrow> continuous i" 
 proof
   assume " N_Chop(i,j,k)"
@@ -463,6 +471,49 @@ proof
   qed
 qed
 
+lemma subset_min:"(i \<noteq> \<emptyset>) \<and> (j \<noteq> \<emptyset>) \<and> (i \<sqsubseteq> j) \<longrightarrow> minimum i \<ge> minimum j" 
+  by (metis Min_le Rep_nat_int el.rep_eq less_eq_nat_int.rep_eq local.minimum.rep_eq mem_Collect_eq minimum_in subsetCE)
+
+lemma subset_max:"(i \<noteq> \<emptyset>) \<and> (j \<noteq> \<emptyset>) \<and> (i \<sqsubseteq> j) \<longrightarrow> maximum i \<le> maximum j"
+  by (metis Max_ge Rep_nat_int el.rep_eq less_eq_nat_int.rep_eq local.maximum.rep_eq mem_Collect_eq maximum_in subsetCE)
+
+
+lemma less_max: "(i \<noteq> \<emptyset>) \<and> (j \<noteq> \<emptyset>) \<and> (continuous i) \<and> (continuous j) \<and> (i \<sqsubset> j) \<and> minimum i = minimum j \<longrightarrow> maximum i < maximum j"
+proof
+  assume assm:"i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> (continuous i) \<and> (continuous j) \<and> (i \<sqsubset> j) \<and> minimum i = minimum j"
+  obtain m and n where 1:"\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> i" 
+    using assm continuos_atLeastAtMost by blast
+  obtain p and q where 2:"\<forall>l. l \<in> {p..q} \<longleftrightarrow> l \<^bold>\<in> j"
+    using assm continuos_atLeastAtMost by blast
+  have "m = minimum i" using nat_int_atLeastAtMost_min assm 1 2 by blast
+  have "p = minimum j" using nat_int_atLeastAtMost_min assm 1 2 by blast
+  then have 3:"m = p" 
+    by (simp add: \<open>m = minimum i\<close> assm)
+  have "{m..n} \<subset> {p..q}" using assm 1 2 
+      using less_nat_int.rep_eq by auto
+  then have "n < q" using 3 
+      using order_trans by auto
+  then show "maximum i < maximum j" using nat_int_atLeastAtMost_max assm 1 2  by simp
+qed
+
+lemma greater_min: "(i \<noteq> \<emptyset>) \<and> (j \<noteq> \<emptyset>) \<and> (continuous i) \<and> (continuous j) \<and> (i \<sqsubset> j) \<and> maximum i = maximum j \<longrightarrow> minimum i > minimum j"
+proof
+  assume assm:"i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> (continuous i) \<and> (continuous j) \<and> (i \<sqsubset> j) \<and> maximum i = maximum j"
+  obtain m and n where 1:"\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> i" 
+    using assm continuos_atLeastAtMost by blast
+  obtain p and q where 2:"\<forall>l. l \<in> {p..q} \<longleftrightarrow> l \<^bold>\<in> j"
+    using assm continuos_atLeastAtMost by blast
+  have "n = maximum i" using nat_int_atLeastAtMost_max assm 1 2 by blast
+  have "q = maximum  j" using nat_int_atLeastAtMost_max assm 1 2 by blast
+  then have 3:"n = q" 
+    by (simp add: \<open>n = maximum i\<close> assm)
+  have "{m..n} \<subset> {p..q}" using assm 1 2 
+      using less_nat_int.rep_eq by auto
+  then have "m > p" using 3 
+      using order_trans by auto
+  then show "minimum i > minimum j" using nat_int_atLeastAtMost_min assm 1 2  by simp
+qed
+
 (*lemma leq_min_inf':"(m::nat) \<le> n \<longrightarrow> minimum(Abs_nat_int{m..n}) = m" 
 proof 
   assume assm:"m \<le> n"
@@ -494,6 +545,10 @@ proof
   with assm show "m=n" by (simp add: Abs_nat_int_inverse el_def)
 qed
 *)
+
+lemma continuous_min_max: "i \<noteq> \<emptyset> \<and> j \<noteq> \<emptyset> \<and> continuous i \<and> continuous j \<and> minimum i = minimum j \<and> maximum i = maximum j \<longrightarrow> i = j"
+  using continuous_nonE_atLeastAtMost in_eq by auto
+
 subsection \<open>Algebraic properties of intersection and union.\<close>
   
 lemma inter_empty1:"(i::nat_int) \<sqinter> \<emptyset> = \<emptyset>" 
@@ -607,12 +662,26 @@ lemma un_element1:" n \<^bold>\<in> i \<longrightarrow> n \<^bold>\<in> i \<squn
 lemma un_element2:" n \<^bold>\<in> j \<longrightarrow> n \<^bold>\<in> i \<squnion> j"
   using in_not_in_iff2 un_not_elem2 by blast
 
+lemma excl_el1: "n \<^bold>\<in> i \<and> i \<sqinter> j = \<emptyset> \<longrightarrow> n \<^bold>\<notin> j" 
+  by (metis Int_iff bot_nat_int.rep_eq el.rep_eq empty_iff inf_nat_int.rep_eq not_in.rep_eq)
+lemma excl_el2: "n \<^bold>\<in> j \<and> i \<sqinter> j = \<emptyset> \<longrightarrow> n \<^bold>\<notin> i" 
+  by (metis Int_iff bot_nat_int.rep_eq el.rep_eq empty_iff inf_nat_int.rep_eq not_in.rep_eq)
+
+lemma un_excl_el1:"n \<^bold>\<in> i \<squnion> j \<and> i \<sqinter> j = \<emptyset> \<and> n \<^bold>\<notin> i \<longrightarrow> n \<^bold>\<in> j" 
+  using sup_nat_int.rep_eq by auto
+lemma un_excl_el2:"n \<^bold>\<in> i \<squnion> j \<and> i \<sqinter> j = \<emptyset> \<and> n \<^bold>\<notin> j \<longrightarrow> n \<^bold>\<in> i" 
+  using sup_nat_int.rep_eq by auto
+
 (*lemma consec_un_element1:"consec i j \<and> n \<^bold>\<in> i \<longrightarrow> n \<^bold>\<in> i \<squnion> j" 
   using less_eq_nat_int.rep_eq nat_int.el.rep_eq  by blast
     
 lemma consec_un_element2:"consec i j \<and> n \<^bold>\<in> j \<longrightarrow> n \<^bold>\<in> i \<squnion> j"
   using less_eq_nat_int.rep_eq nat_int.el.rep_eq nat_int.un_subset2 by blast
 *)
+
+lemma ex_nat_int: "m\<le>n \<longrightarrow> (\<exists>i. \<forall>l. l\<in>{m..n} \<longleftrightarrow> l \<^bold>\<in> i)" 
+  using atLeastAtMost_rep by blast
+
 
 lemma consec_lesser:" consec i j  \<longrightarrow> (\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" 
 proof (rule allI|rule impI)+
@@ -929,7 +998,10 @@ qed
 qed
 *)
 
-lemma card_un_add: " continuous i \<and> continuous j \<and> consec i j \<longrightarrow> |i \<squnion> j| = |i| + |j|" 
+lemma card_un_add:"i \<sqinter> j = \<emptyset> \<longrightarrow> |i \<squnion> j| = |i| + |j|" 
+  by (metis bot_nat_int.rep_eq card'.rep_eq card.infinite card_Un_disjoint card_non_empty_geq_one finite.intros(1) inf_nat_int.rep_eq not_one_le_zero sup_nat_int.rep_eq)
+
+lemma card_un_add': " continuous i \<and> continuous j \<and> consec i j \<longrightarrow> |i \<squnion> j| = |i| + |j|" 
   by (metis Rep_nat_int bot_nat_int.rep_eq card'.rep_eq card_Un_disjoint consec_inter_empty inf_nat_int.rep_eq mem_Collect_eq sup_nat_int.rep_eq)
 (*proof 
   assume assm:"consec i j" 
@@ -974,6 +1046,24 @@ next
     by (metis all_not_in_conv el.rep_eq insertI1 is_singletonI' is_singleton_altdef singletonD)
 qed
 
+lemma atLeastAtMost_card:"(\<forall>l . l \<in> {m..n} \<longleftrightarrow> l\<^bold>\<in>i) \<longrightarrow> |i| = card {m..n}"
+proof
+  assume "\<forall>l . l \<in> {m..n} \<longleftrightarrow> l\<^bold>\<in>i"
+  show " |i| = card {m..n}"
+  proof (cases "i = \<emptyset>")
+    case True
+    show ?thesis 
+      by (metis True \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> i)\<close> atLeastAtMost_insertL atLeastAtMost_singleton atLeastatMost_empty_iff2 bot_nat_int.rsp bot_nat_int_def card.empty card_empty_zero insertI1 insert_absorb nat_int.el.abs_eq order_refl)
+  next
+    case False
+    have "m = minimum i" 
+      using False \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> i)\<close> nat_int_atLeastAtMost_min by blast
+    have "n = maximum i" 
+      using False \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> i)\<close> nat_int_atLeastAtMost_max by blast
+    show ?thesis 
+      using False \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> i)\<close> \<open>m = minimum i\<close> \<open>n = maximum i\<close> card_min_max continuous_nonE_atLeastAtMost minimum_in by auto
+  qed
+qed
 (*lemma singleton:"|i| = 1 \<longrightarrow> (\<exists>n. Rep_nat_int i = {n})"
   using card_1_singletonE card'.rep_eq by fastforce
     
@@ -1061,7 +1151,7 @@ lemma chop_always_possible:"continuous i \<longrightarrow> (\<exists> j k. N_Cho
   using chop_empty_left by auto
     
 lemma chop_add1: "N_Chop(i,j,k) \<longrightarrow> |i| = |j| + |k|" 
-  using card_empty_zero nat_int.card_un_add nchop_def by auto
+  using card_empty_zero nat_int.card_un_add' nchop_def by auto
     
 lemma chop_add2:"continuous i \<and> |i| = x+y \<longrightarrow> (\<exists> j k. N_Chop(i,j,k) \<and> |j|=x \<and> |k|=y)"  
 proof
