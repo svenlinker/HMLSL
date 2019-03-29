@@ -696,23 +696,56 @@ lemma switch_triangle:"(v=c>u) \<and> (v=d>w) \<longrightarrow> (u=d>w)"
 lemma switch_hchop1:
   "(v=v1\<parallel>v2) \<and> (v=c>v') \<longrightarrow>
      (\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'\<parallel>v2'))"  
-  by (metis (no_types, hide_lams) select_convs view.hchop_def view.switch_def)
-    
+proof 
+  assume assm:"(v=v1\<parallel>v2) \<and> (v=c>v')"
+  obtain v1' and v2' where 1:"v1=c>v1'" and 2:"v2=c>v2'" 
+    by (meson view.switch_always_exists)
+  from 1 and 2 and assm have "(v'=v1'\<parallel>v2')"  
+    using view.hchop_def view.switch_def by auto
+  then show "\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'\<parallel>v2')" using 1 2 by blast
+qed
+
 lemma switch_hchop2:
   "(v'=v1'\<parallel>v2') \<and> (v=c>v') \<longrightarrow> 
       (\<exists> v1 v2. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v=v1\<parallel>v2))"
-  by (metis (no_types, hide_lams) select_convs view.hchop_def view.switch_def)
-    
+proof 
+  assume assm:"(v'=v1'\<parallel>v2') \<and> (v=c>v')"
+  obtain v1 and v2 where 1:"v1=c>v1'" and 2:"v2=c>v2'" and 3:"own v1 = own v" and 4:"own v2 = own v"  using switch_origin 
+    using assm view.hchop_def view.switch_def 
+    by (metis  view.switch_always_exists view.switch_symm)
+  from 1 and 2 and 3 and 4 assm have "(v=v1\<parallel>v2)"  
+    using view.hchop_def view.switch_def by auto
+  then show "\<exists> v1 v2. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v=v1\<parallel>v2)" using 1 2 by blast
+qed
+
+
 lemma switch_vchop1:
   "(v=v1--v2) \<and> (v=c>v') \<longrightarrow> 
       (\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'--v2'))"
-  by (metis (no_types, hide_lams) select_convs view.vchop_def view.switch_def)
-    
+proof 
+  assume assm:"(v=v1--v2) \<and> (v=c>v')"
+  obtain v1' and v2' where 1:"v1=c>v1'" and 2:"v2=c>v2'" 
+    by (meson view.switch_always_exists)
+  from 1 and 2 and assm have "(v'=v1'--v2')"  
+    using view.vchop_def view.switch_def by auto
+  then show "\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'--v2')" using 1 2 by blast
+qed
+
+
 lemma switch_vchop2:
   "(v'=v1'--v2') \<and> (v=c>v') \<longrightarrow>
        (\<exists> v1 v2. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v=v1--v2))"
-  by (metis (no_types, hide_lams) select_convs view.vchop_def view.switch_def)
-    
+proof 
+  assume assm:"(v'=v1'--v2') \<and> (v=c>v')"
+  obtain v1 and v2 where 1:"v1=c>v1'" and 2:"v2=c>v2'" and 3:"own v1 = own v" and 4:"own v2 = own v"  using switch_origin 
+    using assm view.vchop_def view.switch_def 
+    by (metis  view.switch_always_exists view.switch_symm)
+  from 1 and 2 and 3 and 4 assm have "(v=v1--v2)"  
+    using view.vchop_def view.switch_def by auto
+  then show "\<exists> v1 v2. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v=v1--v2)" using 1 2 by blast
+qed
+
+
 lemma switch_leq:"u' \<le> u \<and> (v=c>u) \<longrightarrow> (\<exists>v'. (v'=c>u') \<and> v' \<le> v)" 
 proof 
   assume assm: "u' \<le> u \<and> (v=c>u)"
