@@ -57,8 +57,8 @@ lemma restriction_stable2:"(v=u\<parallel>w) \<longrightarrow> restrict v f  c =
     
 lemma restriction_un:
   "(v=u--w) \<longrightarrow> restrict v f c = (restrict u f c \<squnion> restrict w f c)"
-  using nat_int.inter_distr1 nat_int.inter_empty1 nat_int.un_empty_absorb1
-    nat_int.un_empty_absorb2 nat_int.nchop_def restrict_def vchop_def 
+  using nat_int.inter_distr1 nat_int.inter_empty1 
+     nat_int.nchop_def restrict_def vchop_def 
   by auto
     
 lemma restriction_mon1:"(v=u--w) \<longrightarrow> restrict u f c \<sqsubseteq> restrict v f c" 
@@ -107,31 +107,30 @@ proof
     have ex_n:" \<exists>n. n \<in> Rep_nat_int (restrict v2 (res ts) c)" 
       using nat_int.el.rep_eq non_empty nat_int.non_empty_elem_in by auto
     have res1_or2:"|(res ts) c| = 1 \<or> |(res ts) c| = 2" 
-      by (metis Suc_1 atLeastOneRes atMostTwoRes dual_order.antisym le_SucE)
+      by (metis Suc_1  atLeastOneRes atMostTwoRes dual_order.antisym le_SucE )
     then show False 
     proof
       assume res_one:"|(res ts) c|=1"
-      then obtain n where one_lane:"Rep_nat_int ((res ts) c) =  {n}" 
+      then obtain n where one_lane:"\<forall>l. l \<^bold>\<in> (res ts c) \<longleftrightarrow>  l \<in>{n}" 
         using singleton by blast 
-      then have "n \<in> Rep_nat_int (restrict v1 (res ts) c)"
-        by (metis assm equals0D nat_int.el.rep_eq less_eq_nat_int.rep_eq 
-            nat_int.non_empty_elem_in restrict_res singletonI subset_singletonD)
-      then have "Rep_nat_int (restrict v2 (res ts) c) = {}" 
-        by (metis one_lane assm inf.absorb1 less_eq_nat_int.rep_eq restriction.restrict_res
-            restriction_disj subset_singleton_iff)
+      then have "n \<^bold>\<in> (restrict v1 (res ts) c)" 
+        by (metis Int_iff assm inf.absorb_iff2 inf_nat_int.rep_eq nat_int.el.rep_eq nat_int.maximum_in restrict_res singletonD)
+      then have "restrict v2 (res ts) c = \<emptyset>"  
+        by (metis Int_iff assm bot_nat_int.rep_eq el.rep_eq empty_iff ex_n inf_nat_int.rep_eq insert_iff one_lane restriction.restrict_def restriction_disj)
       thus False 
-        using ex_n by blast
+        using ex_n 
+        using non_empty by blast
     next
       assume res_two:"|(res ts) c| = 2"
-      hence ex_two_ln:" (\<exists>n . Rep_nat_int ((res ts) c) = {n,n+1})" 
+      hence ex_two_ln:" (\<exists>n . n \<^bold>\<in> ((res ts) c) \<and> (n+1) \<^bold>\<in> res ts c)" 
         using consecutiveRes by blast
-      then obtain n where n_def:"Rep_nat_int ((res ts) c) = {n,n+1}"  by blast
-      hence rep_restrict_v1:"Rep_nat_int (restrict v1 (res ts) c) \<subseteq> {n,n+1}" 
-        using less_eq_nat_int.rep_eq restrict_res by blast
+      then obtain n where n_def:" n \<^bold>\<in> ((res ts) c) \<and> (n+1) \<^bold>\<in> res ts c"  by blast
+ (*     hence rep_restrict_v1:"Rep_nat_int (restrict v1 (res ts) c) \<subseteq> {n,n+1}" 
+        using less_eq_nat_int.rep_eq restrict_res by blast*)
       hence 
-        "n \<in> Rep_nat_int (restrict v1 (res ts) c) \<or> 
-         n+1 \<in> Rep_nat_int(restrict v1 (res ts) c)"
-        using assm bot.extremum_unique less_eq_nat_int.rep_eq by fastforce
+        "n \<^bold>\<in> (restrict v1 (res ts) c) \<or> 
+         n+1 \<^bold>\<in>(restrict v1 (res ts) c)" sorry
+        using assm bot.extremum_unique less_eq_nat_int.rep_eq 
       thus False
       proof
         assume suc_n_in_res_v1:"n+1 \<in> Rep_nat_int (restrict v1 (res ts) c)"

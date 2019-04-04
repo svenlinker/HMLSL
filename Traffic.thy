@@ -186,20 +186,20 @@ for each traffic snapshot.
 \<close>
 
 (*lemma disjoint: "(res ts c) \<sqinter> (clm ts c) = \<emptyset>" 
-  
+ *) 
 
 lemma atLeastOneRes: "1 \<le> |res ts c|" 
-using Rep_traffic  res_def by auto 
+  using Rep_traffic res.rep_eq sane_def by auto
 
 lemma atMostTwoRes:" |res ts c| \<le> 2"
-using Rep_traffic  res_def  by auto 
+  using Rep_traffic res.rep_eq sane_def by auto
 
 lemma  atMostOneClm: "|clm ts c| \<le> 1" 
-using Rep_traffic  clm_def  by auto 
+  using Rep_traffic clm.rep_eq sane_def by auto
 
 lemma atMostTwoLanes: "|res ts c| +|clm ts c| \<le> 2"
-using Rep_traffic  res_def clm_def  by auto 
-*)
+  using Rep_traffic res.rep_eq clm.rep_eq sane_def by auto
+
 lemma  consecutiveRes:" |res ts  c| =2 \<longrightarrow> (\<exists>n . n \<^bold>\<in> (res ts c) \<and> (n+1) \<^bold>\<in> (res ts c))" 
 proof
   assume assm:"|res ts  c| =2" 
