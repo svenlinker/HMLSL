@@ -35,7 +35,9 @@ begin
   
 typedef real_int = "{r::(real*real) . fst r \<le> snd r}"
   by auto
+print_theorems
 setup_lifting type_definition_real_int
+print_theorems
   
 lift_definition left::"real_int \<Rightarrow> real" is fst proof - qed
 lift_definition right::"real_int \<Rightarrow> real" is snd proof - qed
@@ -49,7 +51,8 @@ context real_int
 begin
   
 definition length :: "real_int \<Rightarrow> real" ("\<parallel>_\<parallel>" 70)
-  where "\<parallel>r\<parallel> \<equiv> right r - left r"
+  where "\<parallel>r\<parallel> = right r - left r"
+print_theorems
 
 definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift _ _")
   where "(shift r x) = Abs_real_int(left r +x, right r +x)"
@@ -57,6 +60,9 @@ definition shift::"real_int \<Rightarrow> real \<Rightarrow> real_int" (" shift 
 definition R_Chop :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int \<Rightarrow> bool" ("R'_Chop'(_,_,_')" 51)
   where rchop_def :
     "R_Chop(r,s,t) ==  left r  = left s \<and> right s = left t \<and> right r =  right t"
+
+definition combine :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int" 
+  where "combine r s == Abs_real_int (left r, right s)" 
 
 end
 
@@ -87,8 +93,8 @@ lemma left_leq_right: "left r \<le> right r"
   using Rep_real_int left.rep_eq right.rep_eq by auto
     
     
-lemma length_ge_zero :" \<parallel>r\<parallel> \<ge> 0" 
-  using Rep_real_int left.rep_eq right.rep_eq length_def by auto
+lemma length_ge_zero :" \<parallel>r\<parallel> \<ge> 0" using left_leq_right 
+  by (simp add: length_def)
 
 lemma consec_add:
   "left r = left s \<and> right r = right t \<and> right s = left t \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel>"
@@ -106,8 +112,23 @@ lemma shift_keeps_length:"\<parallel>r\<parallel> = \<parallel> shift r x\<paral
     
 lemma shift_zero:"(shift r 0) = r"
   by (simp add: Rep_real_int_inverse shift_def )
-    
-lemma shift_additivity:"(shift r (x+y)) = shift (shift r x) y"
+
+lemma shift_inj: "(shift r x) = (shift s x) \<longrightarrow> r = s"  
+proof
+  assume 1:"(shift r x) = (shift s x)" 
+  have 2:"left r + x = left s + x" 
+    using "1" Abs_real_int_inject left_leq_right real_int_class.shift_def by auto
+  have 3: "right r + x = right s + x" 
+    using "1" Abs_real_int_inject left_leq_right real_int_class.shift_def by auto
+  show "r = s" using 2 3 
+    by (metis Rep_real_int_inverse add_diff_cancel_left' left.rep_eq linordered_field_class.sign_simps(27) prod.collapse right.rep_eq)
+qed
+
+lemma shift_inj_amount: "(shift r x) = (shift r y) \<longrightarrow> x = y" 
+  using Abs_real_int_inject left_leq_right real_int_class.shift_def by auto
+
+
+lemma shift_additivity:"(shift r (x+y)) = shift (shift r x) y" 
 proof -
   have 1:"(shift r (x+y)) = Abs_real_int ((left r) +(x+y), (right r)+(x+y))"
     using shift_def by auto
@@ -129,7 +150,75 @@ proof -
     by auto
   with 1 show ?thesis by (simp add: add.assoc)
 qed
-  
+
+lemma chop_combine: "R_Chop(r,s,t) \<longrightarrow> r = combine s t" 
+  by (metis Rep_real_int_inverse combine_def left.rep_eq prod.collapse rchop_def right.rep_eq)
+
+lemma combine_leq_left: "right s = left t \<longrightarrow> s \<le> combine s t"  
+proof
+  assume 1:"right s = left t" 
+  have 2: "left s \<ge> left (combine s t)" using 1
+    by (metis Rep_real_int_cases Rep_real_int_inverse left.rep_eq left_leq_right local.combine_def mem_Collect_eq order_refl order_trans prod.sel(1) prod.sel(2))
+  have 3: "right s \<le> right (combine s t)" using 1 left_leq_right 
+    by (metis (no_types, lifting) CollectI Rep_real_int_cases Rep_real_int_inverse combine_def  dual_order.trans left.rep_eq   prod.sel(1) prod.sel(2) right.rep_eq)
+  show "s \<le> combine s t"  using 2 3 
+    by (simp add: less_eq_real_int_def)
+qed
+
+lemma combine_leq_right: "right s = left t \<longrightarrow> t \<le> combine s t"  
+proof
+  assume 1:"right s = left t" 
+  have 2: "left t \<ge> left (combine s t)" using 1
+    by (metis Rep_real_int_cases Rep_real_int_inverse left.rep_eq left_leq_right local.combine_def mem_Collect_eq  order_trans prod.sel(1) prod.sel(2))
+  have 3: "right t \<le> right (combine s t)" using 1 left_leq_right 
+    by (metis Abs_real_int_inverse CollectI combine_def dual_order.refl order_trans prod.sel(1) prod.sel(2) right.rep_eq)
+  show "t \<le> combine s t"  using 2 3 
+    by (simp add: less_eq_real_int_def)
+qed
+
+lemma shift_combine_comm: "(right r = left s) \<longrightarrow> combine (shift r x) (shift s x) = shift (combine r s) x" 
+proof 
+  assume assm: "right r = left s" 
+  have 0:"combine (shift r x) (shift s x) = Abs_real_int (left (shift r x), right (shift s x))" 
+    by (simp add: combine_def)
+  have 1:"left (shift r x) = left r + x" 
+    using Abs_real_int_inverse left_leq_right real_int_class.shift_def by auto
+  have 2:"right (shift s x) = right s + x" 
+    using Abs_real_int_inverse length_def length_ge_zero real_int_class.shift_def by auto
+  have 3: "left (combine r s) = left r" using combine_def assm Abs_real_int_inverse  
+    by (metis fst_conv left.rep_eq left_leq_right mem_Collect_eq order_trans snd_conv)
+  have 4: "right (combine r s) = right s"  using combine_def assm Abs_real_int_inverse 
+    by (metis fst_conv right.rep_eq left_leq_right mem_Collect_eq order_trans snd_conv)
+  have "(shift (combine r s) x) = Abs_real_int ((left (combine r s)) + x ,( right (combine r s)) + x)" 
+    by (simp add: real_int_class.shift_def)
+  then have "(shift (combine r s) x) = Abs_real_int ((left r + x), (right s + x))" using 3 4 
+    by auto
+  then have "(shift (combine r s) x) = Abs_real_int ((left (shift r x)), (right (shift s  x)))" using 1 2 
+    by simp
+  then show "combine (shift r x) (shift s x) = shift (combine r s) x" using 0 
+    by simp
+qed
+
+lemma shift_combine:"(left t = right s) \<longrightarrow> (r = combine s t) \<longleftrightarrow> (shift r x) = combine (shift s x) (shift t x)" 
+proof
+  assume 1:"(left t = right s)"
+   show " (r = combine s t) \<longleftrightarrow> (shift r x) = combine (shift s x)  (shift t x)"
+  proof
+    assume 2:"(r = combine s t)" 
+    have 3:"left r = left s" using combine_def Abs_real_int_inverse Rep_real_int 2
+      by (metis "1" fst_conv left.rep_eq left_leq_right mem_Collect_eq order_trans snd_conv)
+    have 4: "right r = right t" 
+      by (metis "1" "2" Rep_real_int_cases Rep_real_int_inverse left_leq_right local.combine_def mem_Collect_eq order_trans prod.sel(1) prod.sel(2) right.rep_eq)
+    show  "(shift r x) = combine (shift s x) (shift t x)" using 3 4 
+      using Abs_real_int_inverse combine_def length_def length_ge_zero real_int_class.shift_def by auto
+  next
+    assume 2:"(shift r x) = combine (shift s x) (shift t x)"
+    have "combine (shift s x) (shift t x) = shift (combine s t) x" using shift_combine_comm 1 by auto
+    then show "r=combine s t" 
+      using "2" shift_inj by auto
+  qed
+qed
+
 lemma chop_always_possible: "\<exists> s t. R_Chop(r,s,t)"  
 proof -
   fix x
@@ -201,7 +290,21 @@ proof
     using s_gr_0 t_gr_0 by blast
   thus "\<exists> s t. R_Chop(r,s,t) \<and> \<parallel>s\<parallel>>0 \<and> \<parallel>t\<parallel>>0" by blast
 qed  
-  
+
+lemma chop_assoc1':
+  "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4) 
+     \<longrightarrow> R_Chop(r, combine r1 r3, r4) 
+        \<and> R_Chop(combine r1 r3, r1,r3)"
+proof
+  assume assm: "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4)"
+  have 1:"R_Chop(combine r1 r3, r1,r3)" 
+    by (metis (no_types, lifting) assm  combine_def eq_onp_same_args left.abs_eq left.rep_eq left_leq_right order_trans prod.sel(1) prod.sel(2) rchop_def right.abs_eq right.rep_eq)
+  have 2:" R_Chop(r, combine r1 r3, r4)" 
+    using "1" assm rchop_def by fastforce
+  show " R_Chop(r, combine r1 r3, r4) 
+        \<and> R_Chop(combine r1 r3, r1,r3)" using 1 2 by blast
+qed
+
 lemma chop_assoc1:
   "R_Chop(r,r1,r2) \<and> R_Chop(r2,r3,r4) 
      \<longrightarrow> R_Chop(r, Abs_real_int(left r1, right r3), r4) 

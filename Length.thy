@@ -25,20 +25,24 @@ begin
 context sensors
 begin
 
+declare[[show_types=false]]
 
 definition len:: "view \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real_int"
-  where len_def :"len v ( ts ) c ==
+  where len_def :"len v ( ts ) c = Abs_real_int (
     if (left (space ts v c) > right (ext v))  
-      then  Abs_real_int (right (ext v),right (ext v)) 
+      then   (right (ext v),right (ext v)) 
     else
       if (right (space ts v c) < left (ext v)) 
-        then Abs_real_int (left (ext v),left (ext v))
+        then  (left (ext v),left (ext v))
       else  
-        Abs_real_int (max (left (ext v)) (left (space ts v c)), 
-                      min (right (ext v)) (right (space ts v c)))"
+        (max (left (ext v)) (left (space ts v c)), 
+                      min (right (ext v)) (right (space ts v c)))
+    )"
+
+print_theorems
 
 lemma len_left: " left ((len v  ts) c) \<ge> left (ext v)" 
-    using Abs_real_int_inverse left_leq_right sensors.len_def sensors_axioms by auto
+    using Abs_real_int_inverse left_leq_right sensors.len_def sensors_axioms by simp
 
 lemma len_right: " right ((len v  ts) c) \<le> right (ext v)" 
   using Abs_real_int_inverse left_leq_right sensors.len_def sensors_axioms by auto
@@ -425,8 +429,8 @@ proof
         using lesser maximum by auto
       hence right_v:"right ((space ts v) c) < right (ext v)" 
           using r2 by auto
-      have right_inside:"right ((space ts v) c) \<ge> left (ext v)" 
-        by (meson True assm less_eq_real_int_def less_eq_view_ext_def 
+      have right_inside:"right ((space ts v) c) \<ge> left (ext v)"  
+        by (meson True assm less_eq_real_int_def less_eq_view_def 
             order_trans view.horizontal_chop_leq2)
       with assm and True and right_inside
       have len_v_in_type:
@@ -1030,25 +1034,27 @@ proof
       using len_def by auto
     obtain v1 and v2 and v3 and v' 
       where v1:
-        "v1=\<lparr>ext =Abs_real_int(left(ext v), left (len v ts c)),
+        "v1=Abs_view \<lparr>basic_view.ext =Abs_real_int(left(ext v), left (len v ts c)),
              lan = lan v,
              own = own v\<rparr>"
       and v2:
-      "v2=\<lparr>ext =Abs_real_int(left(len v ts c), right (ext v)),
+      "v2= \<lparr>basic_view.ext =Abs_real_int(left(len v ts c), right (ext v)),
            lan = lan v,
            own = own v\<rparr>"
       and v':
-      "v'=\<lparr>ext =Abs_real_int(left(len v ts c), right (len v ts c)),
+      "v'= \<lparr>basic_view.ext =Abs_real_int(left(len v ts c), right (len v ts c)),
            lan = lan v,
            own = own v\<rparr>"
       and v3:
-      "v3=\<lparr>ext =Abs_real_int(right(len v ts c), right (ext v)),
+      "v3= \<lparr>basic_view.ext =Abs_real_int(right(len v ts c), right (ext v)),
            lan = lan v,
            own = own v\<rparr>" 
-        by blast 
-    hence 1:" (v=v1\<parallel>v2) \<and> (v2=v'\<parallel>v3)"
+      by blast 
+    have "left (ext (Abs_view v2)) = left (ext (Abs_view v'))" 
+    have "(Abs_view v2)=(Abs_view v')\<parallel>(Abs_view v3)" using hchop_def v2 v' v3 Abs_real_int_inverse Abs_view_inverse 
+    hence 1:" (v=v1\<parallel>v2) \<and> (v2=v'\<parallel>v3)" using v1 v2 v3 v' 
       using inside hchop_def real_int.rchop_def Abs_real_int_inverse real_int.left_leq_right
-        v1 v2 v' v3 len_def
+        v1 v2 v' v3 len_def Abs_view_inverse 
       by auto
     have right:"right (ext v') = right (len v ts c)" 
       by (simp add: Rep_real_int_inverse  v')

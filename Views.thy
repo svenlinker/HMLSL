@@ -136,10 +136,26 @@ lemma h_chop_middle1:"(v=u\<parallel>w) \<longrightarrow> left (ext v) \<le> rig
     
 lemma h_chop_middle2:"(v=u\<parallel>w) \<longrightarrow> right (ext v) \<ge> left (ext w)" 
   using real_int.left_leq_right real_int.rchop_def view.hchop_def by auto
-    
-    
-lemma horizontal_chop1: " \<exists> u w. (v=u\<parallel>w)" 
+
+lemma horizontal_chop1:
+  obtains u and w where "v=u\<parallel>w" 
 proof -
+    obtain x1 and x2 where x1_x2_def:" R_Chop(ext v, x1,x2)"  
+      using real_int_class.chop_always_possible by blast
+      obtain V1 and V2 
+    where v1:"V1 = \<lparr> basic_view.ext = x1, lan = lan v, own = own v\<rparr>" 
+    and v2:"V2 = \<lparr> basic_view.ext = x2,lan= lan v, own = own v\<rparr> "  by blast
+ from v1 and v2 have "v= (Abs_view V1)\<parallel> (Abs_view V2)" 
+    using hchop_def x1_x2_def 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq by auto 
+  then show ?thesis 
+    using that by auto
+qed
+    
+lemma horizontal_chop_exists: " \<exists> u w. (v=u\<parallel>w)" 
+  
+  using view.horizontal_chop1 by blast
+(*proof -
   have real_chop:"\<exists>x1 x2.  R_Chop(ext v, x1,x2)" 
     using real_int.chop_singleton_left by force
   obtain x1 and x2 where x1_x2_def:" R_Chop(ext v, x1,x2)" 
@@ -152,6 +168,7 @@ proof -
     using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq by auto 
   thus ?thesis by blast
 qed
+*)
   
 lemma horizontal_chop_empty_right :" \<exists> u. (v=v\<parallel>u)" 
 proof -

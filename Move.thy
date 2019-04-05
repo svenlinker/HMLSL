@@ -21,12 +21,12 @@ theory Move
   imports Traffic Views
 begin
 
-context traffic 
+context view 
 begin  
 
 definition move::"traffic \<Rightarrow> traffic \<Rightarrow> view \<Rightarrow> view"
   where 
-    "move ts ts' v = \<lparr> ext = shift (ext v) ((pos ts' (own v)) - pos ts (own v)), 
+    "move ts ts' v = Abs_view \<lparr> basic_view.ext = shift (ext v) ((pos ts' (own v)) - pos ts (own v)), 
                        lan = lan v, 
                        own =own v \<rparr>"
 
