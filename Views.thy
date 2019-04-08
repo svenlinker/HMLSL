@@ -38,7 +38,48 @@ record basic_view =
 
 print_record basic_view
 print_theorems
-typedef view = "{v::basic_view. continuous (lan v) \<and> more v = ()}" 
+definition
+  basic_view_rel :: "basic_view \<Rightarrow> basic_view \<Rightarrow> bool" (infix "\<approx>" 50)
+  where
+    "v \<approx> v' \<longleftrightarrow> continuous (lan v) \<and> continuous (lan v') \<and> (more v = ()) \<and> (more v' = ()) \<and> (ext v = ext v') \<and> (lan v = lan v') \<and> (own v = own v')"
+
+lemma basic_view_rel_equivp:
+  "part_equivp basic_view_rel" 
+  unfolding part_equivp_def
+proof (auto )
+  fix c :: cars
+  obtain v where 1: " v =\<lparr> ext = Abs_real_int(0::real,0), lan= \<emptyset>, own= c\<rparr>" by blast
+  then show "\<exists>v. v \<approx> v"  
+    by (metis basic_view_rel_def empty_continuous select_convs(2) select_convs(4))
+  fix v' v''
+  assume "v' \<approx> v''" 
+  show "v' \<approx> v'" 
+    using \<open>v' \<approx> v''\<close> basic_view_rel_def by auto
+  show "v'' \<approx> v''" 
+    using \<open>v' \<approx> v''\<close> basic_view_rel_def by auto  
+  show "(\<approx>) v' = (\<approx>) v''" 
+    using \<open>v' \<approx> v''\<close> basic_view_rel_def by auto
+qed
+
+
+  print_quot_maps
+(*
+quotient_type view = "basic_view" / partial: basic_view_rel
+  morphisms Rep_view Abs_view 
+ using basic_view_rel_equivp .
+
+print_quot_maps
+print_quotients
+
+
+functor map  sledgehammer
+  apply simp
+  apply simp
+  done
+
+*)
+
+typedef view = "{v::basic_view. continuous (lan v) }" 
 proof -
   obtain e where "e = Abs_real_int (1,1)" by simp
   obtain l where "l = \<emptyset>" by simp
@@ -50,11 +91,75 @@ proof -
     by (metis (mono_tags, lifting) all_not_in_conv  cases mem_Collect_eq   select_convs(2) select_convs(4) )
 qed
 
-setup_lifting type_definition_view 
+
+
+
+setup_lifting type_definition_view
+
+
+print_theorems
+print_quotients
+definition pcr_view :: "basic_view \<Rightarrow>view \<Rightarrow> bool" 
+where "pcr_view  \<equiv>  (=) OO  cr_view "
+
+
+term "(\<approx>) OO cr_view "
+term cr_view
+term cr_nat_int
+term pcr_nat_int
+term rel_set
+term rel_prod
+(*
+term pcr_nat_int
+term pcr_real_int
+term cr_real_int
+term cr_view
+
+
+lemma test: "pcr_view = cr_view" unfolding pcr_view_def cr_view_def basic_view_rel_def 
+proof -
+{ fix bb :: basic_view and vv :: view
+{ assume "more bb = ()"
+  { assume "Views.Abs_view bb \<noteq> vv"
+    moreover
+{ assume "BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv \<noteq> bb"
+  then have "\<not> continuous (lan bb) \<or> \<not> continuous (lan (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv)) \<or> more bb \<noteq> () \<or> more (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<noteq> () \<or> ext bb \<noteq> ext (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<or> lan bb \<noteq> lan (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<or> own bb \<noteq> own (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv)"
+by force }
+  ultimately have "(\<not> continuous (lan bb) \<and> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<or> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> Views.Abs_view bb \<noteq> vv \<or> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> continuous (lan bb) \<and> more bb = () \<and> Views.Abs_view bb = vv) \<or> \<not> continuous (lan bb) \<or> \<not> continuous (lan (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv)) \<or> more bb \<noteq> () \<or> more (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<noteq> () \<or> ext bb \<noteq> ext (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<or> lan bb \<noteq> lan (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<or> own bb \<noteq> own (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv)"
+    by (metis (full_types, lifting) pick_middlep) }
+  moreover
+  { assume "\<not> continuous (lan bb) \<or> \<not> continuous (lan (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv)) \<or> more bb \<noteq> () \<or> more (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<noteq> () \<or> ext bb \<noteq> ext (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<or> lan bb \<noteq> lan (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv) \<or> own bb \<noteq> own (BNF_Def.pick_middlep (\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v) bb vv)"
+    then have "\<not> continuous (lan bb) \<and> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<or> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> Views.Abs_view bb \<noteq> vv \<or> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> continuous (lan bb) \<and> more bb = () \<and> Views.Abs_view bb = vv"      
+      by (smt old.unit.exhaust pick_middlep relcompp.relcompI select_convs(1))
+   have "\<not> continuous (lan bb) \<and> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<or> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> Views.Abs_view bb \<noteq> vv \<or> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> continuous (lan bb) \<and> more bb = () \<and> Views.Abs_view bb = vv"
+     using \<open>\<not> continuous (lan bb) \<and> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<or> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> Views.Abs_view bb \<noteq> vv \<or> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> continuous (lan bb) \<and> more bb = () \<and> Views.Abs_view bb = vv\<close> by blast }
+  then have "\<not> continuous (lan bb) \<and> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<or> \<not> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> Views.Abs_view bb \<noteq> vv \<or> ((\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = ()) \<and> Views.Abs_view b = v)) bb vv \<and> continuous (lan bb) \<and> more bb = () \<and> Views.Abs_view bb = vv"
+    
+    by (smt relcompp_apply surjective) }
+then show "(\<lambda>b ba. continuous (lan b) \<and> continuous (lan ba) \<and> more b = () \<and> more ba = () \<and> ext b = ext ba \<and> lan b = lan ba \<and> own b = own ba) OO (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = () \<and> more b = () \<and> ext b = ext b \<and> lan b = lan b \<and> own b = own b) \<and> Views.Abs_view b = v) = (\<lambda>b v. (continuous (lan b) \<and> continuous (lan b) \<and> more b = () \<and> more b = () \<and> ext b = ext b \<and> lan b = lan b \<and> own b = own b) \<and> Views.Abs_view b = v)"
+  sorry
+qed
+*)
+
+print_quotients
+print_quot_maps
+
+print_quotconsts
+
+locale view 
+
 
 lift_definition lan::"view \<Rightarrow> lanes" is basic_view.lan .
-lift_definition ext::"view \<Rightarrow> extension" is basic_view.ext .
+lifting_update view.lifting
+print_quotients
+print_quot_maps
+print_bundles
+
+
+print_quot_maps
+lift_definition ext::"view \<Rightarrow> extension" is basic_view.ext.
 lift_definition own::"view \<Rightarrow> cars" is basic_view.own .
+(*lift_definition make:: "extension \<Rightarrow> lanes \<Rightarrow> cars \<Rightarrow> view"   is "\<lambda> e l c . Abs_view (basic_view.make e l c) " . *) 
 
 
 text \<open>
@@ -90,10 +195,35 @@ proof
       using Rep_view_inject \<open>Views.lan v = Views.lan v'\<close> \<open>v' \<le> v\<close> ext.rep_eq lan.rep_eq less_eq_view_def own.rep_eq by fastforce
   qed
 qed  
+
 end 
+
+(*lemma 1:"u \<le> v \<Longrightarrow> ext u \<le> ext v" 
+  by (simp add: less_eq_view_def)
+*)
+instantiation view:: equal 
+begin
+definition "equal_view (v::view) u \<equiv> ( v \<le> u \<and> u \<le> v)" 
+instance 
+proof
+  fix v  u ::view
+  show  "equal_class.equal v u = (v = u)" 
+  proof
+    assume "equal_class.equal v u"
+    then have "v \<le> u \<and> u \<le> v" using equal_view_def by blast
+    then show "v = u" 
+      using antisym_conv by blast 
+  next
+    assume "v = u"
+    then have "v\<le> u \<and> u \<le>v " 
+      by simp
+    then show "equal_class.equal v u" using equal_view_def by blast
+  qed
+qed
+end
+
   
-  
-locale view
+context view
 begin
 
 notation nat_int.maximum ("maximum")
@@ -196,7 +326,8 @@ proof
   assume "\<parallel>ext v\<parallel> > 0" 
   then obtain l1 and l2 
     where chop:" R_Chop(ext v, l1,l2) \<and> \<parallel>l1\<parallel> > 0 \<and> \<parallel>l2\<parallel> > 0" 
-    using real_int.chop_dense by force
+    using chop_dense by blast
+   
   obtain v1 where v1_def:"v1 = \<lparr> basic_view.ext = l1, lan = lan v, own = own v \<rparr>" 
     by simp
   obtain v2 where v2_def:"v2 = \<lparr> basic_view.ext = l2, lan = lan v, own = own v \<rparr>" 
@@ -242,9 +373,14 @@ lemma horizontal_chop_assoc1:
   "(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4) \<longrightarrow> (\<exists>v'. (v=v'\<parallel>v4) \<and> (v'=v1\<parallel>v3))"
 proof
   assume assm:"(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4)"
-  obtain u' 
+(*  obtain u' 
     where v'_def:
       "u' =\<lparr> basic_view.ext = Abs_real_int(left (ext v1), right (ext v3)),
+             lan = (lan v), own = (own v) \<rparr>"
+    by simp*)
+  obtain u' 
+    where v'_def:
+      "u' =\<lparr> basic_view.ext = combine (ext v1) (ext v3),
              lan = (lan v), own = (own v) \<rparr>"
     by simp
   then obtain "v'" where "v' = Abs_view u'" by simp
@@ -263,7 +399,7 @@ proof
   assume assm:"(v=v1\<parallel>v2) \<and> (v1=v3\<parallel>v4)"
   obtain u 
     where v'_def:
-      "u=\<lparr> basic_view.ext = Abs_real_int(left (ext v4),right (ext v2)),
+      "u=\<lparr> basic_view.ext = combine (ext v4) (ext v2),
             lan = (lan v), own = (own v) \<rparr>"  
     by simp
   then obtain v' where "v' = Abs_view u" by simp
@@ -687,12 +823,15 @@ lemma switch_unique:"(v =c> u) \<and> (v =c> w) \<longrightarrow>u = w"
 lemma switch_exists:"\<exists>c u.( v=c>u)"
   using switch_def by auto
     
-lemma switch_always_exists:" \<exists>u. (v=c>u)" 
+lemma switch_always_exists:" \<exists>u. (v=c>u)"  
 proof - 
-  obtain u where "u = Abs_view \<lparr> basic_view.ext = ext v, lan = lan v, own = c\<rparr>" by simp
+  obtain u where "u =  (make (ext v) (lan v) c) "(* \<lparr> basic_view.ext = ext v, lan = lan v, own = c\<rparr>" *) by simp
+  then have "continuous (basic_view.lan u) " 
+    using Rep_view lan.rep_eq 
+  then have "lan v = lan u" using Rep_view lan.rep_eq Abs_view_inverse 
   then have "v=c>u" 
-    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq view.switch_def by auto
-  then show ?thesis by blast
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq view.switch_def 
+  then show ?thesis by blas t
 qed
 
 lemma switch_origin:" \<exists>u. (u=(own v)>v)" 
@@ -780,6 +919,7 @@ proof
     using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq 
     by (simp add: ext.rep_eq less_eq_view_def)
     show  "(\<exists>v'. ( v' = c > u') \<and> v' \<le> v)" using switch less by blast
-qed
+  qed
+
 end
 end

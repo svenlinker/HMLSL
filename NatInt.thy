@@ -44,6 +44,7 @@ print_theorems
 
 setup_lifting type_definition_nat_int
 print_theorems
+
 subsection \<open>Basic properties of discrete intervals.\<close>
   
 locale nat_int 
