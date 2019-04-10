@@ -238,7 +238,7 @@ proof
       then have "len v1 ( ts) c = Abs_real_int (right (ext v1),right (ext v1))"
         using len_def assm hchop_def space_def by auto
       hence empty:"left (len v1 ( ts) c) = right (len v1 ( ts) c)" 
-        by (metis real_int.chop_assoc2 real_int.chop_singleton_right real_int.rchop_def)
+        by (metis real_int.chop_assoc2 real_int.chop_singleton_right real_int.rch op_def)
       have len_geq:"left(len v1 ( ts) c) \<ge> left (ext v)"  
         using l2 len_left by auto
       show "left (len v1 ( ts) c) = left (ext v1)"
