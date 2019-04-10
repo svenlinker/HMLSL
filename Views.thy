@@ -67,7 +67,7 @@ lift_definition lan::"view \<Rightarrow> lanes" is basic_view.lan .
 lift_definition ext::"view \<Rightarrow> extension" is basic_view.ext.
 lift_definition own::"view \<Rightarrow> cars" is basic_view.own .
 
-declare[[show_types]]
+
 
 definition vshift::"view \<Rightarrow> real \<Rightarrow> view"
   where "(vshift v x) == Abs_view \<lparr> basic_view.ext = (real_int.shift (ext v) x), lan = lan v, own = own v\<rparr> " 

@@ -185,9 +185,9 @@ snapshot via lemmas, hence we prove that the sanity conditions hold
 for each traffic snapshot.
 \<close>
 
-(*lemma disjoint: "(res ts c) \<sqinter> (clm ts c) = \<emptyset>" 
- *) 
-
+lemma disjoint: "(res ts c) \<sqinter> (clm ts c) = \<emptyset>"
+  using Rep_traffic res.rep_eq clm.rep_eq sane_def by auto
+  
 lemma atLeastOneRes: "1 \<le> |res ts c|" 
   using Rep_traffic res.rep_eq sane_def by auto
 
@@ -210,9 +210,11 @@ proof
   then have "card {m..n} = 2" using assm atLeastAtMost_card by simp
   from this and assm have "n = m +1" 
     by simp 
-  show "\<exists>n. n \<^bold>\<in> local.res ts c \<and> n + 1 \<^bold>\<in> local.res ts c" 
+  show "\<exists>n. n \<^bold>\<in> res ts c \<and> n + 1 \<^bold>\<in> res ts c" 
     using \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> local.res ts c)\<close> \<open>n = m + 1\<close> le_eq_less_or_eq by auto
 qed
+
+ 
 (*
   have "Rep_nat_int (res ts  c) = {} \<or> (\<exists>n . Rep_nat_int (res ts c) = {n,n+1})" 
     by (metis add_diff_cancel_left' atLeastAtMost_singleton insert_is_Un nat_int.un_consec_seq

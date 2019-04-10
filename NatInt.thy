@@ -616,6 +616,8 @@ proof
         nat_int.union_def)
 qed
 *) 
+
+
 lemma inter_distr1:"consec j k \<longrightarrow> i \<sqinter> (j \<squnion> k) = (i \<sqinter> j) \<squnion> (i \<sqinter> k)"  
   unfolding consec_def
 proof  
@@ -682,6 +684,27 @@ lemma consec_un_element2:"consec i j \<and> n \<^bold>\<in> j \<longrightarrow> 
 
 lemma ex_nat_int: "m\<le>n \<longrightarrow> (\<exists>i. \<forall>l. l\<in>{m..n} \<longleftrightarrow> l \<^bold>\<in> i)" 
   using atLeastAtMost_rep by blast
+
+
+lemma continuous_inter: "continuous i \<and>  continuous j \<longrightarrow> continuous (i \<sqinter> j) " 
+proof (cases "i \<sqinter> j = \<emptyset>")
+case True
+then show ?thesis 
+  using empty_continuous by auto
+next
+  case False
+  then  have 1:"i \<noteq> \<emptyset>" and 2:"j \<noteq> \<emptyset>" 
+    by auto
+  {
+    assume "continuous i \<and>  continuous j"
+    then obtain m and n and p and q where 3:"\<forall>l. l \<^bold>\<in> i \<longleftrightarrow> l \<in> {m..n}" and 4:"\<forall>l. l\<^bold>\<in> j \<longleftrightarrow> l \<in> {p..q}" 
+      by (metis continuos_atLeastAtMost)  
+    then have "continuous (i \<sqinter> j)" 
+      by (simp add: continuous_def inf_nat_int.rep_eq)
+  }
+  then show ?thesis by blast
+qed
+  
 
 
 lemma consec_lesser:" consec i j  \<longrightarrow> (\<forall>n m. (n \<^bold>\<in> i \<and> m \<^bold>\<in> j \<longrightarrow> n < m))" 
@@ -1047,6 +1070,7 @@ next
     by (metis all_not_in_conv el.rep_eq insertI1 is_singletonI' is_singleton_altdef singletonD)
 qed
 
+
 lemma atLeastAtMost_card:"(\<forall>l . l \<in> {m..n} \<longleftrightarrow> l\<^bold>\<in>i) \<longrightarrow> |i| = card {m..n}"
 proof
   assume "\<forall>l . l \<in> {m..n} \<longleftrightarrow> l\<^bold>\<in>i"
@@ -1065,6 +1089,38 @@ proof
       using False \<open>\<forall>l. (l \<in> {m..n}) = (l \<^bold>\<in> i)\<close> \<open>m = minimum i\<close> \<open>n = maximum i\<close> card_min_max continuous_nonE_atLeastAtMost minimum_in by auto
   qed
 qed
+
+lemma cont_card_two:"continuous i \<longrightarrow> ( |i| = 2 \<longleftrightarrow> ( \<exists>n. \<forall> l. l \<in> {n..n+1} \<longleftrightarrow> l \<^bold>\<in> i))"
+proof
+  assume "continuous i" 
+  then obtain m  and n where 1:"\<forall>l. l \<in> {m..n} \<longleftrightarrow> l \<^bold>\<in> i" 
+    using continuos_atLeastAtMost by blast  
+  show "( |i| = 2 \<longleftrightarrow> ( \<exists>n. \<forall> l. l \<in> {n..n+1} \<longleftrightarrow> l \<^bold>\<in> i))"
+  proof
+    assume "|i| = 2"
+    then have "card {m..n} = 2" 
+      using "1" atLeastAtMost_card by auto
+    then have "n = m+1" 
+      by simp
+    then show " \<exists>n. \<forall> l. l \<in> {n..n+1} \<longleftrightarrow> l \<^bold>\<in> i" using 1 by blast
+  next
+    assume " \<exists>n. \<forall> l. l \<in> {n..n+1} \<longleftrightarrow> l \<^bold>\<in> i" 
+    then obtain k where 2:"\<forall> l. l \<in> {k..k+1} \<longleftrightarrow> l \<^bold>\<in> i" by blast
+    then show "|i| = 2" using atLeastAtMost_card 
+      using card_atLeastAtMost by presburger
+  qed
+qed
+
+lemma cont_card_two':"continuous i \<longrightarrow> ( |i| = 2 \<longleftrightarrow> ( \<exists>n. \<forall> l. l \<in> {n,n+1} \<longleftrightarrow> l \<^bold>\<in> i))"
+proof -
+  have 1:"\<forall>n::nat. {n..n+1} = {n,n+1}" 
+    by (simp add: atLeastAtMostSuc_conv insert_commute) 
+  show ?thesis using cont_card_two 1 
+    by (metis Suc_eq_plus1 )
+qed
+
+lemma subset_card_two: "continuous i \<and> continuous j \<and> (j \<noteq> \<emptyset>) \<and> (j \<sqsubseteq> i)  \<longrightarrow> ( \<exists>n. ( \<forall> l. l \<in> {n,n+1} \<longleftrightarrow> l \<^bold>\<in> i) \<longrightarrow> n \<^bold>\<in> j \<or> (n+1) \<^bold>\<in> j)  "  
+  by auto
 (*lemma singleton:"|i| = 1 \<longrightarrow> (\<exists>n. Rep_nat_int i = {n})"
   using card_1_singletonE card'.rep_eq by fastforce
     
