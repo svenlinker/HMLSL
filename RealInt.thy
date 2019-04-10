@@ -73,6 +73,18 @@ definition stretch :: "real \<Rightarrow> real \<Rightarrow> real_int "
 definition mk_empty:: "real \<Rightarrow> real_int"
   where "mk_empty x == Abs_real_int(x,x)"
 
+(* TODO: prove properties of this definition  and use it to define length *)
+definition intersect :: "real_int \<Rightarrow> real_int \<Rightarrow> real_int" 
+  where "intersect r s == 
+    if (left s > right r)  
+      then   mk_empty (right r) 
+    else
+      if (right (s) < left r) 
+        then  mk_empty (left r )
+      else  
+       Abs_real_int (max (left (r)) (left (s)), 
+                      min (right (r)) (right (s)))"
+
 end
 
 text \<open>The intervals defined in this way allow for the definition of an order: 

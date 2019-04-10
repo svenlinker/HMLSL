@@ -28,7 +28,10 @@ begin
 declare[[show_types=false]]
 
 definition len:: "view \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real_int"
-  where len_def :"len v ( ts ) c = Abs_real_int (
+  where len_def :"len v ( ts ) c = intersect (ext v) (space ts v c)"
+
+
+(*"Abs_real_int (
     if (left (space ts v c) > right (ext v))  
       then   (right (ext v),right (ext v)) 
     else
@@ -38,7 +41,7 @@ definition len:: "view \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> re
         (max (left (ext v)) (left (space ts v c)), 
                       min (right (ext v)) (right (space ts v c)))
     )"
-
+*)
 print_theorems
 
 lemma len_left: " left ((len v  ts) c) \<ge> left (ext v)" 

@@ -44,9 +44,9 @@ print_theorems
 
 typedef view = "{v::basic_view. continuous (lan v) }" 
 proof -
-  obtain e where "e = Abs_real_int (1,1)" by simp
+  obtain e where "e = mk_empty 1" by simp
   obtain l where "l = \<emptyset>" by simp
-  obtain c where "c = Abs_cars 0" by simp
+  obtain c::cars where "c = Abs_cars 0" by simp
   obtain v where "v = \<lparr> ext = e, lan = l, own = c\<rparr>" by simp
   have "continuous l"   
     by (simp add: \<open>l = bot\<close> empty_continuous) 
