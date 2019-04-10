@@ -24,66 +24,46 @@ begin
 context view 
 begin  
 
+notation traffic.abstract ("_ \<^bold>\<Rightarrow> _") 
+notation traffic.pos ("pos")
+notation traffic.create_claim ("_ \<^bold>\<midarrow>c'( _, _ ') \<^bold>\<rightarrow> _" 27)
+notation traffic.withdraw_claim ("_ \<^bold>\<midarrow>wdc'(  _ ') \<^bold>\<rightarrow> _" 27)
+notation traffic.create_reservation ("_ \<^bold>\<midarrow>r'(  _ ') \<^bold>\<rightarrow> _" 27)
+notation traffic.withdraw_reservation ("_ \<^bold>\<midarrow>wdr'( _, _ ') \<^bold>\<rightarrow> _" 27)
+
+
+
 definition move::"traffic \<Rightarrow> traffic \<Rightarrow> view \<Rightarrow> view"
   where 
-    "move ts ts' v = Abs_view \<lparr> basic_view.ext = shift (ext v) ((pos ts' (own v)) - pos ts (own v)), 
-                       lan = lan v, 
-                       own =own v \<rparr>"
+    "move ts ts' v = vshift v ((traffic.pos ts' (own v)) - traffic.pos ts (own v))"
 
-lemma move_keeps_length:"\<parallel>ext v\<parallel> = \<parallel>ext (move ts ts' v)\<parallel>"
-  using real_int.shift_keeps_length by (simp add: move_def)
+lemma move_keeps_length:"\<parallel>ext v\<parallel> = \<parallel>ext (move ts ts' v)\<parallel>" 
+  by (simp add: view.move_def view.vshift_ext_len_stab)
 
-lemma move_keeps_lanes:"lan v = lan (move ts ts' v)" using move_def by simp
+lemma move_keeps_lanes:"lan v = lan (move ts ts' v)" by (simp add: move_def view.vshift_lan_stab)  
 
-lemma move_keeps_owner:"own v = own (move ts ts' v)" using move_def by simp
+lemma move_keeps_owner:"own v = own (move ts ts' v)" by (simp add: move_def view.vshift_own_stab)
 
-lemma move_nothing :"move ts ts v = v" using real_int.shift_zero move_def by simp
+lemma move_nothing :"move ts ts v = v" using real_int.shift_zero move_def by (simp add: vshift_zero)
 
 lemma move_trans:
-  "(ts \<^bold>\<Rightarrow> ts') \<and> (ts' \<^bold>\<Rightarrow>ts'') \<longrightarrow> move ts' ts'' (move ts ts' v) = move ts ts'' v"
+  "(ts \<^bold>\<Rightarrow> ts') \<and> (ts' \<^bold>\<Rightarrow>ts'') \<longrightarrow> (move ts' ts'' (move ts ts' v) = move ts ts'' v)" 
 proof
   assume assm:"(ts \<^bold>\<Rightarrow> ts') \<and> (ts' \<^bold>\<Rightarrow>ts'')"
   have 
     "(pos ts'' (own v)) - pos ts (own v) 
       = (pos ts'' (own v) + pos ts' (own v)) - ( pos ts (own v) + pos ts' (own v))"
     by simp
-  have 
-    "move ts' ts'' (move ts ts' v) =
-    \<lparr> ext = 
-    shift (ext (move ts ts' v)) 
-      (pos ts'' (own (move ts ts' v)) - pos ts' (own (move ts ts' v))),
-     lan = lan (move ts ts' v), 
-     own = own (move ts ts' v) \<rparr> " 
-    using move_def by blast
-  hence "move ts' ts'' (move ts ts' v) = 
- \<lparr> ext = shift (ext (move ts ts' v)) (pos ts'' (own v) - pos ts' (own  v)),
-  lan = lan  v, own = own  v \<rparr> " 
-    using move_def by simp
-  then show "move ts' ts'' (move ts ts' v) = move ts ts'' v"  
-  proof -
-    have f2: "\<forall>x0 x1. (x1::real) + x0 = x0 + x1"
-      by auto
-    have 
-      "pos ts'' (own v)
-          + -1*pos ts' (own v)+(pos ts' (own v) + -1*pos ts (own v)) 
-        = pos ts'' (own v) + - 1 * pos ts (own v)"
-      by auto
-    then have 
-      "(shift (ext v) ((pos ts'' (own v)) + ( -1 *  pos ts (own v)))) = 
-       shift (shift  (ext v) (pos ts' (own v) + - 1 * pos ts (own v))) 
-          (pos ts'' (own v) + - 1 * pos ts' (own v))"  
-      by (metis f2 real_int.shift_additivity)
-    then show ?thesis
-      using move_def f2 by simp
-  qed
+  then show "(move ts' ts'' (move ts ts' v) = move ts ts'' v)" using vshift_additivity 
+    using own.rep_eq view.move_def view.vshift_own_stab by auto
 qed
 
 lemma move_stability_res:"(ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<longrightarrow> move ts ts' v = v" 
   and move_stability_clm: "(ts\<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> move ts ts' v = v"
   and move_stability_wdr:"(ts\<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> move ts ts' v = v"
   and move_stability_wdc:"(ts\<^bold>\<midarrow>wdc(c)\<^bold>\<rightarrow>ts') \<longrightarrow> move ts ts' v = v"
-  using create_reservation_def create_claim_def withdraw_reservation_def
-    withdraw_claim_def move_def move_nothing 
+  using traffic.create_reservation_def traffic.create_claim_def traffic.withdraw_reservation_def
+    traffic.withdraw_claim_def move_def move_nothing 
   by (auto)+
 
 end
