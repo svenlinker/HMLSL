@@ -112,10 +112,16 @@ begin
   
 lemma left_leq_right: "left r \<le> right r" 
   using Rep_real_int left.rep_eq right.rep_eq by auto
-    
+
+lemma left_right_eq: "r = s \<longleftrightarrow> left r = left s \<and> right r = right s" 
+  by (metis Rep_real_int_inject left.rep_eq prod.expand right.rep_eq)
+
     
 lemma length_ge_zero :" \<parallel>r\<parallel> \<ge> 0" using left_leq_right 
   by (simp add: length_def)
+
+lemma length_leq: "t \<le> r \<longrightarrow> \<parallel>t\<parallel> \<le> \<parallel>r\<parallel> " 
+  by (simp add: length_def less_eq_real_int_def)
 
 lemma consec_add:
   "left r = left s \<and> right r = right t \<and> right s = left t \<Longrightarrow> \<parallel>r\<parallel> = \<parallel>s\<parallel> + \<parallel>t\<parallel>"
@@ -123,7 +129,9 @@ lemma consec_add:
     
 lemma length_zero_iff_borders_eq:"\<parallel>r\<parallel> = 0 \<longleftrightarrow> left r = right r"
   using length_def by auto
-    
+
+
+
 lemma shift_left_eq_right:"left (shift r x) \<le> right (shift r x)"
   using left_leq_right .
     
@@ -499,7 +507,300 @@ lemma chop_empty1:"R_Chop(r,s,t) \<and> \<parallel>s\<parallel> = 0 \<longrighta
 lemma chop_empty2:"R_Chop(r,s,t) \<and> \<parallel>t\<parallel> = 0 \<longrightarrow> r = s " 
   by (metis (no_types, hide_lams) Rep_real_int_inject left.rep_eq prod.collapse
       real_int.length_zero_iff_borders_eq real_int.rchop_def right.rep_eq)
-    
+
+lemma intersect_left : "left (intersect r s) \<ge> left r" using Abs_real_int_inverse 
+  using empty_left left_leq_right local.intersect_def by auto
+
+lemma intersect_right : "right (intersect r s) \<le> right r" using Abs_real_int_inverse 
+  using empty_right left_leq_right local.intersect_def by auto
+
+lemma intersect_leq : "intersect r s \<le> r" 
+  using intersect_left intersect_right less_eq_real_int_def by auto
+
+lemma intersect_left': "left (s) \<le> right (r) \<longrightarrow> left (intersect r s) \<ge> left (s)" 
+proof
+  assume assm:"left (s) \<le> right (r)"
+  then show "left (intersect r s) \<ge> left (s)" 
+  proof (cases "right (s) < left (r)" )
+    case True
+    then show ?thesis using   real_int.left_leq_right  
+      by (meson intersect_left less_imp_triv not_le order_trans)
+  next
+    case False
+    then have "intersect r s = 
+    Abs_real_int (max (left r) (left s), 
+                   min (right r) (right s))"
+      using intersect_def assm 
+      by simp
+    then have "left (intersect r s) = max (left (r)) (left (s))" 
+      using Abs_real_int_inverse False assm real_int.left_leq_right 
+      by auto
+    then show ?thesis  by linarith
+  qed
+qed
+
+lemma intersect_right': 
+  "right s \<ge> left r \<longrightarrow> right (intersect r s) \<le> right s" 
+proof
+  assume assm:"right (s) \<ge> left (r)"
+  then show "right (intersect r s) \<le> right (s)" 
+  proof (cases "left (s) > right (r)" )
+    case True
+    then show ?thesis using  intersect_right real_int.left_leq_right 
+      by (meson le_less_trans not_less order.asym)
+  next
+    case False
+    then have "intersect r s = 
+      Abs_real_int (max (left (r)) (left (s)), 
+                     min (right (r)) (right (s)))"
+      using intersect_def assm by auto
+    then have "right (intersect r s) = min (right (r)) (right (s))" 
+      using Abs_real_int_inverse False assm real_int.left_leq_right
+      by auto
+    then show ?thesis  by linarith
+  qed
+qed    
+
+lemma intersect_with_zero: "\<parallel>s\<parallel> = 0 \<longrightarrow> \<parallel>intersect r s\<parallel> = 0" 
+proof
+  assume "\<parallel>s\<parallel> = 0"
+  then obtain x where "s = mk_empty x" 
+    using empty_left empty_right left_right_eq length_zero_iff_borders_eq by auto
+  consider (1) "x < left r" | (2) "x > right r" | (3) "left r \<le> x \<and> x \<le> right r" 
+    using not_less by blast
+  then show "\<parallel>intersect r s \<parallel> = 0" 
+  proof (cases)
+    case 1 
+    show ?thesis 
+      using "1" \<open>s = mk_empty x\<close> empty_left empty_length length_def local.intersect_def by auto
+  next
+    case 2
+    show ?thesis 
+      using "2" \<open>s = mk_empty x\<close> empty_length empty_right length_zero_iff_borders_eq local.intersect_def by auto
+  next
+    case 3
+    have a:"max (left r) x = x" using 3
+      by (simp add: max.commute max.order_iff)
+    have b:"min (right r) x = x" using 3 
+      by (simp add: min.commute min.order_iff)
+    show ?thesis using 3 a b 
+      using \<open>\<parallel>s\<parallel> = 0\<close> \<open>s = mk_empty x\<close> empty_left empty_stretch intersect_def length_def stretch_def by auto
+  qed
+qed
+
+lemma rchop_intersect_leq_left : "intersect r s = r \<and> t \<le> r \<longrightarrow> left (intersect t s) = left t" 
+proof
+  assume a:"intersect r s = r \<and> t \<le> r"
+  consider (1) "(left s > right r)" | (2) "(right s < left r)" | (3) "(left s \<le> right r) \<and> (right s\<ge> left r)"    
+    using not_less by blast
+  then show "left (intersect t s) = left t"
+  proof (cases)
+    case 1
+    have "intersect r s = mk_empty (right r)" using 1 intersect_def 
+      by simp
+    then have "left r = right r" 
+      by (metis a empty_left)
+    then show ?thesis
+      by (metis a chop_leq1 chop_singleton_left' dual_order.order_iff_strict less_real_int_def order_trans rchop_def)   
+  next
+    case 2
+    then have "left s \<le> right r " using left_leq_right 
+      by (meson left_leq_right less_eq_real_def order_trans)
+    then have "intersect r s = mk_empty (left r)" using 2 intersect_def 
+      by simp
+    then show ?thesis 
+      by (metis  a chop_leq1 chop_singleton_left dual_order.antisym empty_right less_eq_real_int_def order_trans rchop_def) 
+  next 
+    case 3
+    then have 4:"(left s \<le> right t) \<and> (right s\<ge> left t)" 
+      by (metis a intersect_left' intersect_right' left_leq_right less_eq_real_int_def order_trans)
+    have "max (left t) (left s) = left t" 
+      using "3" a intersect_left' less_eq_real_int_def by fastforce 
+    then show ?thesis using 4 intersect_right' 
+      by (metis a add_0_right less_eq_real_int_def local.intersect_def min_def not_le order_trans real_int_class.shift_def shift_zero)
+  qed
+qed
+
+lemma rchop_intersect_leq_right : "intersect r s = r \<and> t \<le> r \<longrightarrow> right (intersect t s) = right t" 
+proof
+  assume a:"intersect r s = r \<and> t \<le> r"
+  consider (1) "(left s > right r)" | (2) "(right s < left r)" | (3) "(left s \<le> right r) \<and> (right s\<ge> left r)"    
+    using not_less by blast
+  then show "right (intersect t s) = right t"
+  proof (cases)
+    case 1
+    have "intersect r s = mk_empty (right r)" using 1 intersect_def 
+      by simp
+    then have "left r = right r" 
+      by (metis a empty_left)
+    then show ?thesis
+      by (metis a chop_leq1 chop_singleton_left' dual_order.order_iff_strict less_real_int_def order_trans rchop_def)   
+  next
+    case 2
+    then have "left s \<le> right r " using left_leq_right 
+      by (meson left_leq_right less_eq_real_def order_trans)
+    then have "intersect r s = mk_empty (left r)" using 2 intersect_def 
+      by simp
+    then show ?thesis 
+      by (metis  a chop_leq1 chop_singleton_left dual_order.antisym empty_right less_eq_real_int_def order_trans rchop_def) 
+  next 
+    case 3
+    then have 4:"(left s \<le> right t) \<and> (right s\<ge> left t)" 
+      by (metis a intersect_left' intersect_right' left_leq_right less_eq_real_int_def order_trans)
+    have "max (left t) (left s) = left t" 
+      using "3" a intersect_left' less_eq_real_int_def by fastforce 
+    then show ?thesis using 4 intersect_right' 
+      by (metis a add_0_right less_eq_real_int_def local.intersect_def min_def not_le order_trans real_int_class.shift_def shift_zero)
+  qed
+qed
+
+lemma rchop_intersect_left:" (intersect r s) = r \<and> R_Chop(r, r1, r2) \<longrightarrow> intersect r1 s = r1"   
+  using chop_leq1 left_right_eq rchop_intersect_leq_left rchop_intersect_leq_right by blast
+
+lemma rchop_intersect_right:" (intersect r s) = r \<and> R_Chop(r, r1, r2) \<longrightarrow> intersect r2 s = r2"   
+  using chop_leq2 left_right_eq rchop_intersect_leq_left rchop_intersect_leq_right by blast
+
+lemma rchop_intersect_compose:
+  "R_Chop(r,r1,r2) \<and> ( intersect r1 s = r1) \<and> (intersect r2 s = r2)
+     \<longrightarrow> (intersect r s = r)" 
+proof
+  assume a:"R_Chop(r,r1,r2) \<and> ( intersect r1 s = r1) \<and> (intersect r2 s = r2)"
+  consider (1) "\<parallel>r1\<parallel> = 0 \<and> \<parallel>r2\<parallel> = 0 " | (2) "\<parallel>r1\<parallel> \<noteq> 0 \<and> \<parallel>r2\<parallel> = 0"  | (3) "\<parallel>r1\<parallel> = 0 \<and> \<parallel>r2\<parallel> \<noteq> 0 " | (4) "\<parallel>r1\<parallel> \<noteq> 0 \<and> \<parallel>r2\<parallel> \<noteq> 0 "  
+    by blast
+  then show "(intersect r s = r)" 
+  proof (cases)
+    case 1
+    then show ?thesis 
+      using a chop_empty1 by blast
+  next
+    case 2
+    then show ?thesis 
+      using a chop_empty2 by blast
+  next
+    case 3
+    then show ?thesis 
+      using a chop_empty1 by blast
+  next
+    case 4
+    have "right (intersect r2 s ) \<le> right s" 
+      by (metis "4" a empty_length intersect_right' leI local.intersect_def)
+    then have 5:"left (r) \<le> right s" 
+      by (metis a left_leq_right order_trans rchop_def)
+    have "left (intersect r1 s) \<ge> left s" 
+      by (metis "4" a empty_length intersect_left' leI local.intersect_def)
+    then have 6: "left (s) \<le> right r" 
+      by (metis a left_leq_right order_trans rchop_def)
+    have 7:"max (left s) (left r) = left r" 
+      using \<open>left s \<le> left (intersect r1 s)\<close> a rchop_def by auto
+    have 8:"min (right s) (right r) = right r" 
+      using \<open>right (intersect r2 s) \<le> right s\<close> a rchop_def by auto
+    have 9:"left (intersect r s) = left r" 
+      by (metis "8" \<open>left s \<le> left (intersect r1 s)\<close> a add.right_neutral intersect_def left_leq_right less_eq_real_int_def linear max.idem min_def not_le rchop_def rchop_intersect_leq_left real_int_class.shift_def shift_zero)
+    have 10:"right (intersect r s) = right r" 
+      by (metis \<open>left s \<le> left (intersect r1 s)\<close> \<open>right (intersect r2 s) \<le> right s\<close> a add.right_neutral intersect_def left_leq_right less_eq_real_int_def max.idem min.idem not_le rchop_def rchop_intersect_leq_right real_int_class.shift_def shift_zero)
+    then show ?thesis using 9 10 
+      by (simp add: left_right_eq)
+  qed
+qed    
+
+lemma leq_intersect_leq: "t \<le> r \<longrightarrow> \<parallel>intersect t s\<parallel> = 0 \<or>  intersect t s \<le> intersect r s" 
+proof
+  assume a:"t \<le> r" 
+  consider  (1) "(left s > right r)" | (2) "(right s < left r)" | (3) "(left s \<le> right r) \<and> (right s\<ge> left r)" 
+    using not_le by blast
+  then show " \<parallel>intersect t s\<parallel> = 0 \<or>  intersect t s \<le> intersect r s" 
+  proof (cases)
+    case 1
+    then show ?thesis 
+      using a empty_length less_eq_real_int_def local.intersect_def by auto  
+  next
+    case 2
+    then show ?thesis 
+      using a empty_length less_eq_real_int_def local.intersect_def by auto  
+  next
+    case 3
+    consider (4) "(left s > right t \<or> right s < left t)" | (5) "(left s \<le> right t) \<and> (right s\<ge> left t)" using not_le by blast
+    then show ?thesis 
+    proof (cases)
+      case 4
+      then show ?thesis 
+        using empty_length local.intersect_def by auto
+    next
+      case 5
+      then show ?thesis using less_eq_real_int_def 
+        using Abs_real_int_inverse a left_leq_right local.intersect_def by auto
+    qed
+  qed
+qed    
+
+lemma rchop_intersect_empty_left: "\<parallel>intersect r s\<parallel> = 0 \<and> R_Chop(r,r1,r2) \<longrightarrow> \<parallel>intersect r1 s\<parallel> = 0" 
+proof
+  assume a: "\<parallel>intersect r s\<parallel> = 0 \<and> R_Chop(r,r1,r2)"
+  show "\<parallel>intersect r1 s\<parallel> = 0" 
+  proof (rule ccontr)
+    assume la:"\<not> \<parallel>intersect r1 s\<parallel> = 0" 
+    then have "\<parallel>intersect r1 s\<parallel> > 0" using length_ge_zero 
+      using dual_order.order_iff_strict by blast
+    then have "intersect r1 s \<le> intersect r s" using leq_intersect_leq 
+      using la a chop_leq1 by blast
+    then have "\<parallel>intersect r s \<parallel> \<noteq> 0 " 
+      using \<open>0 < \<parallel>intersect r1 s\<parallel>\<close> length_def less_eq_real_int_def by auto
+    then show False using a by blast
+  qed
+qed
+
+lemma rchop_intersect_empty_right: "\<parallel>intersect r s\<parallel> = 0 \<and> R_Chop(r,r1,r2) \<longrightarrow> \<parallel>intersect r2 s\<parallel> = 0" 
+proof
+  assume a: "\<parallel>intersect r s\<parallel> = 0 \<and> R_Chop(r,r1,r2)"
+  show "\<parallel>intersect r2 s\<parallel> = 0" 
+  proof (rule ccontr)
+    assume la:"\<not> \<parallel>intersect r2 s\<parallel> = 0" 
+    then have "\<parallel>intersect r2 s\<parallel> > 0" using length_ge_zero 
+      using dual_order.order_iff_strict by blast
+    then have "intersect r2 s \<le> intersect r s" using leq_intersect_leq 
+      using la a chop_leq2 by blast
+    then have "\<parallel>intersect r s \<parallel> \<noteq> 0 " 
+      using \<open>0 < \<parallel>intersect r2 s\<parallel>\<close> length_def less_eq_real_int_def by auto
+    then show False using a by blast
+  qed
+qed
+
+lemma rchop_intersect_add: "R_Chop(r,r1,r2) \<longrightarrow> \<parallel>intersect r s\<parallel> = \<parallel>intersect r1 s\<parallel>  + \<parallel>intersect r2 s\<parallel>" 
+proof
+  assume a:"R_Chop(r,r1,r2)" 
+  consider (1) "(left s > right r \<or> right s < left r)" | (2) "(left s \<le> right r) \<and> (right s\<ge> left r)" using not_le by blast
+  then show "\<parallel>intersect r s\<parallel> = \<parallel>intersect r1 s\<parallel>  + \<parallel>intersect r2 s\<parallel>"
+  proof (cases)
+    case 1
+    then have "\<parallel>intersect r s\<parallel> = 0" 
+      using empty_length local.intersect_def by auto
+    then show ?thesis 
+      by (metis a add.right_neutral rchop_intersect_empty_left rchop_intersect_empty_right)
+  next
+    case 2
+    consider (z) "\<parallel>r\<parallel> = 0 \<or> \<parallel>s\<parallel> = 0 " | (nz) "\<parallel>r\<parallel> \<noteq> 0 \<and> \<parallel>s\<parallel> \<noteq> 0" by blast
+    then show ?thesis 
+    proof (cases)
+      case z
+      then show ?thesis 
+      proof 
+        assume "\<parallel>r\<parallel> = 0"
+        then have "\<parallel>intersect r s\<parallel> = 0 " using length_leq 
+          by (metis chop_leq1 dual_order.antisym empty_left empty_length empty_right intersect_leq rchop_def)
+        then show ?thesis 
+          by (metis a add.left_neutral  rchop_intersect_empty_left rchop_intersect_empty_right)
+      next
+        assume "\<parallel>s\<parallel> = 0" 
+        then show ?thesis 
+          by (simp add: intersect_with_zero)
+      qed
+    next
+      case nz
+      then have "\<parallel>intersect r s \<parallel> > 0 " using 2 sorry
+      then show ?thesis sorry
+    qed
+  qed
+qed
 end
 (*lemmas[simp] = length_dict *)
   
