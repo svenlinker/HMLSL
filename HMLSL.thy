@@ -224,6 +224,10 @@ lemma mcontext_conjI:
   using mand_def satisfies_def assms(1) assms(2) by auto
 
 
+text\<open>Negation\<close>
+
+lemma mnotE: "\<lbrakk>ts,v \<Turnstile> P; ts,v \<Turnstile> \<^bold>\<not>P\<rbrakk> \<Longrightarrow> R" 
+  using hmlsl.mnot_def hmlsl_axioms satisfies_def by auto
 
 
 lemma hchop_weaken1: "ts,v \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) "
