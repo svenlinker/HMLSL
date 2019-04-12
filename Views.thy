@@ -279,8 +279,26 @@ proof (rule impI)+
   with len_v1 and len_v2 have "(v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y" by simp
   thus "(\<exists>u w. (v=u\<parallel>w) \<and> \<parallel>ext u\<parallel> = x \<and> \<parallel>ext w\<parallel> = y)" by blast
 qed
-  
+
 lemma horizontal_chop_assoc1:
+  assumes a:"(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4)" 
+  obtains v' where "(v=v'\<parallel>v4) \<and> (v'=v1\<parallel>v3)"
+proof -
+   obtain u' 
+    where v'_def: "u' =\<lparr> basic_view.ext = combine (ext v1) (ext v3),
+             lan = (lan v), own = (own v) \<rparr>"
+     by simp
+  then obtain "v'" where "v' = Abs_view u'" by simp
+  hence 1:"v=v'\<parallel>v4" 
+    using a real_int.chop_assoc1 hchop_def v'_def 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq by auto
+  have 2:"v'=v1\<parallel>v3" using v'_def a real_int.chop_assoc1 hchop_def 
+    using "1" rchop_def by auto
+  from 1 and 2 have "(v=v'\<parallel>v4) \<and>  (v'=v1\<parallel>v3)" by best
+  then show ?thesis using that by blast
+qed
+
+lemma horizontal_chop_assoc1':
   "(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4) \<longrightarrow> (\<exists>v'. (v=v'\<parallel>v4) \<and> (v'=v1\<parallel>v3))"
 proof
   assume assm:"(v=v1\<parallel>v2) \<and> (v2=v3\<parallel>v4)"

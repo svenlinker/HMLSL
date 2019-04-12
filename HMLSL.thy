@@ -183,12 +183,23 @@ definition satisfies::" traffic \<Rightarrow> view \<Rightarrow> \<sigma> \<Righ
 definition valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
   where "\<Turnstile> \<phi> \<equiv>  \<forall>ts. \<forall>v. ( ts,v \<Turnstile> \<phi> )"
 
-subsection \<open>Theorems about Basic HMLSL\<close>
+section \<open>Theorems about Basic HMLSL\<close>
 
-subsubsection\<open>FOL Fragment\<close>
+subsection\<open>FOL Fragment\<close>
+
+subsubsection\<open>True and False\<close>
+
+lemma mTrueI:"ts,v \<Turnstile>\<^bold>\<top>" 
+  by (simp add: mtrue_def satisfies_def)
+
+lemma mFalseI: "\<not> (ts,v \<Turnstile> \<^bold>\<bottom>)" 
+  by (simp add: mfalse_def satisfies_def)  
+
+lemma mFalseE: "ts,v \<Turnstile> \<^bold>\<bottom> \<Longrightarrow> P"
+  by (simp add: mFalseI)
 
 text\<open>Disjunction\<close>
-lemma mdisE:
+lemma mdisjE:
 assumes major: "ts,v \<Turnstile> P \<^bold>\<or>  Q"
     and minorP: "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>R"
     and minorQ: "ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> R"
@@ -226,58 +237,193 @@ lemma mcontext_conjI:
 
 text\<open>Negation\<close>
 
-lemma mnotE: "\<lbrakk>ts,v \<Turnstile> P; ts,v \<Turnstile> \<^bold>\<not>P\<rbrakk> \<Longrightarrow> R" 
+lemma mnotI:
+  assumes "ts,v \<Turnstile> P \<Longrightarrow> ts',v' \<Turnstile> \<^bold>\<bottom>"
+  shows "ts,v \<Turnstile> \<^bold>\<not> P"
+  using assms mFalseI mnot_def satisfies_def by auto
+
+lemma mnotE: "\<lbrakk>ts,v \<Turnstile>\<^bold>\<not> P; ts,v \<Turnstile> P\<rbrakk> \<Longrightarrow> R" 
   using hmlsl.mnot_def hmlsl_axioms satisfies_def by auto
 
+lemma mnotI2: "(ts,v \<Turnstile>P \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not> Pa) \<Longrightarrow> (ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>Pa) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not> P"
+  using mnot_def satisfies_def by auto
 
-lemma hchop_weaken1: "ts,v \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) "
-  using valid_def hchop_def horizontal_chop_empty_right  satisfies_def 
-  by (metis (no_types, lifting) hmlsl.intro hmlsl.mtrue_def mimp_def sensors_ge)
+lemma mnotE':
+  assumes 1: "ts,v \<Turnstile> \<^bold>\<not> P"
+    and 2: "ts,v \<Turnstile> \<^bold>\<not> P \<Longrightarrow> ts,v \<Turnstile>P"
+  shows R
+proof -
+  from 2 and 1 have "ts,v \<Turnstile>P"  .
+  with 1 show R by (rule mnotE)
+qed
 
-lemma hchop_weaken2: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi>) " 
-  using valid_def hchop_def  horizontal_chop_empty_left  satisfies_def  by fastforce
 
-lemma hchop_weaken: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi> \<^bold>\<frown> \<^bold>\<top>)" 
-  using valid_def hchop_weaken1 hchop_weaken2  
-  using view.horizontal_chop_empty_left satisfies_def  by fastforce
+subsubsection\<open>Implication\<close>
+lemma  mimpI: "(ts,v \<Turnstile>P \<Longrightarrow> ts,v \<Turnstile>Q) \<Longrightarrow> ts,v \<Turnstile>P \<^bold>\<rightarrow> Q"
+  by (simp add: mimp_def satisfies_def)
 
-lemma hchop_neg1:"\<Turnstile> \<^bold>\<not> (\<phi> \<^bold>\<frown> \<^bold>\<top>) \<^bold>\<rightarrow> ((\<^bold>\<not> \<phi>) \<^bold>\<frown> \<^bold>\<top>)" 
-  using horizontal_chop1 valid_def hchop_def  satisfies_def   
-  using view.horizontal_chop_empty_right by fastforce
+lemma mimpE:
+  assumes "ts,v \<Turnstile> P \<^bold>\<rightarrow> Q" "ts,v \<Turnstile>P" "ts,v \<Turnstile>Q \<Longrightarrow> R"
+  shows R
+  using assms(1) assms(2) assms(3) mimp_def satisfies_def by auto
 
-lemma hchop_neg2:"\<Turnstile> \<^bold>\<not> (\<^bold>\<top>\<^bold>\<frown>\<phi> ) \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<^bold>\<not> \<phi>)"
-  using valid_def  hchop_def  horizontal_chop1 satisfies_def  
-  using view.horizontal_chop_empty_right by fastforce
+lemma mrev_mp: "\<lbrakk>ts,v \<Turnstile>P; ts,v \<Turnstile> P \<^bold>\<rightarrow> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>Q"
+  using mimpE by blast
 
-lemma hchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)))" 
-   using valid_def hchop_def satisfies_def  by auto
+lemma mcontrapos_nn:
+  assumes major: "ts,v \<Turnstile> \<^bold>\<not> Q"
+    and minor: "ts,v \<Turnstile>P \<Longrightarrow> ts,v \<Turnstile>Q"
+  shows "ts,v \<Turnstile>\<^bold>\<not> P"
+  using major minor mnotI2 by blast
 
-lemma hchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>)\<^bold>\<frown>\<phi>) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<frown> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<frown> \<phi>)))" 
-  using valid_def hchop_def satisfies_def  by auto
+lemma mimpE':
+  assumes 1: "ts,v \<Turnstile> P \<^bold>\<rightarrow> Q"
+    and 2: "ts,v \<Turnstile>Q \<Longrightarrow> R"
+    and 3: "ts,v \<Turnstile> P \<^bold>\<rightarrow> Q \<Longrightarrow> ts,v \<Turnstile>P"
+  shows R
+proof -
+  from 3 and 1 have "ts,v \<Turnstile>P" .
+  with 1 have "ts,v \<Turnstile>Q" by (rule mimpE)
+  with 2 show R .
+qed
 
-lemma hchop_assoc:"\<Turnstile>\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<frown> \<chi>) \<^bold>\<leftrightarrow> (\<phi> \<^bold>\<frown> \<psi>) \<^bold>\<frown> \<chi>"
-  unfolding valid_def satisfies_def  using hchop_def horizontal_chop_assoc1 horizontal_chop_assoc2  by fastforce
 
-lemma v_chop_weaken1:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<smile> \<^bold>\<top>))" 
-  using valid_def satisfies_def  vertical_chop_empty_down vchop_def  by fastforce
+subsubsection\<open>Bi-Implication\<close>
+lemma miffI:
+  assumes "ts,v \<Turnstile>P \<Longrightarrow> ts,v \<Turnstile>Q" and "ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile>P"
+  shows "ts,v  \<Turnstile>P \<^bold>\<leftrightarrow>  Q"
+  using assms(1) assms(2) mequ_def satisfies_def by auto
 
-lemma v_chop_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<smile> \<phi>))" 
-  using valid_def satisfies_def  vertical_chop_empty_up  vchop_def by fastforce
+lemma miffD2: "\<lbrakk>ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q; ts,v \<Turnstile> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>P"
+  by (simp add: mequ_def satisfies_def)
 
-lemma v_chop_assoc:"\<Turnstile>(\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<smile> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>) \<^bold>\<smile> \<chi>)"
+(*
+lemma rev_iffD2: "\<lbrakk>ts,v \<Turnstile>Q; ts,v \<Turnstile> P \<^bold>\<leftrightarrow> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>P"
+  by (simp add: mequ_def satisfies_def)
+*)
+lemma miffD1: "ts,v \<Turnstile>Q \<^bold>\<leftrightarrow> P \<Longrightarrow> ts,v \<Turnstile>Q \<Longrightarrow> ts,v \<Turnstile>P"
+  by (simp add: mequ_def satisfies_def)
+
+(*lemma rev_iffD1: "ts,v \<Turnstile>Q \<Longrightarrow> ts,v \<Turnstile>Q \<^bold>\<leftrightarrow> P \<Longrightarrow> ts,v \<Turnstile>P"
+  by (simp add: mequ_def satisfies_def)
+*)
+
+lemma miffE:
+  assumes major: "ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q"
+    and minor: "\<lbrakk>ts,v \<Turnstile> P \<^bold>\<rightarrow> Q; ts,v \<Turnstile>Q \<^bold>\<rightarrow> P\<rbrakk> \<Longrightarrow> R"
+  shows R
+  using major mequ_def mimp_def minor satisfies_def by auto
+
+subsubsection \<open>Existential quantifier\<close>
+
+lemma mexI: "ts,v \<Turnstile> P x \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<exists>x::'a. P x"
+  by (metis mexistsB_def mexists_def satisfies_def)
+
+lemma mexE:
+  assumes major: "ts,v \<Turnstile>\<^bold>\<exists>x::'a. P x"
+    and minor: "\<And>x. ts,v \<Turnstile> P x \<Longrightarrow> Q"
+  shows "Q"
+  by (metis major mexistsB_def mexists_def minor satisfies_def)
+
+
+text \<open>Universal quantifier\<close>
+
+lemma mallI:
+  assumes "\<And>x::'a. ts,v \<Turnstile>P x"
+  shows "ts,v \<Turnstile> \<^bold>\<forall>x. P x"
+  by (metis assms mforallB_def mforall_def satisfies_def)
+
+lemma mspec: "ts,v \<Turnstile>\<^bold>\<forall>x::'a. P x \<Longrightarrow> ts,v \<Turnstile>P x"
+  by (simp add: mforallB_def mforall_def satisfies_def)
+
+lemma mallE:
+  assumes major: "ts,v \<Turnstile> \<^bold>\<forall>x. P x"
+    and minor: "ts,v \<Turnstile>P x \<Longrightarrow> R"
+  shows R
+  by (simp add: major minor mspec)
+
+lemma mall_dupE:
+  assumes major: "ts,v \<Turnstile>\<^bold>\<forall>x. P x"
+    and minor: "\<lbrakk>ts,v \<Turnstile>P x; ts,v \<Turnstile> \<^bold>\<forall>x. P x\<rbrakk> \<Longrightarrow> R"
+  shows R
+  by (simp add: major minor mspec)
+
+subsubsection\<open>True (2)\<close>
+
+lemma mTrueE: "ts,v \<Turnstile> \<^bold>\<top> \<Longrightarrow> ts',v' \<Turnstile> P \<Longrightarrow> ts',v' \<Turnstile> P" .
+lemma mnotFalseE: "ts,v \<Turnstile> \<^bold>\<not> \<^bold>\<bottom> \<Longrightarrow> ts',v' \<Turnstile>P \<Longrightarrow> ts',v' \<Turnstile> P" .
+
+subsubsection\<open>Equational\<close>
+
+lemma mrefl:" ts,v \<Turnstile> x \<^bold>= x" 
+  by (simp add: meq_def satisfies_def) 
+
+(*
+lemmas [elim!] = mdisjE miffE mFalseE mconjE mexE mTrueE mnotFalseE
+  and [intro!] = miffI mconjI mimpI mTrueI mnotI mallI mrefl
+  and [elim 2] = mallE  
+  and [intro] = mexI mdisjI2 mdisjI1
+*)
+lemma hchop_weaken1 : "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<frown> \<^bold>\<top>" 
+  by (metis hmlsl.hchop_def hmlsl.satisfies_def hmlsl_axioms horizontal_chop_empty_right mtrue_def)
+
+lemma hchop_weaken2 : "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>\<^bold>\<top> \<^bold>\<frown> P" 
+  by (metis hmlsl.hchop_def hmlsl.satisfies_def hmlsl_axioms horizontal_chop_empty_left mTrueI)
+
+print_facts
+
+lemma hchop_weaken1': "ts,v \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) " using hchop_weaken1 
+  by (simp add: mimpI)
+
+lemma hchop_weaken2': "ts,v  \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi>) " 
+  using hchop_weaken2 
+  by (simp add:mimpI)
+
+lemma hchop_weaken: " ts,v \<Turnstile> \<phi>  \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<top> \<^bold>\<frown> \<phi> \<^bold>\<frown> \<^bold>\<top>)" 
+  using  hchop_weaken1 hchop_weaken2  by simp
+
+lemma hchop_neg1:"ts,v \<Turnstile> \<^bold>\<not> (\<phi> \<^bold>\<frown> \<^bold>\<top>)  \<Longrightarrow> ts,v \<Turnstile> ((\<^bold>\<not> \<phi>) \<^bold>\<frown> \<^bold>\<top>)" 
+  by (simp add: hchop_weaken1 mnotI2)
+
+lemma hchop_neg2:"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>\<top>\<^bold>\<frown>\<phi> ) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<top> \<^bold>\<frown> \<^bold>\<not> \<phi>)"
+  by (simp add: hchop_weaken2 mnotI2)
+
+
+lemma hchop_disj_distr_right1:"ts,v \<Turnstile> \<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>) \<Longrightarrow> ts,v \<Turnstile> (\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)" 
+  using hchop_def mor_def satisfies_def by auto
+
+lemma hchop_disj_distr_right2:" ts,v \<Turnstile> (\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>) \<Longrightarrow> ts,v \<Turnstile> \<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>) " 
+  using hchop_def mor_def satisfies_def by auto
+
+lemma hchop_disj_distr_left1:"ts,v \<Turnstile> (\<psi> \<^bold>\<or> \<chi>)\<^bold>\<frown>\<phi> \<Longrightarrow> ts,v \<Turnstile> (\<psi> \<^bold>\<frown> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<frown> \<phi>)" 
+  using hchop_def mor_def satisfies_def by auto
+
+lemma hchop_disj_distr_left2:" ts,v \<Turnstile> (\<psi> \<^bold>\<frown> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<frown> \<phi>) \<Longrightarrow> ts,v \<Turnstile> (\<psi> \<^bold>\<or> \<chi>)\<^bold>\<frown>\<phi> " 
+  using hchop_def mor_def satisfies_def by auto
+
+lemma hchop_assoc:"(ts,v \<Turnstile> \<phi> \<^bold>\<frown> (\<psi> \<^bold>\<frown> \<chi>)) = (ts,v \<Turnstile>  (\<phi> \<^bold>\<frown> \<psi>) \<^bold>\<frown> \<chi>)" 
+  unfolding valid_def satisfies_def  using horizontal_chop_assoc1' horizontal_chop_assoc2 hchop_def by fastforce
+
+lemma v_chop_weaken1:"ts,v \<Turnstile> \<phi>  \<Longrightarrow> ts,v \<Turnstile> (\<phi> \<^bold>\<smile> \<^bold>\<top>)"  
+  by (metis hmlsl.satisfies_def hmlsl.vchop_def hmlsl_axioms mtrue_def vertical_chop_empty_down)
+
+lemma v_chop_weaken2:"ts,v \<Turnstile> \<phi> \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<top> \<^bold>\<smile> \<phi>)" 
+  by (metis hmlsl.satisfies_def hmlsl.vchop_def hmlsl_axioms mtrue_def vertical_chop_empty_up)
+
+lemma v_chop_assoc:"(ts,v \<Turnstile>\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<smile> \<chi>)) =  (ts,v \<Turnstile>(\<phi> \<^bold>\<smile> \<psi>) \<^bold>\<smile> \<chi>)"
   unfolding valid_def satisfies_def  using vertical_chop_assoc1 vertical_chop_assoc2 vchop_def by fastforce
 
-lemma vchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<smile> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<smile> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<smile> \<chi>)))" 
-  using valid_def satisfies_def  vchop_def by auto
+lemma vchop_disj_distr1:"(ts,v \<Turnstile> \<phi> \<^bold>\<smile> (\<psi> \<^bold>\<or> \<chi>)) = (ts,v \<Turnstile> (\<phi> \<^bold>\<smile> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<smile> \<chi>))" 
+  using valid_def satisfies_def  vchop_def mor_def by auto
 
-lemma vchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>) \<^bold>\<smile> \<phi> ) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<smile> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<smile> \<phi>)))" 
-  using valid_def satisfies_def  vchop_def by auto
+lemma vchop_disj_distr2:"(ts,v \<Turnstile> (\<psi> \<^bold>\<or> \<chi>) \<^bold>\<smile> \<phi> ) =  (ts,v \<Turnstile>(\<psi> \<^bold>\<smile> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<smile> \<phi>))" 
+  using valid_def satisfies_def  vchop_def mor_def by auto
 
-lemma somewhere_leq:" (ts,v \<Turnstile> \<^bold>\<langle> \<phi> \<^bold>\<rangle>) \<longleftrightarrow> (\<exists>v'. v' \<le> v \<and> (ts,v' \<Turnstile> \<phi>))"
+lemma somewhere_leq:" (ts,v \<Turnstile> \<^bold>\<langle> \<phi> \<^bold>\<rangle>) = (\<exists>v'. v' \<le> v \<and> (ts,v' \<Turnstile> \<phi>))" 
 proof
   assume "ts,v \<Turnstile> \<^bold>\<langle> \<phi> \<^bold>\<rangle>" 
   then obtain v1 v2 vl vr where 1: " (v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (ts,v2 \<Turnstile> \<^bold>\<top> \<^bold>\<smile> \<phi> \<^bold>\<smile> \<^bold>\<top>)" 
-    using hchop_def satisfies_def by auto
+    using hchop_def satisfies_def  somewhere_def by auto  
   then obtain v3 vu vd v' where 2:"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v'--vu) \<and> (ts,v' \<Turnstile> \<phi>)" 
     using  satisfies_def vchop_def by auto
   then have "v' \<le> v" using somewhere_leq 1 2 by blast
@@ -288,16 +434,21 @@ next
     using somewhere_leq 
     by auto
   then have "ts, v2 \<Turnstile>  \<^bold>\<top> \<^bold>\<smile> \<phi> \<^bold>\<smile> \<^bold>\<top>" 
-    using  satisfies_def vchop_def by auto
-  then show "ts,v \<Turnstile>  \<^bold>\<langle> \<phi> \<^bold>\<rangle>" 
-    using hchop_def satisfies_def 1 by auto 
+    using  satisfies_def vchop_def mTrueI by auto
+  then show "ts,v \<Turnstile>  \<^bold>\<langle> \<phi> \<^bold>\<rangle>" using  hchop_def satisfies_def 1 mTrueI somewhere_def by auto
 qed
     
 
-lemma at_exists :"ts,v \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
-  unfolding valid_def satisfies_def unfolding at_def
-  using view.switch_refl view.switch_unique   by blast
-(*proof 
+lemma at_exists :"ts,v \<Turnstile> \<phi>  \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
+proof -
+  assume a: "ts,v \<Turnstile> \<phi>"
+  obtain d where d_def:"d=own v" by blast
+  then have "ts,v \<Turnstile> \<^bold>@d \<phi>" 
+    using a at_def satisfies_def  view.switch_refl sorry
+  then show "ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)" 
+    by (meson mexI)
+qed
+(*proof
   fix ts v
   assume assm:"ts,v \<Turnstile>\<phi>"
   obtain d where d_def:"d=own v" by blast
