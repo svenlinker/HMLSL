@@ -389,7 +389,7 @@ proof
     using assm nat_int_class.chop_assoc1 v'_def view.vchop_def by auto
   then have 1:"v=v'--v4" 
     using assm nat_int.chop_assoc1 vchop_def Abs_view_inverse 
-    by (metis (mono_tags, lifting) "2" Quotient_to_Domainp Quotient_view \<open>N_Chop(basic_view.lan u',Views.lan v1,Views.lan v3)\<close> \<open>v' = Abs_view u'\<close> lan.abs_eq nchop_cont select_convs(4) v'_def view.domain)
+    by (metis (mono_tags, lifting) "2" Quotient_to_Domainp Quotient_view \<open>N_Chop(basic_view.lan u',Views.lan v1,Views.lan v3)\<close> \<open>v' = Abs_view u'\<close> lan.abs_eq nchop_cont  v'_def view.domain)
   from 1 and 2 have "(v=v'--v4) \<and>  (v'=v1--v3)" by best
   then show "(\<exists>v'. (v=v'--v4)  \<and> (v'=v1--v3))" ..
 qed
@@ -505,11 +505,11 @@ proof
     using less_eq_real_int_def assm_exp real_int.left_leq_right snd_conv fst_conv
       mem_Collect_eq order_trans by fastforce
   have "R_Chop(ext v', ext vl, ext v1)" using Abs_view_inverse vl v1 
-    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2) select_convs(4) snd_conv v1_in_type vl_in_type)
+    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2)  snd_conv v1_in_type vl_in_type)
   then have hchop1: "v'=vl\<parallel>v1" 
     using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq v1 view.hchop_def vl by auto 
   have "R_Chop(ext v1, ext v, ext vr)" using Abs_view_inverse v1  vr 
-    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2) select_convs(4) snd_conv  vr_in_type v1_in_type)
+    by (metis (mono_tags, lifting) Quotient_real_int Quotient_to_Domainp Rep_view eq_onp_to_Domainp ext.rep_eq fst_conv lan.rep_eq left.abs_eq mem_Collect_eq rchop_def right.abs_eq select_convs(1) select_convs(2)  snd_conv  vr_in_type v1_in_type)
   then have hchop2: "v1=v\<parallel>vr" 
     using Abs_view_inverse Rep_view lan.rep_eq own.rep_eq v1  vr view.hchop_def  
     using assm_exp by auto 
