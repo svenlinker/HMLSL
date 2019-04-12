@@ -48,35 +48,35 @@ text\<open>
 The first-order operators are direct translations into HOL operators.
 \<close>
 
-abbreviation mtrue  :: "\<sigma>" ("\<^bold>\<top>")
+definition mtrue  :: "\<sigma>" ("\<^bold>\<top>")
   where "\<^bold>\<top> \<equiv> \<lambda> ts w. True" 
-abbreviation mfalse :: "\<sigma>" ("\<^bold>\<bottom>") 
+definition mfalse :: "\<sigma>" ("\<^bold>\<bottom>") 
   where "\<^bold>\<bottom> \<equiv> \<lambda> ts w. False"   
-abbreviation mnot   :: "\<sigma>\<Rightarrow>\<sigma>" ("\<^bold>\<not>_"[52]53)
+definition mnot   :: "\<sigma>\<Rightarrow>\<sigma>" ("\<^bold>\<not>_"[52]53)
   where "\<^bold>\<not>\<phi> \<equiv> \<lambda> ts w. \<not>\<phi>(ts)(w)" 
-abbreviation mnegpred :: "(cars\<Rightarrow>\<sigma>)\<Rightarrow>(cars\<Rightarrow>\<sigma>)" ("\<^sup>\<not>_"[52]53) 
+definition mnegpred :: "(cars\<Rightarrow>\<sigma>)\<Rightarrow>(cars\<Rightarrow>\<sigma>)" ("\<^sup>\<not>_"[52]53) 
   where "\<^sup>\<not>\<Phi> \<equiv> \<lambda>x.\<lambda> ts w. \<not>\<Phi>(x)(ts)(w)"   
-abbreviation mand   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<and>"51)
+definition mand   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<and>"51)
   where "\<phi>\<^bold>\<and>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<and>\<psi>(ts)(w)"   
-abbreviation mor    :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infix "\<^bold>\<or>"50 )
+definition mor    :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infix "\<^bold>\<or>"50 )
   where "\<phi>\<^bold>\<or>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<or>\<psi>(ts)(w)"   
-abbreviation mimp   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<rightarrow>"49) 
+definition mimp   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<rightarrow>"49) 
   where "\<phi>\<^bold>\<rightarrow>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<longrightarrow>\<psi>(ts)(w)"  
-abbreviation mequ   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<leftrightarrow>"48)
+definition mequ   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr"\<^bold>\<leftrightarrow>"48)
   where "\<phi>\<^bold>\<leftrightarrow>\<psi> \<equiv> \<lambda> ts w. \<phi>(ts)(w)\<longleftrightarrow>\<psi>(ts)(w)"  
-abbreviation mforall   :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" ("\<^bold>\<forall>")      
+definition mforall   :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" ("\<^bold>\<forall>")      
   where "\<^bold>\<forall>\<Phi> \<equiv> \<lambda> ts w.\<forall>x. \<Phi>(x)(ts)(w)"
-abbreviation mforallB  :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" (binder"\<^bold>\<forall>"[8]9)
+definition mforallB  :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" (binder"\<^bold>\<forall>"[8]9)
   where "\<^bold>\<forall>x. \<phi>(x) \<equiv> \<^bold>\<forall>\<phi>"   
-abbreviation mexists   :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" ("\<^bold>\<exists>") 
+definition mexists   :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" ("\<^bold>\<exists>") 
   where "\<^bold>\<exists>\<Phi> \<equiv> \<lambda> ts w.\<exists>x. \<Phi>(x)(ts)(w)"
-abbreviation mexistsB  :: "(('a)\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" (binder"\<^bold>\<exists>"[8]9)
+definition mexistsB  :: "(('a)\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" (binder"\<^bold>\<exists>"[8]9)
   where "\<^bold>\<exists>x. \<phi>(x) \<equiv> \<^bold>\<exists>\<phi>"   
-abbreviation meq    :: "'a\<Rightarrow>'a\<Rightarrow>\<sigma>" (infixr"\<^bold>="60) \<comment> \<open>Equality\<close>  
+definition meq    :: "'a\<Rightarrow>'a\<Rightarrow>\<sigma>" (infixr"\<^bold>="60) \<comment> \<open>Equality\<close>  
   where "x\<^bold>=y \<equiv> \<lambda> ts w. x = y"
-abbreviation mgeq :: "('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>\<ge>" 60)
+definition mgeq :: "('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>\<ge>" 60)
   where "x \<^bold>\<ge> y \<equiv> \<lambda> ts w. x \<ge> y" 
-abbreviation mge ::"('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>>" 60)
+definition mge ::"('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>>" 60)
   where "x \<^bold>> y \<equiv> \<lambda> ts w. x > y"
 
 text\<open>
@@ -88,9 +88,9 @@ definition hchop   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infi
   where "\<phi> \<^bold>\<frown> \<psi> \<equiv> \<lambda> ts w.\<exists>v u. (w=v\<parallel>u) \<and> \<phi>(ts)(v)\<and>\<psi>(ts)(u)"
 definition vchop   :: "\<sigma>\<Rightarrow>\<sigma>\<Rightarrow>\<sigma>" (infixr "\<^bold>\<smile>" 53)
   where "\<phi> \<^bold>\<smile> \<psi> \<equiv> \<lambda> ts w.\<exists>v u. (w=v--u) \<and> \<phi>(ts)(v) \<and> \<psi>(ts)(u)"
-abbreviation somewhere ::"\<sigma>\<Rightarrow>\<sigma>" ( "\<^bold>\<langle>_\<^bold>\<rangle> " 55)
+definition somewhere ::"\<sigma>\<Rightarrow>\<sigma>" ( "\<^bold>\<langle>_\<^bold>\<rangle> " 55)
   where "\<^bold>\<langle>\<phi>\<^bold>\<rangle> \<equiv> \<^bold>\<top> \<^bold>\<frown> (\<^bold>\<top>\<^bold>\<smile>\<phi> \<^bold>\<smile>\<^bold>\<top>)\<^bold>\<frown>\<^bold>\<top>"
-abbreviation everywhere::"\<sigma>\<Rightarrow>\<sigma>" ("\<^bold>[_\<^bold>]" 55)
+definition everywhere::"\<sigma>\<Rightarrow>\<sigma>" ("\<^bold>[_\<^bold>]" 55)
   where "\<^bold>[\<phi>\<^bold>] \<equiv> \<^bold>\<not>\<^bold>\<langle>\<^bold>\<not>\<phi>\<^bold>\<rangle>"
 
 text\<open>
@@ -107,17 +107,17 @@ are given by the different types of transitions between
 traffic snapshots.
 \<close>
 
-abbreviation res_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>r'(_') _" 55)
+definition res_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>r'(_') _" 55)
   where "\<^bold>\<box>r(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)" 
-abbreviation clm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>c'(_') _" 55)
+definition clm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>c'(_') _" 55)
   where "\<^bold>\<box>c(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts' n. (ts\<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
-abbreviation wdres_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>wdr'(_') _" 55)
+definition wdres_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>wdr'(_') _" 55)
   where "\<^bold>\<box>wdr(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts' n. (ts\<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
-abbreviation wdclm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>wdc'(_') _" 55)
+definition wdclm_box::"cars \<Rightarrow> \<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>wdc'(_') _" 55)
   where "\<^bold>\<box>wdc(c) \<phi> \<equiv> \<lambda> ts w. \<forall>ts'. (ts\<^bold>\<midarrow>wdc(c)\<^bold>\<rightarrow>ts') \<longrightarrow> \<phi>(ts')(w)"
-abbreviation time_box::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>\<^bold>\<tau> _" 55) 
+definition time_box::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>\<box>\<^bold>\<tau> _" 55) 
   where "\<^bold>\<box>\<^bold>\<tau> \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts\<^bold>\<leadsto>ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)" 
-abbreviation globally::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>G _" 55)
+definition globally::"\<sigma> \<Rightarrow> \<sigma>" ("\<^bold>G _" 55)
   where "\<^bold>G \<phi> \<equiv> \<lambda>ts w. \<forall>ts'. (ts \<^bold>\<Rightarrow> ts') \<longrightarrow> \<phi>(ts')(move ts ts' w)"
 
 
@@ -151,22 +151,22 @@ to connect the atomic formulas for reservations and claims
 with the atom denoting free space \cite{Linker2015a}.
 \<close>
 
-abbreviation width_eq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> = _ " 60)
+definition width_eq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> = _ " 60)
   where "\<^bold>\<omega> = n \<equiv> \<lambda>  ts v. |lan v| = n"  
 
-abbreviation width_geq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> \<ge> _" 60)
+definition width_geq::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> \<ge> _" 60)
   where "\<^bold>\<omega> \<ge> n \<equiv> \<lambda>  ts v. |lan v| \<ge> n" 
 
-abbreviation width_ge::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> > _" 60)
+definition width_ge::"nat \<Rightarrow> \<sigma>" ("\<^bold>\<omega> > _" 60)
   where "\<^bold>\<omega> > n \<equiv> (\<^bold>\<omega> = n+1) \<^bold>\<smile> \<^bold>\<top>"
 
-abbreviation length_eq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> = _ " 60)
+definition length_eq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> = _ " 60)
   where "\<^bold>\<l> = r \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel> = r"
 
-abbreviation length_ge:: "real \<Rightarrow> \<sigma>" ("\<^bold>\<l> > _" 60)
+definition length_ge:: "real \<Rightarrow> \<sigma>" ("\<^bold>\<l> > _" 60)
   where "\<^bold>\<l> > r \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel> > r"
 
-abbreviation length_geq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> \<ge> _" 60)
+definition length_geq::"real \<Rightarrow> \<sigma>" ("\<^bold>\<l> \<ge> _" 60)
   where "\<^bold>\<l> \<ge> r \<equiv> (\<^bold>\<l> = r) \<^bold>\<or> (\<^bold>\<l> > r)"
 
 text\<open>
@@ -185,8 +185,50 @@ definition valid :: "\<sigma> \<Rightarrow> bool" ("\<Turnstile> _" 10 )
 
 subsection \<open>Theorems about Basic HMLSL\<close>
 
-lemma hchop_weaken1: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) " 
-  using valid_def hchop_def horizontal_chop_empty_right  satisfies_def by fastforce
+subsubsection\<open>FOL Fragment\<close>
+
+text\<open>Disjunction\<close>
+lemma mdisE:
+assumes major: "ts,v \<Turnstile> P \<^bold>\<or>  Q"
+    and minorP: "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>R"
+    and minorQ: "ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> R"
+  shows "ts,v \<Turnstile>R" 
+  using major minorP minorQ mor_def satisfies_def by auto
+
+lemma mdisjI1: "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>P \<^bold>\<or> Q" 
+  using mor_def satisfies_def by auto
+
+lemma mdisjI2: "ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<or> Q"
+  using mor_def satisfies_def by auto
+
+text\<open>Conjunction\<close>
+lemma mconjI: "\<lbrakk>ts,v \<Turnstile>P; ts,v \<Turnstile> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<and> Q"
+  using mand_def satisfies_def by auto
+
+lemma mconjunct1: "\<lbrakk>ts,v \<Turnstile> P \<^bold>\<and> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>P"
+  using mand_def satisfies_def by auto
+
+lemma mconjunct2: "\<lbrakk>ts,v \<Turnstile> P \<^bold>\<and> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>Q"
+  using mand_def satisfies_def by auto
+
+lemma mconjE:
+  assumes major: "ts,v \<Turnstile>P \<^bold>\<and> Q"
+    and minor: "\<lbrakk>ts,v \<Turnstile>P; ts,v \<Turnstile> Q\<rbrakk> \<Longrightarrow> R"
+  shows R
+  using mand_def satisfies_def 
+  using major minor by auto
+
+lemma mcontext_conjI:
+  assumes "ts,v \<Turnstile>P" "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>Q"
+  shows "ts,v \<Turnstile> P \<^bold>\<and> Q"
+  using mand_def satisfies_def assms(1) assms(2) by auto
+
+
+
+
+lemma hchop_weaken1: "ts,v \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<phi> \<^bold>\<frown> \<^bold>\<top>) "
+  using valid_def hchop_def horizontal_chop_empty_right  satisfies_def 
+  by (metis (no_types, lifting) hmlsl.intro hmlsl.mtrue_def mimp_def sensors_ge)
 
 lemma hchop_weaken2: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<phi>) " 
   using valid_def hchop_def  horizontal_chop_empty_left  satisfies_def  by fastforce
