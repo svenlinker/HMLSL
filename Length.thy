@@ -761,8 +761,9 @@ qed
 
 
 lemma len_hchop_add:
-  "(v=v1\<parallel>v2) \<longrightarrow> \<parallel>len v ts c\<parallel> = \<parallel>len v1 ts c\<parallel> + \<parallel>len v2 ts c\<parallel>" 
-  
+  "(v=v1\<parallel>v2) \<longrightarrow> \<parallel>len v ts c\<parallel> = \<parallel>len v1 ts c\<parallel> + \<parallel>len v2 ts c\<parallel>" using rchop_intersect_add 
+  using len_def space_def view.hchop_def by auto
+(*  
 proof
   assume chop:"v=v1\<parallel>v2"
   show "\<parallel>len v ts c\<parallel> = \<parallel>len v1 ts c\<parallel> + \<parallel>len v2 ts c\<parallel>"
@@ -942,11 +943,13 @@ proof
     qed
   qed
 qed
-
+*)
 lemma len_non_empty_inside:
  "\<parallel>len v ( ts) c\<parallel> > 0 
-  \<longrightarrow> left (space ts v c) < right (ext v) \<and> right (space ts v c) > left (ext v)"
-proof
+  \<longrightarrow> left (space ts v c) < right (ext v) \<and> right (space ts v c) > left (ext v)" 
+  using intersect_length_not_empty 
+  by (simp add: len_def)
+(*proof
   assume assm: "\<parallel>len v ( ts) c\<parallel> > 0"
   show "left ((space ts v) c) < right (ext v) \<and> right ((space ts v) c) > left (ext v)"
   proof (rule ccontr)
@@ -1007,16 +1010,36 @@ proof
     qed
   qed
 qed
+*)
 
 lemma len_fills_subview:
   "\<parallel>len v ts c\<parallel> > 0 
       \<longrightarrow> (\<exists> v1 v2 v3 v'. (v=v1\<parallel>v2) \<and> (v2=v'\<parallel>v3) \<and> len v' ts c = ext v' \<and> 
-                          \<parallel>len v' ts c\<parallel> = \<parallel>len v ts c\<parallel>)"
+                          \<parallel>len v' ts c\<parallel> = \<parallel>len v ts c\<parallel>)" 
 proof
   assume assm: "\<parallel>len v ( ts) c\<parallel> > 0" 
+  then obtain e1 e2 e3 e' where "R_Chop(ext v,e1,e2) \<and> R_Chop(e2,e',e3)  \<and> intersect e' (space ts v c) = e' \<and> \<parallel>len v ts c\<parallel> = \<parallel>intersect e' (space ts v c) \<parallel>" 
+    using intersect_fills_chop len_def 
+    by fastforce
+  obtain v1 where v1:"ext v1 = e1 \<and> lan v1 = lan v \<and> own v1 = own v" 
+    by (metis Abs_view_inverse basic_view.simps(1) basic_view.simps(2) basic_view.simps(3) ext.rep_eq horizontal_chop_empty_right horizontal_chop_lanes_continuous lan.rep_eq mem_Collect_eq own.rep_eq)
+  obtain v2 where v2:"ext v2 = e2 \<and> lan v2 = lan v \<and> own v2 = own v" 
+    by (metis Abs_view_inverse basic_view.simps(1) basic_view.simps(2) basic_view.simps(3) ext.rep_eq horizontal_chop_empty_right horizontal_chop_lanes_continuous lan.rep_eq mem_Collect_eq own.rep_eq)
+  obtain v3 where v3:"ext v3 = e3 \<and> lan v3 = lan v \<and> own v3 = own v" 
+    by (metis Abs_view_inverse basic_view.simps(1) basic_view.simps(2) basic_view.simps(3) ext.rep_eq horizontal_chop_empty_right horizontal_chop_lanes_continuous lan.rep_eq mem_Collect_eq own.rep_eq)
+  obtain v' where v':"ext v' = e' \<and> lan v' = lan v \<and> own v' = own v" 
+    by (metis Abs_view_inverse basic_view.simps(1) basic_view.simps(2) basic_view.simps(3) ext.rep_eq horizontal_chop_empty_right horizontal_chop_lanes_continuous lan.rep_eq mem_Collect_eq own.rep_eq)
+  have h:"space ts v c = space ts v' c" 
+    by (simp add: space_def v')
+  then have 1:"len v' ts c = ext v'" 
+   using \<open>R_Chop(Views.ext v,e1,e2) \<and> R_Chop(e2,e',e3) \<and> intersect e' (space ts v c) = e' \<and> \<parallel>len v ts c\<parallel> = \<parallel>intersect e' (space ts v c)\<parallel>\<close> len_def v' by auto
+  have 2:"\<parallel>len v ts c\<parallel> = \<parallel>len v' ts c\<parallel>" using h 
+    using "1" \<open>R_Chop(Views.ext v,e1,e2) \<and> R_Chop(e2,e',e3) \<and> intersect e' (space ts v c) = e' \<and> \<parallel>len v ts c\<parallel> = \<parallel>intersect e' (space ts v c)\<parallel>\<close> v' by auto
   show " \<exists> v1 v2 v3 v'. (v=v1\<parallel>v2) \<and> (v2=v'\<parallel>v3) \<and> len v' ( ts) c = ext v' \<and> 
-          \<parallel>len v' ( ts) c\<parallel> = \<parallel>len v ( ts) c\<parallel>"
-  proof -
+          \<parallel>len v' ( ts) c\<parallel> = \<parallel>len v ( ts) c\<parallel>" using 1 2 
+    by (metis \<open>R_Chop(Views.ext v,e1,e2) \<and> R_Chop(e2,e',e3) \<and> intersect e' (space ts v c) = e' \<and> \<parallel>len v ts c\<parallel> = \<parallel>intersect e' (space ts v c)\<parallel>\<close> \<open>\<And>thesis. (\<And>v2. Views.ext v2 = e2 \<and> Views.lan v2 = Views.lan v \<and> Views.own v2 = Views.own v \<Longrightarrow> thesis) \<Longrightarrow> thesis\<close> v' v1 v3 view.hchop_def)
+qed
+(*  proof -
     from assm have inside:
       "left ((space ts v) c) < right (ext v) \<and> right ((space ts v) c) > left (ext v)" 
       using len_non_empty_inside by auto
@@ -1091,10 +1114,11 @@ proof
     then show ?thesis using 1 2 3 by blast
   qed
 qed
-
+*)
 lemma ext_eq_len_eq:
   "ext v = ext v'\<and> own v = own v' \<longrightarrow> len v ts c = len v' ts c" 
-  using left_space right_space sensors.len_def sensors_axioms by auto
+  using left_space right_space sensors.len_def sensors_axioms 
+  by (simp add: space_def)
 
 lemma len_stable_down:"(v=v1--v2) \<longrightarrow> len v ts c = len v1 ts c" 
   using ext_eq_len_eq view.vchop_def by blast
@@ -1119,7 +1143,8 @@ qed
 lemma view_leq_len_leq:"(ext v \<le> ext v') \<and> (own v = own v') \<and> \<parallel>len v ts c\<parallel> > 0 
                           \<longrightarrow> len v ts c \<le> len v' ts c" 
   using Abs_real_int_inverse  length_def length_ge_zero less_eq_real_int_def 
-    sensors.len_def sensors.space_def sensors_axioms by auto
+    sensors.len_def sensors.space_def sensors_axioms leq_intersect_leq 
+  by (metis len_def less_irrefl space_def)
 
 end
 end
