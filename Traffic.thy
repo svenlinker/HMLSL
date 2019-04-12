@@ -229,13 +229,13 @@ lemma clmNextRes :
   "(clm ts c) \<noteq> \<emptyset> \<longrightarrow> (\<exists> n. n \<^bold>\<in> res ts c \<squnion> clm ts c \<and> (n+1) \<^bold>\<in> res ts c \<squnion> clm ts c )"
   using res_def clm_def sane_def 
   by (metis Rep_traffic mem_Collect_eq sup_commute traffic.clm.rep_eq traffic.res.rep_eq)
-(*
+
 lemma psGeZero:"\<forall>c. (physical_size ts c > 0)"
-  using Rep_traffic physical_size_def by auto 
+  using sane_def Rep_traffic traffic.physical_size.rep_eq by auto
 
 lemma sdGeZero:"\<forall>c. (braking_distance ts c > 0)"
-  using Rep_traffic braking_distance_def by auto 
-*)
+  using sane_def Rep_traffic braking_distance.rep_eq by auto 
+
 
 lemma res_non_empty: "res ts c \<noteq> \<emptyset>"
  using sane_def  Rep_traffic res.rep_eq

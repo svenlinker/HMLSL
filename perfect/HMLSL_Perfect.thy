@@ -106,7 +106,7 @@ during spatial transitions.
 lemma forwards_res_act:
  "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts,v \<Turnstile> cl(c)) \<longrightarrow> (ts',v \<Turnstile> re(c))"
   unfolding hmlsl.satisfies_def hmlsl.re_def hmlsl.cl_def 
-  by (metis card_subset_le card_subset_less create_reservation_restrict_union disjoint dual_order.antisym less_numeral_extra(4) order.not_eq_order_implies_strict perfect_sensors.create_reservation_length_stable restriction.restrict_clm restriction.restrict_def traffic.atMostOneClm  un_empty_absorb2)
+  by (metis create_reservation_restrict_union inf_sup_aci(5) perfect_sensors.create_reservation_length_stable restriction.restrict_view sup.absorb_iff1)
 
 lemma forwards_res_stab:
  "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts,v \<Turnstile> re(c)) \<longrightarrow> (ts',v \<Turnstile> re(c))"
@@ -143,7 +143,7 @@ proof
   next
     assume restr_res_empty:"restrict v (res ts) c = \<emptyset>"
     then have clm_non_empty:" restrict v (clm ts) c \<noteq> \<emptyset>" 
-      using assm card_empty_zero restriction.create_reservation_restrict_union un_empty_absorb1 
+      using assm card_empty_zero restriction.create_reservation_restrict_union 
       unfolding hmlsl.satisfies_def hmlsl.re_def by auto
     hence restrict_one:"|restrict v (clm ts) c | = 1" 
       using nat_int.card_non_empty_geq_one nat_int.card_subset_le dual_order.antisym

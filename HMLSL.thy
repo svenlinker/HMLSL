@@ -196,10 +196,12 @@ lemma hchop_weaken: " \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<top> 
   using view.horizontal_chop_empty_left satisfies_def  by fastforce
 
 lemma hchop_neg1:"\<Turnstile> \<^bold>\<not> (\<phi> \<^bold>\<frown> \<^bold>\<top>) \<^bold>\<rightarrow> ((\<^bold>\<not> \<phi>) \<^bold>\<frown> \<^bold>\<top>)" 
-  using horizontal_chop1 valid_def hchop_def  satisfies_def   by fastforce
+  using horizontal_chop1 valid_def hchop_def  satisfies_def   
+  using view.horizontal_chop_empty_right by fastforce
 
 lemma hchop_neg2:"\<Turnstile> \<^bold>\<not> (\<^bold>\<top>\<^bold>\<frown>\<phi> ) \<^bold>\<rightarrow> (\<^bold>\<top> \<^bold>\<frown> \<^bold>\<not> \<phi>)"
-  using valid_def  hchop_def  horizontal_chop1 satisfies_def  by fastforce
+  using valid_def  hchop_def  horizontal_chop1 satisfies_def  
+  using view.horizontal_chop_empty_right by fastforce
 
 lemma hchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>)) \<^bold>\<leftrightarrow> ((\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)))" 
    using valid_def hchop_def satisfies_def  by auto
@@ -225,6 +227,27 @@ lemma vchop_disj_distr1:"\<Turnstile> ((\<phi> \<^bold>\<smile> (\<psi> \<^bold>
 lemma vchop_disj_distr2:"\<Turnstile> (((\<psi> \<^bold>\<or> \<chi>) \<^bold>\<smile> \<phi> ) \<^bold>\<leftrightarrow> ((\<psi> \<^bold>\<smile> \<phi>)\<^bold>\<or>(\<chi> \<^bold>\<smile> \<phi>)))" 
   using valid_def satisfies_def  vchop_def by auto
 
+lemma somewhere_leq:" (ts,v \<Turnstile> \<^bold>\<langle> \<phi> \<^bold>\<rangle>) \<longleftrightarrow> (\<exists>v'. v' \<le> v \<and> (ts,v' \<Turnstile> \<phi>))"
+proof
+  assume "ts,v \<Turnstile> \<^bold>\<langle> \<phi> \<^bold>\<rangle>" 
+  then obtain v1 v2 vl vr where 1: " (v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (ts,v2 \<Turnstile> \<^bold>\<top> \<^bold>\<smile> \<phi> \<^bold>\<smile> \<^bold>\<top>)" 
+    using hchop_def satisfies_def by auto
+  then obtain v3 vu vd v' where 2:"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v'--vu) \<and> (ts,v' \<Turnstile> \<phi>)" 
+    using  satisfies_def vchop_def by auto
+  then have "v' \<le> v" using somewhere_leq 1 2 by blast
+  then show "(\<exists>v'. v' \<le> v \<and> (ts,v' \<Turnstile> \<phi>))" using 2 by blast
+next
+  assume "(\<exists>v'. v' \<le> v \<and> (ts,v' \<Turnstile> \<phi>))" 
+  then obtain v1 v2 vl vr v3 vu vd v' where 1:"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v'--vu) \<and> (ts,v' \<Turnstile> \<phi>)"
+    using somewhere_leq 
+    by auto
+  then have "ts, v2 \<Turnstile>  \<^bold>\<top> \<^bold>\<smile> \<phi> \<^bold>\<smile> \<^bold>\<top>" 
+    using  satisfies_def vchop_def by auto
+  then show "ts,v \<Turnstile>  \<^bold>\<langle> \<phi> \<^bold>\<rangle>" 
+    using hchop_def satisfies_def 1 by auto 
+qed
+    
+
 lemma at_exists :"ts,v \<Turnstile> \<phi> \<^bold>\<rightarrow> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
   unfolding valid_def satisfies_def unfolding at_def
   using view.switch_refl view.switch_unique   by blast
@@ -243,7 +266,7 @@ lemma at_conj_distr:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<
 lemma at_disj_dist:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
   unfolding at_def satisfies_def  valid_def using valid_def switch_unique satisfies_def   by blast
 
-lemma at_hchop_dist1:"ts,v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ((\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))" 
+lemma at_hchop_dist1:"ts,v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ((\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"  
 proof -
   { 
   assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))"
@@ -300,8 +323,8 @@ lemma at_eq:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c
   unfolding valid_def satisfies_def using switch_always_exists  unfolding at_def by blast
 
 lemma at_neg1:"\<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
-  unfolding satisfies_def valid_def using switch_unique unfolding at_def
-  by (metis select_convs switch_def)
+  unfolding satisfies_def valid_def using switch_unique unfolding at_def 
+  by (simp add: view.switch_always_exists)
 
 lemma at_neg2:"\<Turnstile>\<^bold>\<not> (\<^bold>@c \<phi> ) \<^bold>\<rightarrow> ( (\<^bold>@c \<^bold>\<not> \<phi>))"
   unfolding valid_def satisfies_def at_def using switch_unique  by fastforce
@@ -314,7 +337,7 @@ lemma at_neg':"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>) \<^bold>\<le
 
 lemma at_neg_neg1:"\<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
   unfolding valid_def satisfies_def at_def using switch_unique switch_def switch_refl 
-  by (metis select_convs switch_def)
+  using view.switch_always_exists by blast
 
 lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> (\<^bold>@c  \<phi>)"
  unfolding valid_def at_def satisfies_def using switch_unique switch_def switch_refl  
@@ -329,7 +352,7 @@ lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^
 lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" unfolding valid_def satisfies_def by simp
 
 lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
-unfolding valid_def satisfies_def  using traffic.abstract.refl traffic.move_nothing  by fastforce
+unfolding valid_def satisfies_def  using traffic.abstract.refl move_nothing  by fastforce
 
 lemma globally_4: "\<Turnstile> (\<^bold>G  \<phi>) \<^bold>\<rightarrow> \<^bold>G \<^bold>G \<phi>"
      using traffic.abs_trans traffic.move_trans valid_def satisfies_def by presburger
@@ -376,7 +399,7 @@ unfolding valid_def  satisfies_def  vchop_def using vertical_chop_add2  by fastf
 
 lemma width_hchop_stable: "\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<omega> = x) \<^bold>\<frown> (\<^bold>\<omega>=x)))"
 unfolding valid_def  hchop_def satisfies_def  using  horizontal_chop1 
-  using view.hchop_def by fastforce
+  by (metis view.horizontal_chop_width_stable)
 
 lemma length_geq_zero:"\<Turnstile> (\<^bold>\<l> \<ge> 0)"
 unfolding valid_def satisfies_def   by (metis order.not_eq_order_implies_strict real_int.length_ge_zero)

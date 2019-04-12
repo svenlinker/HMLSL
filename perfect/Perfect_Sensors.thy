@@ -195,14 +195,15 @@ proof
       hence outside_left':" left (ext v') > right ((space ts v) c) "
         using left_eq by simp
       from outside_left and outside_left' show ?thesis 
-        using perfect_sensors.len_def left_eq sp right_eq
-        by auto
+        using perfect_sensors.len_def left_eq sp right_eq 
+        by (simp add: assm)
     next
       assume inside_left:"\<not> left (ext v) > right ((space ts v) c) "
       hence inside_left':"\<not> left (ext v') > right ((space ts v) c) "
         using left_eq by simp
       from inside_left inside_right inside_left' inside_right' left_eq right_eq
-      show ?thesis by (simp add:perfect_sensors.len_def sp)
+      show ?thesis 
+        by (simp add: assm perfect_sensors.len_def sp)
     qed
   qed
 qed
