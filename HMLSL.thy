@@ -257,6 +257,13 @@ proof -
   with 1 show R by (rule mnotE)
 qed
 
+lemma mclassical:
+  assumes prem: "ts,v \<Turnstile> \<^bold>\<not> P \<Longrightarrow> ts,v \<Turnstile> P"
+  shows "ts,v \<Turnstile>P"  
+  using mnotI prem by blast
+
+lemmas mccontr = mFalseE [THEN mclassical]
+
 
 subsubsection\<open>Implication\<close>
 lemma  mimpI: "(ts,v \<Turnstile>P \<Longrightarrow> ts,v \<Turnstile>Q) \<Longrightarrow> ts,v \<Turnstile>P \<^bold>\<rightarrow> Q"
@@ -326,7 +333,7 @@ lemma mexE:
   by (metis major mexistsB_def mexists_def minor satisfies_def)
 
 
-text \<open>Universal quantifier\<close>
+subsubsection \<open>Universal quantifier\<close>
 
 lemma mallI:
   assumes "\<And>x::'a. ts,v \<Turnstile>P x"
@@ -358,12 +365,69 @@ subsubsection\<open>Equational\<close>
 lemma mrefl:" ts,v \<Turnstile> x \<^bold>= x" 
   by (simp add: meq_def satisfies_def) 
 
-(*
-lemmas [elim!] = mdisjE miffE mFalseE mconjE mexE mTrueE mnotFalseE
-  and [intro!] = miffI mconjI mimpI mTrueI mnotI mallI mrefl
-  and [elim 2] = mallE  
+subsubsection\<open>Modal Operators\<close>
+lemma hchopE: 
+  assumes "ts,v \<Turnstile>P \<^bold>\<frown> Q " 
+  obtains u and w 
+    where "v=u\<parallel>w" and "ts,u \<Turnstile> P" and "ts,w \<Turnstile> Q" 
+  using assms hchop_def satisfies_def by auto
+
+lemma hchopI: "v=u\<parallel>w \<Longrightarrow> ts,u \<Turnstile>P \<Longrightarrow> ts,w \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<frown> Q" 
+  using hchop_def satisfies_def by auto
+
+lemma vchopE: 
+  assumes "ts,v \<Turnstile>P \<^bold>\<smile> Q " 
+  obtains u and w 
+    where "v=u--w" and "ts,u \<Turnstile> P" and "ts,w \<Turnstile> Q" 
+  using assms vchop_def satisfies_def by auto
+
+lemma vchopI: "v=u--w \<Longrightarrow> ts,u \<Turnstile>P \<Longrightarrow> ts,w \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<smile> Q" 
+  using vchop_def satisfies_def by auto
+
+lemma someE: 
+  assumes "ts,v \<Turnstile>\<^bold>\<langle> P \<^bold>\<rangle> " 
+  obtains u  
+  where "u \<le> v" and "ts,u \<Turnstile> P" 
+proof -
+   obtain v1 v2 vl vr where 1: " (v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (ts,v2 \<Turnstile> \<^bold>\<top> \<^bold>\<smile> P \<^bold>\<smile> \<^bold>\<top>)" 
+    using hchop_def satisfies_def  somewhere_def assms by auto  
+  then obtain v3 vu vd v' where 2:"(v=vl\<parallel>v1) \<and> (v1=v2\<parallel>vr) \<and> (v2=vd--v3) \<and> (v3=v'--vu) \<and> (ts,v' \<Turnstile> P)" 
+    using  satisfies_def vchop_def assms by auto
+  then have "v' \<le> v" using somewhere_leq 1 2 by blast
+  then show ?thesis using that 2 by blast
+qed
+
+lemma someI:" u \<le> v \<Longrightarrow> ts,u \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<langle> P \<^bold>\<rangle>" 
+  using somewhere_def somewhere_leq  hchopI mTrueI vchopI by auto
+
+lemma atE:
+  assumes "ts,v \<Turnstile> \<^bold>@c P" 
+  obtains u
+  where "v =c> u" and "ts,u \<Turnstile> P" 
+  by (metis assms at_def satisfies_def view.switch_exists)
+
+lemma atI:
+  "\<lbrakk>\<And>u. v =c> u \<Longrightarrow> ts,u \<Turnstile> P\<rbrakk> \<Longrightarrow> ts,v \<Turnstile> \<^bold>@c P" 
+  by (simp add: at_def satisfies_def)
+
+
+subsubsection\<open>Global Invariants\<close>
+lemma globallyE: 
+  assumes major: " ts,v \<Turnstile> \<^bold>G P" 
+    and relation:" ts \<^bold>\<Rightarrow> ts'" 
+  shows " ts',(move ts ts' v) \<Turnstile> P"  
+  using globally_def major relation satisfies_def by auto
+
+lemma globallyI:
+  assumes "\<And>ts'. ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> ts', (move ts ts' v) \<Turnstile> P" 
+  shows "ts,v \<Turnstile> \<^bold>G P" 
+  using assms globally_def satisfies_def by auto
+
+lemmas [elim!] = mdisjE miffE mFalseE mconjE mexE mTrueE mnotFalseE globallyE hchopE vchopE someE atE 
+  and [intro!] = miffI mconjI mimpI mTrueI mnotI mallI mrefl globallyI hchopI vchopI someI atI
+  and [elim 2] = mallE 
   and [intro] = mexI mdisjI2 mdisjI1
-*)
+
 lemma hchop_weaken1 : "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<frown> \<^bold>\<top>" 
   by (metis hmlsl.hchop_def hmlsl.satisfies_def hmlsl_axioms horizontal_chop_empty_right mtrue_def)
 
@@ -439,15 +503,21 @@ next
 qed
     
 
-lemma at_exists :"ts,v \<Turnstile> \<phi>  \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)"
-proof -
+lemma at_exists :"ts,v \<Turnstile> \<phi>  \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)" 
+  using view.switch_exists view.switch_refl by fastforce
+(*proof -
   assume a: "ts,v \<Turnstile> \<phi>"
   obtain d where d_def:"d=own v" by blast
+  then have "v =d> v" 
+    by (simp add: view.switch_refl)
+  have "\<And>u. (v =d> u) \<longrightarrow> u = v" using switch_unique 
+    using d_def view.switch_def by blast
   then have "ts,v \<Turnstile> \<^bold>@d \<phi>" 
-    using a at_def satisfies_def  view.switch_refl sorry
+    using a at_def satisfies_def by auto
   then show "ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)" 
-    by (meson mexI)
+    by (meson mexI) 
 qed
+*)
 (*proof
   fix ts v
   assume assm:"ts,v \<Turnstile>\<phi>"
@@ -457,17 +527,16 @@ qed
 qed
 *)
 
-lemma at_conj_distr:"\<Turnstile>(\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))"
-  unfolding at_def  satisfies_def  using valid_def satisfies_def  switch_unique  by blast
+lemma at_conj_distr:"(ts,v \<Turnstile>\<^bold>@c ( \<phi> \<^bold>\<and> \<psi>)) = ( ts,v \<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<and> (\<^bold>@c \<psi>))" 
+  using at_def mand_def satisfies_def by auto
 
-lemma at_disj_dist:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) \<^bold>\<leftrightarrow> ((\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"
-  unfolding at_def satisfies_def  valid_def using valid_def switch_unique satisfies_def   by blast
+lemma at_disj_dist:"(ts,v \<Turnstile>\<^bold>@c (\<phi> \<^bold>\<or> \<psi>)) = (ts,v \<Turnstile> (\<^bold>@c \<phi> )  \<^bold>\<or> ( \<^bold>@c \<psi> ))"  
+  by (metis  at_def mor_def satisfies_def switch_exists)
 
-lemma at_hchop_dist1:"ts,v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<^bold>\<rightarrow> ((\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"  
-proof -
-  { 
+lemma at_hchop_dist1:"ts,v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>)) \<Longrightarrow> ts,v \<Turnstile>  ((\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"  
+proof -  
   assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))"
-  obtain v' where v':"v=c>v'" using switch_always_exists  by fastforce
+  obtain v' where v':"v=c>v'" using switch_exists  by fastforce
   with assm obtain v1' and v2'
     where chop:"(v'=v1'\<parallel>v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
     unfolding satisfies_def   using hchop_def at_def by auto 
@@ -476,23 +545,32 @@ proof -
     using switch_hchop2  by fastforce
   hence v1:"ts,v1 \<Turnstile> (\<^bold>@c \<phi>)" and v2:"ts,v2 \<Turnstile> (\<^bold>@c \<psi>)" 
     unfolding satisfies_def  using switch_unique chop at_def unfolding satisfies_def  by fastforce+   
-  from  v1 and v2 and origin have "ts,v \<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)"  unfolding satisfies_def hchop_def by blast
-}
-  from this show ?thesis unfolding satisfies_def by blast  (* " ( ts,v  \<Turnstile> (\<^bold>@ c \<phi>) \<^bold>\<frown>( \<^bold>@ c \<psi>)) " *)
+  from  v1 and v2 and origin show "ts,v \<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)"  unfolding satisfies_def hchop_def by blast
 qed
 
-lemma at_hchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
-  unfolding valid_def at_def hchop_def using switch_unique switch_hchop1 switch_def unfolding satisfies_def at_def hchop_def  by meson
-
-(*lemma at_hchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
-  unfolding valid_def using at_hchop_dist1 at_hchop_dist2 *)
-
-lemma at_vchop_dist1:"\<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>)) \<^bold>\<rightarrow> ( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
+lemma at_hchop_dist2:"ts,v \<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>)) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  " 
 proof -
-  {
+  assume a:"ts,v \<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<frown> (\<^bold>@c \<psi>))"
+  then obtain v1 and v2
+    where chop:"(v=v1\<parallel>v2) \<and> (ts,v1 \<Turnstile> \<^bold>@c \<phi>) \<and> (ts,v2\<Turnstile> \<^bold>@c \<psi>)" 
+    using hchop_def satisfies_def by auto
+  then obtain v' and v1' and v2' where 1:"v =c>v'" and "v'=v1'\<parallel>v2'" and "ts,v1' \<Turnstile> \<phi>" and "ts,v2' \<Turnstile>\<psi>"  
+    by (metis at_def satisfies_def view.switch_exists switch_hchop1)
+  then have "ts,v' \<Turnstile> \<phi> \<^bold>\<frown> \<psi>" 
+    using hchop_def satisfies_def by auto
+  then show "ts,v \<Turnstile> (\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  " 
+    using at_def satisfies_def 1 view.switch_unique by metis
+qed
+
+lemma at_hchop_dist:"(ts,v \<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<frown>  (\<^bold>@c \<psi>)) = (ts,v \<Turnstile>\<^bold>@c (\<phi> \<^bold>\<frown> \<psi>))  "
+  using at_hchop_dist1 at_hchop_dist2 
+  by meson
+
+lemma at_vchop_dist1:"ts,v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>)) \<Longrightarrow> ts,v \<Turnstile> ( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
+proof -
   fix ts v
   assume assm:"ts, v \<Turnstile>(\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))"
-  obtain v' where v':"v=c>v'" using switch_always_exists by fastforce
+  obtain v' where v':"v=c>v'" using switch_exists by fastforce
   with assm obtain v1' and v2' 
     where chop:"(v'=v1'--v2') \<and> (ts,v1' \<Turnstile> \<phi>) \<and> (ts,v2'\<Turnstile>\<psi>)" 
     using at_def satisfies_def vchop_def by auto
@@ -503,56 +581,76 @@ proof -
     using switch_unique chop at_def satisfies_def 
     unfolding at_def unfolding satisfies_def 
     by fastforce+  
-  from v1 and v2 and origin have "ts,v \<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)" unfolding satisfies_def 
+  from v1 and v2 and origin show "ts,v \<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)" unfolding satisfies_def 
     using vchop_def by auto
-}
-  from this show ?thesis unfolding satisfies_def valid_def by simp
 qed
 
-(*lemma at_vchop_dist2:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<rightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
-  using valid_def switch_unique switch_vchop1 switch_def   
+lemma at_vchop_dist2:"ts,v \<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
+proof -
+  assume a:"ts,v \<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>))"
+  then obtain v1 and v2
+    where chop:"(v=v1--v2) \<and> (ts,v1 \<Turnstile> \<^bold>@c \<phi>) \<and> (ts,v2\<Turnstile> \<^bold>@c \<psi>)" 
+    using vchop_def satisfies_def by auto
+  then obtain v' and v1' and v2' where 1:"v =c>v'" and "v'=v1'--v2'" and "ts,v1' \<Turnstile> \<phi>" and "ts,v2' \<Turnstile>\<psi>"  
+    by (metis at_def satisfies_def view.switch_exists switch_vchop1)
+  then have "ts,v' \<Turnstile> \<phi> \<^bold>\<smile> \<psi>" 
+    using vchop_def satisfies_def by auto
+  then show "ts,v \<Turnstile> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  " 
+    using at_def satisfies_def 1 view.switch_unique by metis
+qed
+  
 
-lemma at_vchop_dist:"\<Turnstile>( (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) \<^bold>\<leftrightarrow> (\<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
-  using at_vchop_dist1 at_vchop_dist2 by blast
+lemma at_vchop_dist:"(ts,v \<Turnstile>  (\<^bold>@c \<phi>) \<^bold>\<smile> (\<^bold>@c \<psi>)) = (ts,v \<Turnstile> \<^bold>@c (\<phi> \<^bold>\<smile> \<psi>))  "
+  using at_vchop_dist1 at_vchop_dist2 by meson
+
+lemma eq_rigid:" (c = d) = (ts,v \<Turnstile> c \<^bold>= d)" 
+  by (simp add: meq_def satisfies_def)
+
+lemma at_eq:"(ts,v \<Turnstile> \<^bold>@e c \<^bold>= d) = (ts,v \<Turnstile> c \<^bold>= d)" 
+  using eq_rigid 
+  by (metis at_def satisfies_def switch_exists)
+
+(*lemma at_eq':"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
+  unfolding valid_def satisfies_def using switch_exists   
+  by (metis at_def meq_def mequ_def)
 *)
 
-lemma at_eq:"\<Turnstile>(\<^bold>@e c \<^bold>= d) \<^bold>\<leftrightarrow> (c \<^bold>= d)"
-  unfolding valid_def satisfies_def using switch_always_exists  unfolding at_def by blast
+lemma at_neg1:"ts,v \<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>)"
+  using satisfies_def  switch_unique  at_def 
+  by (metis mnotE mnotI2 view.switch_exists)
 
-lemma at_neg1:"\<Turnstile>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)"
-  unfolding satisfies_def valid_def using switch_unique unfolding at_def 
-  by (simp add: view.switch_always_exists)
+lemma at_neg2:"ts,v \<Turnstile>\<^bold>\<not> (\<^bold>@c \<phi> ) \<Longrightarrow> ts,v \<Turnstile> ( (\<^bold>@c \<^bold>\<not> \<phi>))"
+  using satisfies_def  switch_unique  at_def 
+  by (metis mnotE mnotI2 view.switch_exists)
 
-lemma at_neg2:"\<Turnstile>\<^bold>\<not> (\<^bold>@c \<phi> ) \<^bold>\<rightarrow> ( (\<^bold>@c \<^bold>\<not> \<phi>))"
-  unfolding valid_def satisfies_def at_def using switch_unique  by fastforce
+lemma at_neg :"(ts,v \<Turnstile>\<^bold>@c( \<^bold>\<not> \<phi>)) = (ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>))" 
+  by (meson at_neg1 at_neg2)
 
-lemma at_neg :"\<Turnstile>(\<^bold>@c( \<^bold>\<not> \<phi>)) \<^bold>\<leftrightarrow> \<^bold>\<not> (\<^bold>@c \<phi>)" 
-  unfolding at_def satisfies_def valid_def using valid_def view.switch_always_exists view.switch_unique by fastforce
+lemma at_neg':"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> (\<^bold>@c( \<^bold>\<not> \<phi>))" 
+  by (meson at_neg miffI)
+  
 
-lemma at_neg':"ts,v \<Turnstile> \<^bold>\<not> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> (\<^bold>@c( \<^bold>\<not> \<phi>))" unfolding valid_def at_def satisfies_def using at_neg valid_def satisfies_def 
-  by (metis view.switch_always_exists   view.switch_unique)
+lemma at_neg_neg1:"ts,v \<Turnstile>(\<^bold>@c \<phi>) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
+  by (meson at_neg mnotI2)
 
-lemma at_neg_neg1:"\<Turnstile>(\<^bold>@c \<phi>) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)"
-  unfolding valid_def satisfies_def at_def using switch_unique switch_def switch_refl 
-  using view.switch_always_exists by blast
+lemma at_neg_neg2:"ts,v \<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>@c  \<phi>)" 
+  using at_neg2 mnot_def satisfies_def by auto
 
-lemma at_neg_neg2:"\<Turnstile>\<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>) \<^bold>\<rightarrow> (\<^bold>@c  \<phi>)"
- unfolding valid_def at_def satisfies_def using switch_unique switch_def switch_refl  
-  by metis
+lemma at_neg_neg:"(ts,v \<Turnstile> \<^bold>@c \<phi>) = (ts,v \<Turnstile> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>))" 
+  by (meson at_neg_neg1 at_neg_neg2)
 
-lemma at_neg_neg:"\<Turnstile> (\<^bold>@c \<phi>) \<^bold>\<leftrightarrow> \<^bold>\<not>(\<^bold>@c \<^bold>\<not> \<phi>)" 
-  unfolding valid_def at_def satisfies_def using at_neg_neg1 at_neg_neg2 valid_def at_def 
-  using at_neg' 
-  by (metis view.switch_always_exists  view.switch_unique) 
+lemma globally_all_iff:"(ts,v \<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>))) = (ts,v \<Turnstile> \<^bold>\<forall>c.( \<^bold>G \<phi>))" 
+  using globallyE by blast
 
-lemma globally_all_iff:"\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" unfolding valid_def satisfies_def by simp
-lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" unfolding valid_def satisfies_def by simp
+lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" 
+  by (metis globally_all_iff miffI)
 
-lemma globally_refl:" \<Turnstile>(\<^bold>G \<phi>) \<^bold>\<rightarrow> \<phi>" 
-unfolding valid_def satisfies_def  using traffic.abstract.refl move_nothing  by fastforce
+lemma globally_refl:" ts,v \<Turnstile>(\<^bold>G \<phi>) \<Longrightarrow> ts,v \<Turnstile> \<phi>" 
+  using globallyE abstract.refl 
+  by (metis view.move_nothing)
 
-lemma globally_4: "\<Turnstile> (\<^bold>G  \<phi>) \<^bold>\<rightarrow> \<^bold>G \<^bold>G \<phi>"
-     using traffic.abs_trans traffic.move_trans valid_def satisfies_def by presburger
+lemma globally_4: "ts,v \<Turnstile> (\<^bold>G  \<phi>) \<Longrightarrow> ts,v \<Turnstile> \<^bold>G \<^bold>G \<phi>"
+  using globallyE globallyI traffic.abs_trans traffic.move_trans by presburger
 (*proof -
   {
   fix ts v ts' ts'' 
@@ -567,166 +665,189 @@ lemma globally_4: "\<Turnstile> (\<^bold>G  \<phi>) \<^bold>\<rightarrow> \<^bol
 qed
 *)
 
-lemma spatial_weaken: "\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle>)" 
-unfolding valid_def satisfies_def
-  using horizontal_chop_empty_left horizontal_chop_empty_right vertical_chop_empty_down
-    vertical_chop_empty_up   hchop_def vchop_def
-  by fastforce
+lemma spatial_weaken: "ts,v \<Turnstile> \<phi> \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<rangle>" 
+  using somewhere_leq by auto
 
-lemma spatial_weaken2:"\<Turnstile> (\<phi> \<^bold>\<rightarrow> \<psi>) \<^bold>\<rightarrow> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<psi>\<^bold>\<rangle>)"
-unfolding valid_def satisfies_def
-  using spatial_weaken horizontal_chop_empty_left horizontal_chop_empty_right 
-    vertical_chop_empty_down vertical_chop_empty_up unfolding valid_def satisfies_def
-  by blast 
+lemma spatial_weaken2:"ts,v \<Turnstile> (\<phi> \<^bold>\<rightarrow> \<psi>) \<Longrightarrow> ts,v \<Turnstile> (\<phi> \<^bold>\<rightarrow> \<^bold>\<langle>\<psi>\<^bold>\<rangle>)"
+  by (meson mimpE mimpI spatial_weaken)
 
-lemma somewhere_distr: "\<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle>" 
-unfolding valid_def hchop_def vchop_def satisfies_def by blast
+lemma somewhere_distr: "(ts,v \<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<or>\<psi>\<^bold>\<rangle>) = (ts,v \<Turnstile> \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle>\<psi>\<^bold>\<rangle> )" 
+  using mor_def satisfies_def somewhere_leq by auto
 
-lemma somewhere_and:"\<Turnstile> \<^bold>\<langle>\<phi> \<^bold>\<and> \<psi>\<^bold>\<rangle> \<^bold>\<rightarrow>  \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<and> \<^bold>\<langle>\<psi>\<^bold>\<rangle>"
-unfolding valid_def  hchop_def vchop_def satisfies_def by blast
+lemma somewhere_and:"ts,v \<Turnstile> \<^bold>\<langle>\<phi> \<^bold>\<and> \<psi>\<^bold>\<rangle> \<Longrightarrow> ts,v \<Turnstile>  \<^bold>\<langle>\<phi>\<^bold>\<rangle> \<^bold>\<and> \<^bold>\<langle>\<psi>\<^bold>\<rangle>"
+  using somewhere_leq by auto
 
-lemma somewhere_and_or_distr :"\<Turnstile>(\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle> \<^bold>\<leftrightarrow> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>)" 
-unfolding valid_def  hchop_def vchop_def satisfies_def by blast
-
-lemma width_add1:"\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y) \<^bold>\<rightarrow> \<^bold>\<omega> = x+y)"
-unfolding valid_def hchop_def vchop_def satisfies_def using vertical_chop_add1  by fastforce
-
-lemma width_add2:"\<Turnstile>((\<^bold>\<omega> = x+y) \<^bold>\<rightarrow>  (\<^bold>\<omega> = x) \<^bold>\<smile> \<^bold>\<omega> = y)"
-unfolding valid_def  satisfies_def  vchop_def using vertical_chop_add2  by fastforce
-
-lemma width_hchop_stable: "\<Turnstile>((\<^bold>\<omega> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<omega> = x) \<^bold>\<frown> (\<^bold>\<omega>=x)))"
-unfolding valid_def  hchop_def satisfies_def  using  horizontal_chop1 
-  by (metis view.horizontal_chop_width_stable)
-
-lemma length_geq_zero:"\<Turnstile> (\<^bold>\<l> \<ge> 0)"
-unfolding valid_def satisfies_def   by (metis order.not_eq_order_implies_strict real_int.length_ge_zero)
-
-lemma length_split: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
-unfolding valid_def hchop_def satisfies_def   using horizontal_chop_non_empty  by fastforce
-
-lemma length_meld: "\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0) \<^bold>\<rightarrow> (\<^bold>\<l> > 0))"
-unfolding valid_def  hchop_def satisfies_def  using view.hchop_def real_int.chop_add_length_ge_0 
-  by (metis (no_types, lifting))
-
-lemma length_dense:"\<Turnstile>((\<^bold>\<l> > 0) \<^bold>\<leftrightarrow> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))"
-unfolding valid_def satisfies_def   using length_meld length_split unfolding valid_def satisfies_def  by blast
-
-lemma length_add1:"\<Turnstile>((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>= y)) \<^bold>\<rightarrow> (\<^bold>\<l>= x+y)"
-unfolding valid_def satisfies_def  hchop_def using view.hchop_def real_int.rchop_def real_int.length_def   by fastforce
-
-lemma length_add2:"\<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<^bold>\<rightarrow> ( (\<^bold>\<l>=x+y) \<^bold>\<rightarrow> ((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)))"
-unfolding valid_def hchop_def satisfies_def  using horizontal_chop_split_add  by fastforce
-
-lemma length_add:"\<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<^bold>\<rightarrow> ( (\<^bold>\<l>=x+y) \<^bold>\<leftrightarrow> ((\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)))"
-unfolding valid_def satisfies_def   using length_add1 length_add2 unfolding valid_def satisfies_def  by blast
-
-lemma length_vchop_stable:"\<Turnstile>(\<^bold>\<l> = x) \<^bold>\<leftrightarrow> ((\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x))"
-unfolding valid_def satisfies_def   vchop_def using view.vchop_def vertical_chop1  by fastforce
-
-lemma res_ge_zero:"\<Turnstile>(re(c) \<^bold>\<rightarrow> \<^bold>\<l>>0)"
-unfolding valid_def satisfies_def re_def  by blast
-
-lemma clm_ge_zero:"\<Turnstile>(cl(c) \<^bold>\<rightarrow> \<^bold>\<l>>0)"
-unfolding valid_def satisfies_def cl_def  by blast
-
-lemma free_ge_zero:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<l>>0"
-unfolding valid_def satisfies_def  by blast
-
-lemma width_res:"\<Turnstile>(re(c) \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-unfolding valid_def satisfies_def re_def  by auto
-
-lemma width_clm:"\<Turnstile>(cl(c) \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-unfolding valid_def satisfies_def  cl_def by simp
-
-lemma width_free:"\<Turnstile>(free \<^bold>\<rightarrow> \<^bold>\<omega> = 1)"
-unfolding valid_def satisfies_def  by simp
-
-lemma width_somewhere_res:"\<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<rightarrow> (\<^bold>\<omega> \<ge> 1)"
-proof -
-  {
-    fix ts v
-  assume "ts,v \<Turnstile>  \<^bold>\<langle>re(c)\<^bold>\<rangle>"
-  then have "ts,v \<Turnstile> (\<^bold>\<omega> \<ge> 1)" unfolding vchop_def hchop_def
-    using view.hchop_def  view.vertical_chop_width_mon 
-    unfolding satisfies_def re_def by fastforce  
-}
-  from this show ?thesis   unfolding valid_def 
-    by (simp add: satisfies_def)
-qed    
-
-lemma clm_disj_res:"\<Turnstile> \<^bold>\<not> \<^bold>\<langle> cl(c) \<^bold>\<and> re(c) \<^bold>\<rangle>" 
-proof -
-  {
-  fix ts v
-  assume "ts,v \<Turnstile>\<^bold>\<langle>cl(c) \<^bold>\<and> re(c)\<^bold>\<rangle>"
-  then obtain v' where "v' \<le> v \<and> (ts,v' \<Turnstile> cl(c) \<^bold>\<and> re(c))" unfolding satisfies_def hchop_def vchop_def
-    by (meson view.somewhere_leq)
-  then have False unfolding satisfies_def re_def cl_def using disjoint  
-    by (metis card_non_empty_geq_one inf.idem restriction.restriction_clm_leq_one
-        restriction.restriction_clm_res_disjoint)
-}
-  from this show ?thesis   unfolding valid_def satisfies_def  
-    using satisfies_def by blast
+lemma somewhere_and_or_distr :"(ts,v \<Turnstile>\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle>) = (ts,v \<Turnstile> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>)" 
+proof
+  assume "ts,v \<Turnstile>\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle>"
+  then obtain v' where "v' \<le> v" and "ts,v' \<Turnstile> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>)" 
+    using somewhere_leq by blast
+  then have "ts,v' \<Turnstile> (\<chi> \<^bold>\<and>  \<phi>) \<^bold>\<or> (\<chi> \<^bold>\<and> \<psi>)" by auto
+  then have "ts,v \<Turnstile> \<^bold>\<langle> (\<chi> \<^bold>\<and>  \<phi>) \<^bold>\<or> (\<chi> \<^bold>\<and> \<psi>) \<^bold>\<rangle>" 
+    using \<open>v' \<le> v\<close> somewhere_leq by blast
+  then show "ts,v \<Turnstile> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>" using somewhere_distr by blast
+next
+  assume "ts,v \<Turnstile> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>" 
+  then show "ts,v \<Turnstile>\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle>" 
+    by (metis (full_types) mconjI mconjunct1 mconjunct2 mdisjE mdisjI1 mdisjI2 somewhere_leq)
 qed
 
-lemma width_ge:"\<Turnstile> (\<^bold>\<omega>> 0) \<^bold>\<rightarrow> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>> 0))"
-unfolding valid_def satisfies_def   using  vertical_chop_add1  add_gr_0 zero_less_one  
-  using hmlsl.vchop_def hmlsl_axioms by auto
+lemma width_add1:"ts,v \<Turnstile>(\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y) \<Longrightarrow> (ts,v \<Turnstile> \<^bold>\<omega> = x+y)"  
+  using satisfies_def vertical_chop_add1 width_eq_def by force
 
-lemma two_res_width: "\<Turnstile>((re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<omega> = 2)"
-unfolding valid_def vchop_def satisfies_def re_def
-  using view.vertical_chop_add1 by auto
+lemma width_add2:"ts,v \<Turnstile>(\<^bold>\<omega> = x+y) \<Longrightarrow> ts,v \<Turnstile>  (\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y)"
+  using satisfies_def  width_eq_def vchop_def view.vertical_chop_add2 by auto
 
+lemma width_hchop_stable: "(ts,v \<Turnstile>(\<^bold>\<omega> = x)) = (ts,v \<Turnstile> (\<^bold>\<omega> = x) \<^bold>\<frown> (\<^bold>\<omega>=x))"
+  by (metis (mono_tags, hide_lams) hchopI hmlsl.hchopE hmlsl_axioms horizontal_chop_empty_right horizontal_chop_lanes_stable satisfies_def width_eq_def)
 
-lemma res_at_most_two:"\<Turnstile>\<^bold>\<not> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
+lemma length_geq_zero:"ts,v \<Turnstile> (\<^bold>\<l> \<ge> 0)" 
 proof -
-  {
-  fix ts v 
+  have "\<parallel>ext v\<parallel> \<ge> 0" 
+    by (simp add: length_ge_zero)
+  then show "ts,v \<Turnstile> (\<^bold>\<l> \<ge> 0)" 
+    using hmlsl.length_eq_def hmlsl_axioms length_ge_def length_geq_def mor_def satisfies_def by auto
+qed
+
+lemma length_split: "ts,v \<Turnstile>(\<^bold>\<l> > 0) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0)" 
+  by (metis  hchopI length_ge_def satisfies_def view.horizontal_chop_non_empty)
+
+lemma length_meld: "ts,v \<Turnstile>(\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<l> > 0)"
+proof -
+  assume "ts,v \<Turnstile>(\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0)" 
+  then obtain u and w where "v=u\<parallel>w" and "\<parallel>ext u\<parallel> > 0" and "\<parallel>ext w \<parallel> > 0" 
+    using length_ge_def satisfies_def by force
+  then have "\<parallel>ext v\<parallel> > 0" 
+    using chop_add_length_ge_0 view.hchop_def by blast
+  then show "ts,v \<Turnstile> (\<^bold>\<l> > 0)" 
+    using length_ge_def satisfies_def by auto
+qed
+
+lemma length_dense:"(ts,v \<Turnstile>(\<^bold>\<l> > 0)) = (ts,v \<Turnstile> (\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0))" 
+  by (meson length_meld length_split)
+
+lemma length_add1:"ts,v \<Turnstile>(\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>= y) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>= x+y" 
+  using length_def length_eq_def rchop_def satisfies_def view.hchop_def by force
+
+lemma length_add2:"ts,v \<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0)  \<Longrightarrow> ts,v \<Turnstile>  (\<^bold>\<l>=x+y) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)" 
+proof -
+  assume 1:"ts,v \<Turnstile>  (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0)" and 2:" ts,v \<Turnstile>  (\<^bold>\<l>=x+y)" 
+  from 1 have "x \<ge> 0 \<and> y \<ge> 0" 
+    by (meson mconjunct1 mconjunct2 mgeq_def satisfies_def)
+  then obtain u and w where " v=u\<parallel>w" and "ts,u \<Turnstile>  (\<^bold>\<l>=x)" and " ts,w \<Turnstile>  (\<^bold>\<l>=y)"
+    using 2 horizontal_chop_split_add 
+    by (metis length_eq_def  satisfies_def )
+  then show "ts,v \<Turnstile> (\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)" 
+    by blast
+qed
+
+lemma length_add:"ts,v \<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<Longrightarrow>  (ts,v \<Turnstile>\<^bold>\<l>=x+y) = (ts,v \<Turnstile> (\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y))"
+   using length_add1 length_add2 by meson
+
+lemma length_vchop_stable:"(ts,v \<Turnstile> \<^bold>\<l> = x) =  (ts,v \<Turnstile>(\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x))" 
+proof
+  assume a:"ts,v \<Turnstile> \<^bold>\<l> = x"
+  then have 1:"\<parallel>ext v\<parallel> = x" 
+    by (simp add: length_eq_def satisfies_def) 
+   obtain u and w where "v=u--w" and "\<parallel>ext u \<parallel> = x " and "\<parallel>ext w\<parallel> = x" 
+     by (metis "1" a v_chop_weaken1 vchopE view.vertical_chop_length_stable)
+  then show "ts,v \<Turnstile>(\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x)" 
+    using length_eq_def satisfies_def vchopI by auto
+next
+  assume "ts,v \<Turnstile>(\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x)" 
+  then show "ts,v \<Turnstile>(\<^bold>\<l> = x)" 
+    using length_eq_def satisfies_def view.vchop_def by force
+qed
+
+lemma res_ge_zero:"ts,v \<Turnstile>re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>>0" 
+  by (simp add: length_ge_def re_def satisfies_def) 
+
+lemma clm_ge_zero:"ts,v \<Turnstile>cl(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>>0"
+  by (simp add: length_ge_def cl_def satisfies_def) 
+
+lemma free_ge_zero:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>>0"
+  by (simp add: length_ge_def satisfies_def)
+
+lemma width_res:"ts,v \<Turnstile>re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 1"
+  by (simp add: re_def satisfies_def width_eq_def)
+
+lemma width_clm:"ts,v \<Turnstile>cl(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 1"
+  by (simp add: cl_def satisfies_def width_eq_def)
+
+lemma width_free:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 1"
+  by (simp add: satisfies_def width_eq_def)
+
+lemma width_somewhere_res:"ts,v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> \<ge> 1" 
+  using leq_lan re_def satisfies_def width_geq_def by fastforce
+
+lemma clm_disj_res:"ts,v \<Turnstile> \<^bold>\<not> \<^bold>\<langle> cl(c) \<^bold>\<and> re(c) \<^bold>\<rangle>" 
+proof 
+  assume "ts,v \<Turnstile>\<^bold>\<langle>cl(c) \<^bold>\<and> re(c)\<^bold>\<rangle>"
+  then obtain v' where "v' \<le> v \<and> (ts,v' \<Turnstile> cl(c) \<^bold>\<and> re(c))" by blast
+  then have "ts,v' \<Turnstile> \<^bold>\<bottom>"  using disjoint  
+    by (metis card_non_empty_geq_one hmlsl.cl_def hmlsl.re_def hmlsl_axioms inf.idem mand_def order_refl restriction_clm_res_disjoint satisfies_def)
+  then show "ts,v \<Turnstile> \<^bold>\<bottom>" 
+    by auto
+qed
+
+lemma width_ge:"ts,v \<Turnstile> (\<^bold>\<omega>> 0) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<exists> x. (\<^bold>\<omega> = x) \<^bold>\<and> (x \<^bold>> 0))"
+proof -
+  assume a: "ts,v \<Turnstile> (\<^bold>\<omega>> 0)" 
+  obtain x where x:"ts,v \<Turnstile> \<^bold>\<omega> = x" 
+    by (simp add: satisfies_def width_eq_def)
+  then have "x > 0" using a 
+    using satisfies_def vchop_def vertical_chop_add1 width_eq_def width_ge_def by auto
+  then have "ts,v \<Turnstile>  (\<^bold>\<omega> = x ) \<^bold>\<and> x \<^bold>> 0" 
+    by (metis hmlsl.mge_def hmlsl_axioms mconjI satisfies_def x)
+  then show ?thesis 
+    by blast
+qed
+
+lemma two_res_width: "ts,v \<Turnstile>re(c) \<^bold>\<smile> re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 2"
+  using hmlsl.re_def hmlsl_axioms satisfies_def vertical_chop_add1 width_eq_def by force
+
+
+lemma res_at_most_two:"ts,v \<Turnstile>\<^bold>\<not> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )" 
+proof 
   assume "ts, v \<Turnstile> (re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c) )"
   then obtain v' and v1 and v2 and v3  
     where "v = v1--v'" and "v'=v2--v3" 
     and "ts,v1 \<Turnstile>re(c)" and "ts,v2 \<Turnstile>re(c)" and "ts,v3 \<Turnstile>re(c)" 
     unfolding satisfies_def  using vchop_def by auto
-  then have False 
+  then show "ts,v \<Turnstile> \<^bold>\<bottom>"  
   proof -
     have "|restrict v' (res ts) c| < |restrict v (res ts) c|"
       using \<open>ts,v1 \<Turnstile>re(c)\<close> \<open>v=v1--v'\<close> restriction.restriction_add_res unfolding satisfies_def re_def by auto
     then show ?thesis unfolding satisfies_def vchop_def using  \<open>ts,v2 \<Turnstile> re(c)\<close> \<open>ts,v3 \<Turnstile>re(c)\<close> \<open>v'=v2--v3\<close> not_less 
           one_add_one restriction_add_res restriction_res_leq_two unfolding satisfies_def re_def by metis
   qed
-}
-  from this show ?thesis unfolding valid_def satisfies_def by blast
 qed
 
-lemma res_at_most_two2:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c)\<^bold>\<rangle>"
-unfolding valid_def  satisfies_def  vchop_def hchop_def using res_at_most_two unfolding valid_def vchop_def satisfies_def  by blast
+lemma res_at_most_two2:"ts,v \<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<smile>  re(c)  \<^bold>\<smile>  re(c)\<^bold>\<rangle>" 
+  using res_at_most_two  mnotE by blast
 
-lemma res_at_most_somewhere:"\<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> " 
-proof -
-  {
-  fix ts v
+lemma res_at_most_somewhere:"ts,v \<Turnstile>\<^bold>\<not> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> " 
+proof 
   assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>re(c)\<^bold>\<rangle> )"
   obtain vu and v1 and vm and vd 
     where chops:"(v=vu--v1) \<and> (v1 = vm--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>re(c)\<^bold>\<rangle>) 
                  \<and> (ts,vm \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> ) \<and>( ts,vd \<Turnstile> \<^bold>\<langle> re(c)\<^bold>\<rangle>)"
     unfolding satisfies_def vchop_def hchop_def using assm unfolding hchop_def vchop_def satisfies_def by blast
-  from chops have res_vu:"|restrict vu (res ts) c| \<ge> 1" unfolding satisfies_def vchop_def hchop_def re_def
-    by (metis restriction_card_somewhere_mon)
-  from chops have res_vm:"|restrict vm (res ts) c| \<ge> 1" unfolding satisfies_def vchop_def hchop_def re_def
-    by (metis restriction_card_somewhere_mon)
-  from chops have res_vd:"|restrict vd (res ts) c| \<ge> 1" unfolding satisfies_def vchop_def hchop_def re_def
-    by (metis restriction_card_somewhere_mon)
+  then obtain vu' and vm' and vd' where "vu' \<le> vu \<and> (ts,vu' \<Turnstile>re(c))" and "vm' \<le> vm \<and> (ts,vm' \<Turnstile>re(c)) " and "vd' \<le> vd \<and> (ts, vd' \<Turnstile> re(c))" 
+    by blast
+  then have 
+    res_vu:"|restrict vu (res ts) c| \<ge> 1" 
+    and  res_vm:"|restrict vm (res ts) c| \<ge> 1"
+    and res_vd:"|restrict vd (res ts) c| \<ge> 1" using re_def somewhere_leq satisfies_def somewhere_def 
+    by (metis restriction_card_leq_mon)+
   from chops have 
     "|restrict v (res ts) c | = 
      |restrict vu (res ts) c|+ |restrict vm (res ts) c| + |restrict vd (res ts) c| "
     using restriction_add_res by force
   with res_vu and res_vd res_vm have "|restrict v (res ts) c | \<ge> 3" 
     by linarith
-  with restriction_res_leq_two have False  
+  with restriction_res_leq_two show "ts,v \<Turnstile> \<^bold>\<bottom>"   
     by (metis not_less_eq_eq numeral_2_eq_2 numeral_3_eq_3)
-}
-  from this show ?thesis 
-    using hmlsl.valid_def hmlsl_axioms satisfies_def by auto
 qed
 
 (*

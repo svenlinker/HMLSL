@@ -368,6 +368,11 @@ proof
   then show "|restrict v f c| \<ge> 1" using restriction_stable1 restriction_stable2 assm
     by metis
 qed
+
+lemma restriction_card_leq_mon:
+  "v' \<le> v \<and> |restrict v' f c| = x \<longrightarrow> |restrict v f c| \<ge> x" 
+  by (metis card_subset_le inf_mono less_eq_view_def order_refl restriction.restrict_def')
+
   
 lemma restrict_eq_lan_subs:
   "|restrict v f c| = |lan v| \<and> (restrict v f c \<sqsubseteq> lan v) \<longrightarrow> restrict v f c = lan v" 

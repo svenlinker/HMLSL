@@ -161,8 +161,8 @@ text\<open>We can also switch the perspective of a view to the car \(c\). That i
 we substitute \(c\) for the original owner of the view.\<close>
 
 definition switch :: "view \<Rightarrow> cars \<Rightarrow> view \<Rightarrow> bool" ("_ = _ > _")
-  where   "  (v=c>w) == ext v = ext w \<and> 
-                        lan v = lan w \<and>  
+  where   "  (v=c>w) == ext w = ext v \<and> 
+                        lan w = lan v \<and>  
                         own w = c "
 
 text\<open>Most of the lemmas in this theory are direct transfers of the corresponding
@@ -745,14 +745,31 @@ there also exist two subviews \(u^\prime\), \(w^\prime\) of \(v^\prime\),
 such that \(u^\prime\) is reachable from \(u\) (and respectively for \(w^\prime\), \(w\)).
 \<close>
   (* switch lemmas *)
+ 
+
 lemma switch_unique:"(v =c> u) \<and> (v =c> w) \<longrightarrow>u = w"
   using switch_def 
   using Rep_view_inject ext.rep_eq lan.rep_eq own.rep_eq by fastforce
-    
-lemma switch_exists:"\<exists>c u.( v=c>u)"
-  using switch_def by auto
-    
-lemma switch_always_exists:" \<exists>u. (v=c>u)"  
+
+
+
+lemma switch_exists:"(\<exists>! u.( v=c>u))"
+proof - 
+  obtain u where "u =   Abs_view \<lparr> basic_view.ext = ext v, lan = lan v, own = c\<rparr>"  by simp
+  then have "continuous (lan u) " 
+    using Rep_view lan.rep_eq by simp  
+  then have "lan v = lan u" using Rep_view lan.rep_eq Abs_view_inverse 
+    by (simp add: \<open>u = Abs_view \<lparr>basic_view.ext = Views.ext v, lan = Views.lan v, own = c\<rparr>\<close>)
+  then have 1:"v=c>u" 
+    using Abs_view_inverse Rep_view ext.rep_eq lan.rep_eq own.rep_eq view.switch_def 
+    by (simp add: \<open>u = Abs_view \<lparr>basic_view.ext = Views.ext v, lan = Views.lan v, own = c\<rparr>\<close>) 
+  have 2:"\<And>w. v = c > w \<Longrightarrow> w = u" 
+    using \<open>v = c > u\<close> view.switch_unique by auto  
+  show ?thesis using 1 2  
+    by blast
+qed
+
+(*lemma switch_always_exists:" \<exists>u. (v=c>u)"  using switch_exists 
 proof - 
   obtain u where "u =   Abs_view \<lparr> basic_view.ext = ext v, lan = lan v, own = c\<rparr>"  by simp
   then have "continuous (lan u) " 
@@ -764,6 +781,7 @@ proof -
     by (simp add: \<open>u = Abs_view \<lparr>basic_view.ext = Views.ext v, lan = Views.lan v, own = c\<rparr>\<close>) 
   then show ?thesis by blast
 qed
+*)
 
 lemma switch_origin:" \<exists>u. (u=(own v)>v)" 
   using switch_def  by auto
@@ -786,7 +804,7 @@ lemma switch_hchop1:
 proof 
   assume assm:"(v=v1\<parallel>v2) \<and> (v=c>v')"
   obtain v1' and v2' where 1:"v1=c>v1'" and 2:"v2=c>v2'" 
-    by (meson view.switch_always_exists)
+    by (meson view.switch_exists)
   from 1 and 2 and assm have "(v'=v1'\<parallel>v2')"  
     using view.hchop_def view.switch_def by auto
   then show "\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'\<parallel>v2')" using 1 2 by blast
@@ -799,7 +817,7 @@ proof
   assume assm:"(v'=v1'\<parallel>v2') \<and> (v=c>v')"
   obtain v1 and v2 where 1:"v1=c>v1'" and 2:"v2=c>v2'" and 3:"own v1 = own v" and 4:"own v2 = own v"  using switch_origin 
     using assm view.hchop_def view.switch_def 
-    by (metis  view.switch_always_exists view.switch_symm)
+    by (metis  view.switch_exists view.switch_symm)
   from 1 and 2 and 3 and 4 assm have "(v=v1\<parallel>v2)"  
     using view.hchop_def view.switch_def by auto
   then show "\<exists> v1 v2. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v=v1\<parallel>v2)" using 1 2 by blast
@@ -812,7 +830,7 @@ lemma switch_vchop1:
 proof 
   assume assm:"(v=v1--v2) \<and> (v=c>v')"
   obtain v1' and v2' where 1:"v1=c>v1'" and 2:"v2=c>v2'" 
-    by (meson view.switch_always_exists)
+    by (meson view.switch_exists)
   from 1 and 2 and assm have "(v'=v1'--v2')"  
     using view.vchop_def view.switch_def by auto
   then show "\<exists> v1' v2'. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v'=v1'--v2')" using 1 2 by blast
@@ -826,7 +844,7 @@ proof
   assume assm:"(v'=v1'--v2') \<and> (v=c>v')"
   obtain v1 and v2 where 1:"v1=c>v1'" and 2:"v2=c>v2'" and 3:"own v1 = own v" and 4:"own v2 = own v"  using switch_origin 
     using assm view.vchop_def view.switch_def 
-    by (metis  view.switch_always_exists view.switch_symm)
+    by (metis  view.switch_exists view.switch_symm)
   from 1 and 2 and 3 and 4 assm have "(v=v1--v2)"  
     using view.vchop_def view.switch_def by auto
   then show "\<exists> v1 v2. (v1 =c> v1') \<and> (v2 =c> v2') \<and> (v=v1--v2)" using 1 2 by blast
@@ -871,6 +889,13 @@ lemma vshift_zero: "vshift v 0 = v" using vshift_lan_stab vshift_own_stab vshift
 
 lemma vshift_additivity: "vshift (vshift v x) y = vshift v (x+y)" 
   by (metis real_int_class.shift_def semiring_normalization_rules(25) view.vshift_lan_stab view.vshift_left view.vshift_own_stab view.vshift_right vshift_def)
+
+lemma leq_ext: "u\<le>v  \<longrightarrow> \<parallel>ext u\<parallel> \<le> \<parallel>ext v\<parallel>" 
+  by (simp add: length_leq less_eq_view_def)
+
+lemma leq_lan: "u\<le>v  \<longrightarrow> |lan u| \<le> |lan v|" 
+  using card_subset_le less_eq_view_def by auto
+
 
 end
 end
