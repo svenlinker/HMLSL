@@ -73,6 +73,8 @@ definition mexists   :: "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" ("\<^bo
   where "\<^bold>\<exists>\<Phi> \<equiv> \<lambda> ts w.\<exists>x. \<Phi>(x)(ts)(w)"
 definition mexistsB  :: "(('a)\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" (binder"\<^bold>\<exists>"[8]9)
   where "\<^bold>\<exists>x. \<phi>(x) \<equiv> \<^bold>\<exists>\<phi>"   
+definition mexists1 ::  "('a\<Rightarrow>\<sigma>)\<Rightarrow>\<sigma>" (binder "\<^bold>\<exists>!"[8]9) 
+  where "\<^bold>\<exists>! x. \<phi>(x) \<equiv> \<lambda>ts w. \<exists>!x. \<phi>(x)(ts)(w)"
 definition meq    :: "'a\<Rightarrow>'a\<Rightarrow>\<sigma>" (infixr"\<^bold>="60) \<comment> \<open>Equality\<close>  
   where "x\<^bold>=y \<equiv> \<lambda> ts w. x = y"
 definition mgeq :: "('a::ord) \<Rightarrow> 'a \<Rightarrow> \<sigma>" (infix "\<^bold>\<ge>" 60)
@@ -213,6 +215,8 @@ lemma mdisjI1: "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>P \<^bold
 lemma mdisjI2: "ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<or> Q"
   using mor_def satisfies_def by auto
 
+
+
 text\<open>Conjunction\<close>
 lemma mconjI: "\<lbrakk>ts,v \<Turnstile>P; ts,v \<Turnstile> Q\<rbrakk> \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<and> Q"
   using mand_def satisfies_def by auto
@@ -257,6 +261,9 @@ proof -
   from 2 and 1 have "ts,v \<Turnstile>P"  .
   with 1 show R by (rule mnotE)
 qed
+
+lemma mnot_mnotE: "(ts,v \<Turnstile>\<^bold>\<not>\<^bold>\<not>P) = (ts,v \<Turnstile>P)" 
+  using mnotE mnotI2 by blast
 
 lemma mclassical:
   assumes prem: "ts,v \<Turnstile> \<^bold>\<not> P \<Longrightarrow> ts,v \<Turnstile> P"
@@ -322,20 +329,7 @@ lemma miffE:
   shows R
   using major mequ_def mimp_def minor satisfies_def by auto
 
-subsubsection \<open>Existential quantifier\<close>
-
-lemma mexI: "ts,v \<Turnstile> P x \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<exists>x::'a. P x"
-  by (metis mexistsB_def mexists_def satisfies_def)
-
-lemma mexE:
-  assumes major: "ts,v \<Turnstile>\<^bold>\<exists>x::'a. P x"
-    and minor: "\<And>x. ts,v \<Turnstile> P x \<Longrightarrow> Q"
-  shows "Q"
-  by (metis major mexistsB_def mexists_def minor satisfies_def)
-
-
-subsubsection \<open>Universal quantifier\<close>
-
+subsubsection \<open>Quantifiers\<close>
 lemma mallI:
   assumes "\<And>x::'a. ts,v \<Turnstile>P x"
   shows "ts,v \<Turnstile> \<^bold>\<forall>x. P x"
@@ -356,10 +350,57 @@ lemma mall_dupE:
   shows R
   by (simp add: major minor mspec)
 
+
+lemma mexI: "ts,v \<Turnstile> P x \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<exists>x::'a. P x"
+  by (metis mexistsB_def mexists_def satisfies_def)
+
+lemma mexE:
+  assumes major: "ts,v \<Turnstile>\<^bold>\<exists>x::'a. P x"
+    and minor: "\<And>x. ts,v \<Turnstile> P x \<Longrightarrow> Q"
+  shows "Q"
+  by (metis major mexistsB_def mexists_def minor satisfies_def)
+
+lemma mex1I:
+  assumes "ts,v \<Turnstile>P a" "\<And>x. ts,v \<Turnstile> P x \<Longrightarrow> ts,v \<Turnstile>x \<^bold>= a"
+  shows "ts,v \<Turnstile> \<^bold>\<exists>! x. P x"
+  by (metis assms(1) assms(2) meq_def mexists1_def satisfies_def)
+
+
+lemma mex_ex1I:
+  assumes ex_prem: "ts,v \<Turnstile> \<^bold>\<exists> x. P x"
+    and eq: "\<And>x y. \<lbrakk>ts,v \<Turnstile>P x; ts,v \<Turnstile>P y\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>x \<^bold>=  y"
+  shows "ts,v \<Turnstile>\<^bold>\<exists>!x. P x"
+  by (metis eq ex_prem mex1I mexE)
+
+lemma mex1E:
+  assumes major: "ts,v \<Turnstile>\<^bold>\<exists>!x. P x"
+    and minor: "\<And>x. \<lbrakk>ts,v \<Turnstile>P x; ts,v \<Turnstile>\<^bold>\<forall>y. P y \<^bold>\<rightarrow> y \<^bold>= x\<rbrakk> \<Longrightarrow> R"
+  shows R
+proof -
+  from major have "\<And>x y. \<lbrakk>ts,v \<Turnstile>P x; ts,v \<Turnstile>P y\<rbrakk> \<Longrightarrow> ts,v \<Turnstile>x \<^bold>=  y"
+    by (metis meq_def mexists1_def satisfies_def)
+  then have "\<And>x. ts,v \<Turnstile>P x \<Longrightarrow> ts,v \<Turnstile>\<^bold>\<forall>y. P y \<^bold>\<rightarrow> y \<^bold>= x" 
+    by (simp add: mallI mimpI) 
+  then show "R" using minor 
+    by (metis (no_types, lifting) hmlsl.mexists1_def hmlsl_axioms major satisfies_def)
+qed
+
+lemma mex1_implies_mex: "ts,v \<Turnstile>\<^bold>\<exists>!x. P x \<Longrightarrow> ts,v \<Turnstile>\<^bold>\<exists>x. P x"
+  apply (erule mex1E)
+  apply (rule mexI)
+  apply assumption
+  done
+
+
+
+
 subsubsection\<open>True (2)\<close>
 
 lemma mTrueE: "ts,v \<Turnstile> \<^bold>\<top> \<Longrightarrow> ts',v' \<Turnstile> P \<Longrightarrow> ts',v' \<Turnstile> P" .
 lemma mnotFalseE: "ts,v \<Turnstile> \<^bold>\<not> \<^bold>\<bottom> \<Longrightarrow> ts',v' \<Turnstile>P \<Longrightarrow> ts',v' \<Turnstile> P" .
+
+
+
 
 subsubsection\<open>Equational\<close>
 
@@ -424,10 +465,120 @@ lemma globallyI:
   shows "ts,v \<Turnstile> \<^bold>G P" 
   using assms globally_def satisfies_def by auto
 
-lemmas [elim!] = mdisjE miffE mFalseE mconjE mexE mTrueE mnotFalseE globallyE hchopE vchopE someE atE 
-  and [intro!] = miffI mconjI mimpI mTrueI mnotI mallI mrefl globallyI hchopI vchopI someI atI
+subsubsection\<open>Classical Reasoning\<close>
+lemma mdisjCI:
+  assumes "ts,v \<Turnstile>\<^bold>\<not> Q \<Longrightarrow> ts,v \<Turnstile>P"
+  shows "ts,v \<Turnstile> P \<^bold>\<or> Q"
+  by (rule mclassical) (iprover intro: assms mdisjI1 mdisjI2 mnotI elim: mnotE)
+
+lemma mexcluded_middle: "ts,v \<Turnstile> \<^bold>\<not> P \<^bold>\<or> P"
+  by (iprover intro: mdisjCI)
+
+text \<open>Classical implies elimination.\<close>
+lemma mimpCE:
+  assumes major: "ts,v \<Turnstile>P \<^bold>\<rightarrow>  Q"
+    and minor: "ts,v \<Turnstile> \<^bold>\<not> P \<Longrightarrow> R" "ts,v \<Turnstile>Q \<Longrightarrow> R"
+  shows R  
+  using major mclassical minor(1) minor(2) mrev_mp by blast
+
+lemma miffCE:
+  assumes major: "ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q"
+    and minor: "\<lbrakk>ts,v \<Turnstile>P; ts,v \<Turnstile> Q\<rbrakk> \<Longrightarrow> R" "\<lbrakk>ts,v \<Turnstile>\<^bold>\<not> P; ts,v \<Turnstile>\<^bold>\<not> Q\<rbrakk> \<Longrightarrow> R"
+  shows R
+  by (rule major [THEN miffE]) (iprover intro: minor elim: mimpCE mnotE)
+
+lemma mexCI:
+  assumes "ts,v \<Turnstile> \<^bold>\<forall>x. \<^bold>\<not> P x \<Longrightarrow> ts,v \<Turnstile>P a"
+  shows "ts,v \<Turnstile>\<^bold>\<exists> x. P x"  
+  by (metis assms mallI mclassical mexI)
+
+(*lemmas [elim!] = mimpCE mdisjE miffCE  mFalseE mconjE mexE mTrueE mnotFalseE globallyE hchopE vchopE someE atE 
+  and [intro!] = mdisjCI mexCI miffI mconjI mimpI mTrueI mnotI mallI mrefl globallyI hchopI vchopI someI atI
   and [elim 2] = mallE 
   and [intro] = mexI mdisjI2 mdisjI1
+*)
+declare miffI [intro!]
+  and mnotI [intro!]
+  and mimpI [intro!]
+  and mdisjCI [intro!]
+  and mconjI [intro!]
+  and mTrueI [intro!]
+  and mrefl [intro!]
+  and globallyI [intro!]
+  and hchopI [intro!]
+  and vchopI [intro!]
+  and someI [intro!]
+  and atI [intro!]
+
+declare miffCE [elim!]
+  and mFalseE [elim!]
+  and mimpCE [elim!]
+  and mdisjE [elim!]
+  and mconjE [elim!]
+  and globallyE [elim!]
+  and hchopE [elim!]
+  and vchopE [elim!]
+  and someE [elim!]
+  and atE [elim!]
+declare mex_ex1I [intro!]
+  and mallI [intro!]
+  and mexI [intro]
+
+declare mexE [elim!]
+  mallE [elim]
+
+
+
+
+
+subsubsection\<open>HMLSL Simplifier Rules\<close>
+
+lemma de_Morgan_mdisj: "(ts,v \<Turnstile> \<^bold>\<not> (P \<^bold>\<or> Q)) \<longleftrightarrow> (ts,v \<Turnstile>\<^bold>\<not> P \<^bold>\<and> \<^bold>\<not> Q)" 
+  using hmlsl.mor_def hmlsl_axioms mand_def mnot_def by auto
+lemma de_Morgan_mconj: "(ts,v \<Turnstile> \<^bold>\<not> (P \<^bold>\<and> Q)) \<longleftrightarrow> (ts,v \<Turnstile> \<^bold>\<not> P \<^bold>\<or> \<^bold>\<not> Q)" 
+  using hmlsl.mor_def hmlsl_axioms mand_def mnot_def by auto
+
+lemma mall_not_mex: "(ts,v \<Turnstile> (\<^bold>\<forall>x. P x)) \<longleftrightarrow> (ts,v \<Turnstile> \<^bold>\<not> ( \<^bold>\<exists> x. \<^bold>\<not> P x))" 
+  by (metis   mclassical mexE mexI mexistsB_def mforallB_def mforall_def mnotE mnot_def satisfies_def)
+
+lemma not_mall: "(ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<forall>x. P x)) \<longleftrightarrow> (ts,v \<Turnstile> ( \<^bold>\<exists> x. \<^bold>\<not> P x))" 
+  by (metis   mclassical mexE mexI mexistsB_def mforallB_def mforall_def mnotE mnot_def satisfies_def)
+
+(*lemma mimp_mall :"(ts,v \<Turnstile>( \<^bold>\<forall>x. Px) \<^bold>\<rightarrow> Q) \<longleftrightarrow> (ts,v \<Turnstile> \<^bold>\<exists> x. ( P x \<^bold>\<rightarrow> Q))  "*) 
+
+lemma not_mex: "(ts,v \<Turnstile> \<^bold>\<not> (\<^bold>\<exists> x. P x)) \<longleftrightarrow> (ts,v \<Turnstile>(\<^bold>\<forall>x. \<^bold>\<not> P x))" 
+  by (metis mallI mclassical mexE mexI mexistsB_def mforallB_def mforall_def mnotE  satisfies_def)
+
+lemma mimp_mex: "(ts,v \<Turnstile> ((\<^bold>\<exists> x. P x) \<^bold>\<rightarrow> Q)) \<longleftrightarrow> (ts,v \<Turnstile> \<^bold>\<forall>x.( P x \<^bold>\<rightarrow> Q))" 
+  by (metis (mono_tags, lifting) mallE mallI mimpE' mimpI mnotE' mnotI2 not_mex) 
+
+
+
+lemma miff_mallI:
+  assumes "\<And>x. (ts,v \<Turnstile> P x) = (ts,v \<Turnstile> Q x)"
+  shows "(ts,v \<Turnstile> \<^bold>\<forall> x. P x) = (ts,v \<Turnstile>\<^bold>\<forall> x. Q x)"
+  using assms by blast
+
+
+lemma miff_mexI:
+  assumes "\<And>x. (ts,v \<Turnstile> P x) = (ts,v \<Turnstile> Q x)"
+  shows "(ts,v \<Turnstile> \<^bold>\<exists> x. P x) = (ts,v \<Turnstile>\<^bold>\<exists> x. Q x)"
+  using assms by blast
+
+lemma mimp_cong: "ts,v \<Turnstile>(P \<^bold>\<leftrightarrow> P') \<Longrightarrow> (ts,v \<Turnstile> P' \<Longrightarrow> (ts,v \<Turnstile> Q \<^bold>\<leftrightarrow> Q')) \<Longrightarrow> ((ts,v \<Turnstile> P \<^bold>\<rightarrow> Q) \<longleftrightarrow> (ts,v \<Turnstile>P' \<^bold>\<rightarrow> Q'))" 
+  by (metis miffD1 miffD2 mimpE mimpI)
+
+bundle hmlsl_simps =  
+                      de_Morgan_mconj[simp]
+                      de_Morgan_mdisj[simp]
+                      mall_not_mex[simp] 
+                      not_mall[simp] 
+                      not_mex[simp] 
+                      mimp_mex[simp] 
+                      mnot_mnotE[simp]  
+                      mimp_cong[cong]
+                      miff_mexI[cong] 
+                      miff_mallI[cong]
 
 lemma hchop_weaken1 : "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile> P \<^bold>\<frown> \<^bold>\<top>" 
   by (metis hmlsl.hchop_def hmlsl.satisfies_def hmlsl_axioms horizontal_chop_empty_right mtrue_def)
@@ -505,7 +656,8 @@ qed
     
 
 lemma at_exists :"ts,v \<Turnstile> \<phi>  \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<exists> c. \<^bold>@c \<phi>)" 
-  using view.switch_exists view.switch_refl by fastforce
+  using view.switch_exists view.switch_refl 
+  by (metis atI mexI)
 (*proof -
   assume a: "ts,v \<Turnstile> \<phi>"
   obtain d where d_def:"d=own v" by blast
@@ -641,7 +793,8 @@ lemma at_neg_neg:"(ts,v \<Turnstile> \<^bold>@c \<phi>) = (ts,v \<Turnstile> \<^
   by (meson at_neg_neg1 at_neg_neg2)
 
 lemma globally_all_iff:"(ts,v \<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>))) = (ts,v \<Turnstile> \<^bold>\<forall>c.( \<^bold>G \<phi>))" 
-  using globallyE by blast
+  using globallyE 
+  by (metis hmlsl.globallyI hmlsl_axioms mallI mspec)
 
 lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" 
   by (metis globally_all_iff miffI)
@@ -682,11 +835,15 @@ lemma somewhere_and_or_distr :"(ts,v \<Turnstile>\<^bold>\<langle> \<chi> \<^bol
 proof
   assume "ts,v \<Turnstile>\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle>"
   then obtain v' where "v' \<le> v" and "ts,v' \<Turnstile> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>)" 
-    using somewhere_leq by blast
-  then have "ts,v' \<Turnstile> (\<chi> \<^bold>\<and>  \<phi>) \<^bold>\<or> (\<chi> \<^bold>\<and> \<psi>)" by auto
+    using somewhere_leq 
+    by meson
+  then have "ts,v' \<Turnstile> (\<chi> \<^bold>\<and>  \<phi>) \<^bold>\<or> (\<chi> \<^bold>\<and> \<psi>)" 
+    by (metis mconjI mconjunct1 mconjunct2 mdisjE mdisjI1 mdisjI2)
   then have "ts,v \<Turnstile> \<^bold>\<langle> (\<chi> \<^bold>\<and>  \<phi>) \<^bold>\<or> (\<chi> \<^bold>\<and> \<psi>) \<^bold>\<rangle>" 
-    using \<open>v' \<le> v\<close> somewhere_leq by blast
-  then show "ts,v \<Turnstile> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>" using somewhere_distr by blast
+    using \<open>v' \<le> v\<close> somewhere_leq 
+    by meson
+  then show "ts,v \<Turnstile> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>" using somewhere_distr 
+    by simp
 next
   assume "ts,v \<Turnstile> \<^bold>\<langle> \<chi> \<^bold>\<and>  \<phi> \<^bold>\<rangle> \<^bold>\<or> \<^bold>\<langle> \<chi> \<^bold>\<and> \<psi> \<^bold>\<rangle>" 
   then show "ts,v \<Turnstile>\<^bold>\<langle> \<chi> \<^bold>\<and> (\<phi> \<^bold>\<or> \<psi>) \<^bold>\<rangle>" 
@@ -694,7 +851,8 @@ next
 qed
 
 lemma width_add1:"ts,v \<Turnstile>(\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y) \<Longrightarrow> (ts,v \<Turnstile> \<^bold>\<omega> = x+y)"  
-  using satisfies_def vertical_chop_add1 width_eq_def by force
+  using satisfies_def vertical_chop_add1 width_eq_def 
+  by (metis (mono_tags, lifting) vchopE)
 
 lemma width_add2:"ts,v \<Turnstile>(\<^bold>\<omega> = x+y) \<Longrightarrow> ts,v \<Turnstile>  (\<^bold>\<omega> = x) \<^bold>\<smile> (\<^bold>\<omega> = y)"
   using satisfies_def  width_eq_def vchop_def view.vertical_chop_add2 by auto
@@ -717,7 +875,8 @@ lemma length_meld: "ts,v \<Turnstile>(\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bol
 proof -
   assume "ts,v \<Turnstile>(\<^bold>\<l> > 0) \<^bold>\<frown> (\<^bold>\<l> > 0)" 
   then obtain u and w where "v=u\<parallel>w" and "\<parallel>ext u\<parallel> > 0" and "\<parallel>ext w \<parallel> > 0" 
-    using length_ge_def satisfies_def by force
+    using length_ge_def  
+    by (metis hchopE satisfies_def)
   then have "\<parallel>ext v\<parallel> > 0" 
     using chop_add_length_ge_0 view.hchop_def by blast
   then show "ts,v \<Turnstile> (\<^bold>\<l> > 0)" 
@@ -728,7 +887,15 @@ lemma length_dense:"(ts,v \<Turnstile>(\<^bold>\<l> > 0)) = (ts,v \<Turnstile> (
   by (meson length_meld length_split)
 
 lemma length_add1:"ts,v \<Turnstile>(\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>= y) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>= x+y" 
-  using length_def length_eq_def rchop_def satisfies_def view.hchop_def by force
+proof -
+  assume "ts,v \<Turnstile>(\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>= y)"
+  then obtain v1 and v2 where "v=v1\<parallel>v2" and "ts,v1 \<Turnstile>\<^bold>\<l> = x" and "ts,v2 \<Turnstile> \<^bold>\<l>=y" 
+    using  hchopE by blast
+  then have "\<parallel>ext v\<parallel> = x + y " 
+    by (simp add: length_def length_eq_def rchop_def satisfies_def view.hchop_def)
+  then show " ts,v \<Turnstile> \<^bold>\<l>= x+y" 
+    by (simp add: length_def length_eq_def  satisfies_def )
+qed
 
 lemma length_add2:"ts,v \<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0)  \<Longrightarrow> ts,v \<Turnstile>  (\<^bold>\<l>=x+y) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)" 
 proof -
@@ -739,7 +906,7 @@ proof -
     using 2 horizontal_chop_split_add 
     by (metis length_eq_def  satisfies_def )
   then show "ts,v \<Turnstile> (\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y)" 
-    by blast
+    using hchopI by auto
 qed
 
 lemma length_add:"ts,v \<Turnstile> (x \<^bold>\<ge> 0 \<^bold>\<and> y \<^bold>\<ge> 0) \<Longrightarrow>  (ts,v \<Turnstile>\<^bold>\<l>=x+y) = (ts,v \<Turnstile> (\<^bold>\<l>=x) \<^bold>\<frown> (\<^bold>\<l>=y))"
@@ -757,7 +924,8 @@ proof
 next
   assume "ts,v \<Turnstile>(\<^bold>\<l> = x) \<^bold>\<smile> ( \<^bold>\<l> = x)" 
   then show "ts,v \<Turnstile>(\<^bold>\<l> = x)" 
-    using length_eq_def satisfies_def view.vchop_def by force
+    using length_eq_def satisfies_def view.vchop_def 
+    by (metis vchopE)
 qed
 
 lemma res_ge_zero:"ts,v \<Turnstile>re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>>0" 
@@ -779,12 +947,13 @@ lemma width_free:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^b
   by (simp add: free_def satisfies_def width_eq_def)
 
 lemma width_somewhere_res:"ts,v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> \<ge> 1" 
-  using leq_lan re_def satisfies_def width_geq_def by fastforce
+  using leq_lan re_def satisfies_def width_geq_def 
+  using somewhere_leq by fastforce
 
 lemma clm_disj_res:"ts,v \<Turnstile> \<^bold>\<not> \<^bold>\<langle> cl(c) \<^bold>\<and> re(c) \<^bold>\<rangle>" 
 proof 
   assume "ts,v \<Turnstile>\<^bold>\<langle>cl(c) \<^bold>\<and> re(c)\<^bold>\<rangle>"
-  then obtain v' where "v' \<le> v \<and> (ts,v' \<Turnstile> cl(c) \<^bold>\<and> re(c))" by blast
+  then obtain v' where "v' \<le> v \<and> (ts,v' \<Turnstile> cl(c) \<^bold>\<and> re(c))"  by blast
   then have "ts,v' \<Turnstile> \<^bold>\<bottom>"  using disjoint  
     by (metis card_non_empty_geq_one hmlsl.cl_def hmlsl.re_def hmlsl_axioms inf.idem mand_def order_refl restriction_clm_res_disjoint satisfies_def)
   then show "ts,v \<Turnstile> \<^bold>\<bottom>" 
@@ -1249,25 +1418,28 @@ if the view consists of one lane and a non-zero extension, where neither
 a reservation nor a car resides, the view satisfies free (and vice versa). 
 \<close>
 
-(*
-lemma no_cars_means_free:
-  "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<Longrightarrow> ts,v \<Turnstile> free" 
 
+lemma no_cars_means_free:
+  includes hmlsl_simps
+  shows
+  "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<Longrightarrow> ts,v \<Turnstile> free" 
 proof -
-  {
-  fix ts v
   assume assm:
     "ts,v \<Turnstile> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-  have ge_0:"ts,v \<Turnstile> \<^bold>\<l> > 0" using assm unfolding satisfies_def by best
-  have one_lane:"ts,v \<Turnstile>\<^bold>\<omega> = 1" using assm unfolding satisfies_def  by best    
-  have "ts,v \<Turnstile> free" unfolding satisfies_def 
-  proof (rule ccontr)
+  have ge_0:"ts,v \<Turnstile> \<^bold>\<l> > 0" using assm  by best
+  have one_lane:"ts,v \<Turnstile>\<^bold>\<omega> = 1" using assm   by auto  
+  have no_car1:"ts,v \<Turnstile> \<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" using assm 
+    by (meson mconjE)
+  show "ts,v \<Turnstile> free"  
+  proof (rule mccontr)
     have no_car: "ts,v \<Turnstile>\<^bold>\<not>( \<^bold>\<exists> c.  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))"
-      using assm unfolding satisfies_def  by best
+      using no_car1 by (metis (no_types) not_mex)
+      
     assume "ts,v \<Turnstile> \<^bold>\<not> free"
     hence contra:
       "\<not>(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
-      using ge_0 one_lane unfolding satisfies_def  by blast
+      using ge_0 one_lane unfolding satisfies_def  
+      by (simp add: free_def length_ge_def mnot_def width_eq_def)
     hence ex_car:
       "\<exists>c. \<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" 
       using real_int.length_ge_zero dual_order.antisym not_le 
@@ -1276,7 +1448,7 @@ proof -
       "\<parallel>len v ts c\<parallel> > 0 \<and> (restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)"       
       using ex_car by blast
     hence "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" by best
-    thus False 
+    thus "ts,v \<Turnstile>\<^bold>\<bottom>"  
     proof
       assume "restrict v (clm ts) c \<noteq> \<emptyset>"
       with one_lane have clm_one:"|restrict v (clm ts) c| = 1" 
@@ -1295,9 +1467,9 @@ proof -
       have "|restrict v3 (clm ts) c| =1 " 
         using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> clm_one restriction_stable restriction_stable1
         by auto
-      have v3_one_lane:"|lan v3| = 1" horizontal_chop_empty_left horizontal_chop_empty_right
-        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane
-        by auto
+      have v3_one_lane:"|lan v3| = 1" using horizontal_chop_empty_left horizontal_chop_empty_right
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane      
+        by (metis hmlsl.width_eq_def hmlsl_axioms satisfies_def view.horizontal_chop_width_stable)
       have clm_fills_v3:"restrict v3 (clm ts) c = lan v3" 
       proof (rule ccontr)
         assume  aux:"restrict v3 (clm ts) c \<noteq> lan v3"
@@ -1314,18 +1486,19 @@ proof -
         thus False using v3_one_lane by auto
       qed
       have "\<parallel>ext v3\<parallel> > 0" using c_def len_eq by auto
-      have "ts, v3 \<Turnstile> cl(c)" using clm_one len_eq c_def clm_fills_v3 v3_one_lane
-        by auto
+      have "ts, v3 \<Turnstile> cl(c)" using clm_one len_eq c_def clm_fills_v3 v3_one_lane        
+        by (simp add: len_eq cl_def satisfies_def)
       hence "ts,v \<Turnstile>  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
         using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> by blast
-      hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by blast
-      thus False using no_car by best
+      hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
+        by (meson mexI)
+      thus "ts,v \<Turnstile>\<^bold>\<bottom> " using no_car 
+        by (meson mnotE)
     next
       assume "restrict v (res ts) c \<noteq> \<emptyset>"
       with one_lane have clm_one:"|restrict v (res ts) c| = 1" 
-        using el_in_restriction_clm_singleton      
-        by (metis nat_int.card_non_empty_geq_one nat_int.card_subset_le 
-            dual_order.antisym restrict_view)
+        using el_in_restriction_clm_singleton 
+        by (metis card_non_empty_geq_one card_subset_le dual_order.antisym restriction.restrict_view satisfies_def width_eq_def)
       obtain v1 and v2 and v3 and v4 
         where "v=v1\<parallel>v2" and "v2=v3\<parallel>v4" 
           and len_eq:"len v3 ts c = ext v3 \<and> \<parallel>len v3 ts c\<parallel> = \<parallel>len v ts c\<parallel> " 
@@ -1341,7 +1514,7 @@ proof -
         by auto
       have v3_one_lane:"|lan v3| = 1" 
         using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane
-        by auto
+        by (metis satisfies_def view.horizontal_chop_lanes_stable width_eq_def)
       have "restrict v3 (res ts) c = lan v3" 
       proof (rule ccontr)
         assume  aux:"restrict v3 (res ts) c \<noteq> lan v3"
@@ -1359,62 +1532,69 @@ proof -
       have "\<parallel>ext v3\<parallel> > 0" using c_def len_eq by auto
       have "ts, v3 \<Turnstile> re(c)" 
         using clm_one len_eq c_def \<open>restrict v3 (res ts) c = lan v3\<close> v3_one_lane
-        by auto
+        by (simp add: len_eq re_def satisfies_def)
       hence "ts,v \<Turnstile>  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" 
-        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> by blast
-      hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by blast
-      thus False using no_car by best
+        using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> 
+        using hchopI mTrueI mor_def satisfies_def by auto
+      hence "ts,v \<Turnstile>\<^bold>\<exists> c. (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" by (meson mexI) 
+      thus "ts,v \<Turnstile> \<^bold>\<bottom>"  using no_car by (meson mnotE)
     qed
   qed
 qed
 
+
+
 lemma free_means_no_cars:
-  "\<Turnstile>free \<^bold>\<rightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
-  unfolding valid_def
-proof (rule allI | rule impI)+
-  fix ts v
+  includes hmlsl_simps
+  shows "ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
+proof -
   assume assm:"ts,v \<Turnstile> free"
   have no_car:"ts,v \<Turnstile>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))"
-  proof (rule ccontr)
-    assume "\<not> (ts,v \<Turnstile>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-    hence contra:"ts,v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>" by blast
+  proof (rule mccontr)
+    assume "(ts,v \<Turnstile>\<^bold>\<not>(\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
+  (*  then have "ts,v \<Turnstile>\<^bold>\<exists> c. \<^bold>\<not>\<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)" *)
+    hence contra:"ts,v \<Turnstile> \<^bold>\<exists> c. \<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>"   sorry
     from this obtain c and v1 and v' and v2 and vc where 
-      vc_def:"(v=v1\<parallel>v') \<and> (v'=vc\<parallel>v2) \<and> (ts,vc \<Turnstile> cl(c) \<^bold>\<or> re(c))" by blast
+      vc_def:"(v=v1\<parallel>v') \<and> (v'=vc\<parallel>v2) \<and> (ts,vc \<Turnstile> cl(c) \<^bold>\<or> re(c))" 
+      by force
     hence len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" 
-      by (metis len_empty_on_subview1 len_empty_on_subview2 less_eq_real_def
-          real_int.length_ge_zero)
+      by (metis cl_def len_empty_subview length_ge_zero less_eq_real_def mdisjE re_def satisfies_def view.horizontal_chop_leq1 view.horizontal_chop_leq2) 
     from vc_def have vc_ex_car:
       "restrict vc (clm ts) c \<noteq> \<emptyset> \<or> restrict vc (res ts) c \<noteq>\<emptyset>" 
-      using nat_int.card_empty_zero one_neq_zero by auto
-    have eq_lan:"lan v = lan vc" using vc_def hchop_def by auto
+      using nat_int.card_empty_zero one_neq_zero 
+      using cl_def re_def satisfies_def by fastforce
+    have eq_lan:"lan v = lan vc" using vc_def hchop_def 
+      using view.hchop_def by auto
     hence v_ex_car:"restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq>\<emptyset>" 
       using vc_ex_car by (simp add: restrict_def)
-    from len_ge_zero and v_ex_car and assm show False by force
+    from len_ge_zero and v_ex_car and assm show "ts,v \<Turnstile> \<^bold>\<bottom> " 
+      by (metis free_def not_less order_refl satisfies_def)
   qed
   with assm show 
     "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
+    using free_ge_zero width_free 
     by blast
 qed
 
+(*
 lemma free_eq_no_cars:
   "\<Turnstile>free \<^bold>\<leftrightarrow> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))" 
 unfolding valid_def   using no_cars_means_free free_means_no_cars unfolding valid_def by blast
 
 lemma free_nowhere_res:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown> (re(c)) \<^bold>\<frown> \<^bold>\<top>)"
 unfolding valid_def  using free_eq_no_cars unfolding valid_def by blast
+*)
 
-lemma two_res_not_res: "\<Turnstile>((re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<not>re(c))" 
-  unfolding valid_def  
-  using view.vertical_chop_singleton by fastforce
+lemma two_res_not_res: "ts,v \<Turnstile>re(c) \<^bold>\<smile> re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>re(c)" 
+  by (metis add_eq_self_zero mccontr one_add_one satisfies_def two_res_width width_eq_def width_res zero_neq_one)
 
-lemma two_clm_width: "\<Turnstile>((cl(c) \<^bold>\<smile> cl(c)) \<^bold>\<rightarrow> \<^bold>\<omega> = 2)"
-  unfolding valid_def  
-  using view.vertical_chop_add1 by auto
+lemma two_clm_width: "ts,v \<Turnstile>cl(c) \<^bold>\<smile> cl(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 2" 
+  using clm_sing mnotE by blast
 
-lemma two_res_no_car: "\<Turnstile>(re(c) \<^bold>\<smile> re(c)) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c. ( cl(c) \<^bold>\<or> re(c)) )" 
-unfolding valid_def sledgehammer
-  using view.vertical_chop_singleton by force 
+lemma two_res_no_car: "ts,v \<Turnstile>re(c) \<^bold>\<smile> re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c. ( cl(c) \<^bold>\<or> re(c)) )" 
+  by (metis (no_types, lifting) add_eq_self_zero cl_def mclassical mexE mor_def one_add_one one_neq_zero re_def satisfies_def two_res_width width_eq_def)
 
+(*
 lemma two_lanes_no_car:"\<Turnstile>(\<^bold>\<not> \<^bold>\<omega>= 1) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
 unfolding valid_def  by simp
 
