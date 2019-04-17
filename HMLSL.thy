@@ -956,38 +956,46 @@ proof (rule allI|rule notI)+
 qed
 *)
 
-lemma clm_sing:"\<Turnstile>\<^bold>\<not>  (cl(c) \<^bold>\<smile> cl(c)) "
-unfolding valid_def vchop_def satisfies_def cl_def  using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one    
-  by (metis (no_types, hide_lams) add_eq_self_zero le_add1 le_antisym one_neq_zero)
+lemma clm_sing:"ts,v \<Turnstile>\<^bold>\<not>  (cl(c) \<^bold>\<smile> cl(c)) "
+proof
+  assume "ts,v \<Turnstile> cl(c) \<^bold>\<smile> cl(c)" 
+  then obtain v1 and v2 where "v=v1--v2" and "ts,v1 \<Turnstile>cl(c)" and "ts,v2 \<Turnstile> cl(c)" 
+    by blast
+  then have "|restrict v (clm ts )  c| = 2"  using restriction_add_clm 
+    using cl_def satisfies_def by auto 
+  then show "ts,v \<Turnstile> \<^bold>\<bottom>" using atMostOneClm 
+    by (metis numeral_le_one_iff restriction.restriction_clm_leq_one semiring_norm(69))
+qed
 
-lemma clm_sing_somewhere:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>cl(c) \<^bold>\<smile> cl(c)\<^bold>\<rangle> "
-unfolding valid_def  vchop_def hchop_def using clm_sing unfolding satisfies_def  valid_def vchop_def hchop_def by blast
+lemma clm_sing_somewhere:"ts,v \<Turnstile>\<^bold>\<not>  \<^bold>\<langle>cl(c) \<^bold>\<smile> cl(c)\<^bold>\<rangle> " 
+  using clm_sing mnotE by blast
 
-lemma clm_sing_not_interrupted:"\<Turnstile> \<^bold>\<not>(cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile> cl(c))"
-unfolding valid_def vchop_def satisfies_def  cl_def using atMostOneClm  restriction_add_clm vchop_def restriction_clm_leq_one clm_sing
-  by (metis (no_types, hide_lams) add.commute add_eq_self_zero dual_order.antisym
-      le_add1 one_neq_zero)
+lemma clm_sing_not_interrupted:"ts,v \<Turnstile> \<^bold>\<not>(cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile> cl(c))" 
+proof
+  assume "ts,v \<Turnstile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile> cl(c)"
+  then obtain v1 and v2 and v3  and vm where "v=v1--vm" and "vm=v2--v3" and "ts,v1 \<Turnstile> cl(c)" and "ts,v3 \<Turnstile> cl(c)" by blast
+  then have "|restrict v (clm ts) c| \<ge> 2" using restriction_add_clm cl_def satisfies_def by auto
+  then show "ts,v \<Turnstile>\<^bold>\<bottom>" using atMostOneClm 
+    by (metis Suc_1 not_less_eq_eq restriction.restriction_clm_leq_one)
+qed
 
-lemma clm_sing_somewhere2:"\<Turnstile>\<^bold>\<not>  (\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>) " 
-  using view.vchop_def clm_sing_not_interrupted vertical_chop_assoc1 unfolding valid_def vchop_def satisfies_def 
-  by meson
+lemma clm_sing_somewhere2:"ts,v \<Turnstile>\<^bold>\<not>  (\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>) "  using clm_sing_not_interrupted mnotE 
+  by (metis (full_types) mclassical satisfies_def v_chop_assoc vchopE vchop_def)
 
-lemma clm_sing_somewhere3:"\<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>)\<^bold>\<rangle> "  
-  using clm_sing_somewhere2  unfolding valid_def  satisfies_def vchop_def hchop_def   by blast
+lemma clm_sing_somewhere3:"ts,v \<Turnstile>\<^bold>\<not>  \<^bold>\<langle>(\<^bold>\<top> \<^bold>\<smile> cl(c) \<^bold>\<smile> \<^bold>\<top> \<^bold>\<smile>  cl(c) \<^bold>\<smile> \<^bold>\<top>)\<^bold>\<rangle> "  using clm_sing_somewhere2 mnotE 
+  by (meson mclassical somewhere_leq)
 
 
-lemma clm_at_most_somewhere:"\<Turnstile>\<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
-proof  -
-  {
-  fix ts v
+lemma clm_at_most_somewhere:"ts,v \<Turnstile>\<^bold>\<not> (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)" 
+proof  
   assume assm:"ts,v \<Turnstile>  (\<^bold>\<langle>cl(c)\<^bold>\<rangle> \<^bold>\<smile> \<^bold>\<langle>cl(c)\<^bold>\<rangle>)"
   obtain vu and vd 
-    where chops:"(v=vu--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>cl(c)\<^bold>\<rangle>) \<and> ( ts,vd \<Turnstile> \<^bold>\<langle> cl(c)\<^bold>\<rangle>)" unfolding vchop_def hchop_def satisfies_def
-    using assm unfolding vchop_def hchop_def satisfies_def by blast
-  from chops have clm_vu:"|restrict vu (clm ts) c| \<ge> 1" unfolding vchop_def hchop_def satisfies_def cl_def
-    by (metis restriction_card_somewhere_mon)
-  from chops have clm_vd:"|restrict vd (clm ts) c| \<ge> 1" unfolding vchop_def hchop_def satisfies_def cl_def
-    by (metis restriction_card_somewhere_mon)
+    where chops:"(v=vu--vd)\<and> (ts,vu \<Turnstile>\<^bold>\<langle>cl(c)\<^bold>\<rangle>) \<and> ( ts,vd \<Turnstile> \<^bold>\<langle> cl(c)\<^bold>\<rangle>)" 
+    using assm vchop_def hchop_def  by blast
+  from chops have clm_vu:"|restrict vu (clm ts) c| \<ge> 1" 
+    by (metis cl_def restriction.restriction_card_leq_mon satisfies_def someE)
+  from chops have clm_vd:"|restrict vd (clm ts) c| \<ge> 1" 
+    by (metis cl_def restriction.restriction_card_leq_mon satisfies_def someE)
   from chops have clm_add:
     "|restrict v (clm ts) c | = |restrict vu (clm ts) c| + |restrict vd (clm ts) c|"
     using restriction_add_clm      by auto
@@ -995,20 +1003,15 @@ proof  -
     using add.commute add_eq_self_zero dual_order.antisym le_add1 less_one not_le
       restriction_res_leq_two
     by linarith
-  with restriction_clm_leq_one have False     
+  with restriction_clm_leq_one show "ts,v \<Turnstile>\<^bold>\<bottom>"      
     by (metis One_nat_def not_less_eq_eq numeral_2_eq_2)
-}
-  from this show ?thesis using hmlsl.valid_def hmlsl_axioms unfolding vchop_def hchop_def satisfies_def 
-     by fastforce
 qed
 
 
 
 
-lemma res_decompose: "\<Turnstile>(re(c)  \<^bold>\<rightarrow> re(c) \<^bold>\<frown> re(c))" 
-proof - 
-  {
-  fix ts v
+lemma res_decompose: "ts,v \<Turnstile>re(c)  \<Longrightarrow> ts,v \<Turnstile> re(c) \<^bold>\<frown> re(c)" 
+proof -
   assume assm:"ts,v \<Turnstile>re(c)"
   then obtain v1 and v2 
     where 1:"v=v1\<parallel>v2" and 2:"\<parallel>ext v1\<parallel> > 0" and 3:"\<parallel>ext v2\<parallel> > 0" unfolding satisfies_def re_def 
@@ -1021,31 +1024,36 @@ proof -
   from 5 have 7:"ts,v2 \<Turnstile>re(c)" using  assm "6" unfolding satisfies_def hchop_def re_def
     by (metis "1" "3"   len_view_hchop_right restriction.restrict_eq_lan_subs
         restriction.restrict_view restriction.restriction_stable)
-  from 1 and 6 and 7 have "ts,v \<Turnstile>re(c) \<^bold>\<frown> re(c)" unfolding satisfies_def hchop_def by blast
-}
-  from this show ?thesis 
-    using hmlsl.satisfies_def hmlsl.valid_def hmlsl_axioms by auto
+  from 1 and 6 and 7 show "ts,v \<Turnstile>re(c) \<^bold>\<frown> re(c)"  by blast
 qed
 
-lemma res_compose: "\<Turnstile>(re(c) \<^bold>\<frown> re(c)  \<^bold>\<rightarrow> re(c))"     
-  unfolding valid_def  hchop_def using  real_int.chop_dense len_compose_hchop view.hchop_def length_dense restrict_def
-unfolding valid_def hchop_def satisfies_def re_def
-  by (metis (no_types, lifting))
+lemma res_compose: "ts,v \<Turnstile>re(c) \<^bold>\<frown> re(c)  \<Longrightarrow> ts,v \<Turnstile> re(c)"  
+  by (metis (full_types) chop_add_length_ge_0 hchopE len_compose_hchop re_def restriction_stable1 satisfies_def view.hchop_def)
 
-lemma res_dense:"\<Turnstile>re(c) \<^bold>\<leftrightarrow> re(c) \<^bold>\<frown> re(c)"
+lemma res_dense:"(ts,v \<Turnstile>re(c)) = (ts,v \<Turnstile> re(c) \<^bold>\<frown> re(c))"
   using res_decompose res_compose unfolding valid_def satisfies_def by blast
 
-lemma res_continuous :"\<Turnstile>(re(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown> ( \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
-unfolding valid_def hchop_def satisfies_def re_def  by (metis (no_types, lifting) view.hchop_def len_view_hchop_left len_view_hchop_right
-      restrict_def)
+lemma res_continuous :"ts,v \<Turnstile>re(c) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown> ( \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))" 
+proof 
+  assume 1:"ts,v \<Turnstile> re(c)" and 2:"ts,v \<Turnstile>  \<^bold>\<top> \<^bold>\<frown> ( \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>"
+  then obtain v1 v2 v3 vF where "v=v1\<parallel>v2" and "v2=vF\<parallel>v3" and "ts,vF \<Turnstile>  \<^bold>\<not>re(c) \<^bold>\<and> \<^bold>\<l> > 0" by blast
+  then have "\<parallel>ext vF\<parallel> \<noteq> \<parallel> len vF ts c\<parallel> " 
+    by (metis "1" length_ge_def mconjunct1 mconjunct2 mnotE re_def restriction.restrict_def satisfies_def sensors.intro sensors.len_view_hchop_left sensors.len_view_hchop_right sensors_ge view.hchop_def) 
+  then show "ts,v \<Turnstile>\<^bold>\<bottom>" using 1 
+    by (metis \<open>v2=vF\<parallel>v3\<close> \<open>v=v1\<parallel>v2\<close> re_def satisfies_def sensors.len_view_hchop_left sensors.len_view_hchop_right sensors_axioms)
+qed
 
-lemma no_clm_before_res:"\<Turnstile>\<^bold>\<not>(cl(c) \<^bold>\<frown> re(c))"  
-unfolding valid_def  hchop_def satisfies_def re_def cl_def by (metis (no_types, lifting) nat_int.card_empty_zero nat_int.card_subset_le
-      disjoint view.hchop_def inf_assoc inf_le1 not_one_le_zero restrict_def)
+lemma no_clm_before_res:"ts,v \<Turnstile>\<^bold>\<not>(cl(c) \<^bold>\<frown> re(c))"  
+  by (metis cl_def hchop_def horizontal_chop_lanes_stable  inf.idem mnot_def nat_int.card_empty_zero one_neq_zero re_def restriction.restrict_def'  restriction_clm_res_disjoint  satisfies_def)
 
-lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
-  unfolding valid_def hchop_def satisfies_def re_def cl_def
-  by (metis (no_types, lifting) inf.idem nat_int.card_non_empty_geq_one restriction.restrict_def restriction.restriction_clm_leq_one restriction_clm_res_disjoint view.hchop_def)
+lemma no_clm_before_res2:"ts,v \<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))" 
+proof 
+  assume 1:"ts,v \<Turnstile> cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c)"
+  then have "restrict v (clm ts) c = restrict v (res ts) c" 
+    using cl_def hmlsl.re_def hmlsl_axioms restriction.restrict_def satisfies_def view.hchop_def by force
+  then show "ts,v \<Turnstile> \<^bold>\<bottom>" 
+    by (metis 1 cl_def hchopE inf.idem nat_int.card_empty_zero one_neq_zero restriction.restriction_stable1 restriction_clm_res_disjoint satisfies_def)
+qed
 (*proof (rule allI| rule impI)+
   fix ts v
   show "ts,v \<Turnstile> \<^bold>\<not> (cl(c) \<^bold>\<frown> \<^bold>\<top> \<^bold>\<frown> re(c))"
@@ -1067,18 +1075,21 @@ lemma no_clm_before_res2:"\<Turnstile>\<^bold>\<not> (cl(c) \<^bold>\<frown> \<^
   qed 
 qed 
 *)
-lemma clm_decompose: "\<Turnstile>(cl(c)  \<^bold>\<rightarrow> cl(c) \<^bold>\<frown> cl(c))" 
+lemma clm_decompose: "ts,v \<Turnstile>cl(c)  \<Longrightarrow> ts,v \<Turnstile> cl(c) \<^bold>\<frown> cl(c)" 
 proof -
-  {
-  fix ts v
-  assume assm: "ts,v \<Turnstile> cl(c)"
+  assume assm:"ts,v \<Turnstile> cl(c)" 
   have restr:"restrict v (clm ts) c = lan v" using assm unfolding satisfies_def cl_def by simp
   have len_ge_zero:"\<parallel>len v ts c\<parallel> > 0" using assm unfolding satisfies_def cl_def by simp
   have len:"len v ts c = ext v" using assm unfolding satisfies_def cl_def by simp
   obtain v1 v2 where chop:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0 " 
     using assm view.horizontal_chop_non_empty    
     using length_split unfolding hchop_def satisfies_def cl_def by blast    
-  from chop and len have len_v1:"len v1 ts c = ext v1" 
+  then have 1:"ts,v1 \<Turnstile> cl(c)" 
+    by (metis assm cl_def len_view_hchop_left  restriction_stable1 satisfies_def view.hchop_def)
+  have 2:"ts,v2 \<Turnstile> cl(c)" using chop 
+    by (metis assm cl_def  len_view_hchop_right restriction_stable2 satisfies_def view.hchop_def)
+  show "ts,v \<Turnstile> cl(c) \<^bold>\<frown> cl(c) " using 1 2 chop by blast
+(*  from chop and len have len_v1:"len v1 ts c = ext v1" 
     using len_view_hchop_left by blast
   from chop and len have len_v2:"len v2 ts c = ext v2" 
     using len_view_hchop_right by blast
@@ -1091,43 +1102,49 @@ proof -
 }
   from this show ?thesis unfolding valid_def satisfies_def
     using hmlsl.satisfies_def hmlsl_axioms by blast
+*)
 qed
 
 
-lemma clm_compose: "\<Turnstile>(cl(c) \<^bold>\<frown> cl(c)  \<^bold>\<rightarrow> cl(c))" 
-  using  real_int.chop_dense len_compose_hchop view.hchop_def length_dense restrict_def     
-unfolding valid_def hchop_def satisfies_def cl_def
-  by (metis (no_types, lifting))
-
-lemma clm_dense:"\<Turnstile>cl(c) \<^bold>\<leftrightarrow> cl(c) \<^bold>\<frown> cl(c)"
-   using clm_decompose clm_compose unfolding valid_def satisfies_def by blast
-
-lemma clm_continuous :"\<Turnstile>(cl(c)) \<^bold>\<rightarrow> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
-unfolding valid_def hchop_def satisfies_def  cl_def by (metis (no_types, lifting) view.hchop_def len_view_hchop_left len_view_hchop_right
-      restrict_def)
+lemma clm_compose: "ts,v \<Turnstile>cl(c) \<^bold>\<frown> cl(c)  \<Longrightarrow> ts,v \<Turnstile> cl(c)" 
+  by (metis (full_types) chop_add_length_ge_0 cl_def hchopE len_compose_hchop restriction_stable1 satisfies_def view.hchop_def)
 
 
-lemma res_not_free: "\<Turnstile>(\<^bold>\<exists> c. re(c) \<^bold>\<rightarrow> \<^bold>\<not>free)" 
-unfolding valid_def satisfies_def  using nat_int.card_empty_zero one_neq_zero re_def by auto
+lemma clm_dense:"(ts,v \<Turnstile>cl(c)) = (ts,v \<Turnstile> cl(c) \<^bold>\<frown> cl(c))"
+   using clm_decompose clm_compose  
+   by meson
 
-lemma clm_not_free: "\<Turnstile>(\<^bold>\<exists> c. cl(c) \<^bold>\<rightarrow> \<^bold>\<not>free)"
-unfolding valid_def  satisfies_def using nat_int.card_empty_zero cl_def by auto
+lemma clm_continuous :"ts,v \<Turnstile> cl(c) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>))"     
+proof
+  assume 1:"ts,v \<Turnstile> cl(c)" and 2:"ts,v \<Turnstile> \<^bold>\<top> \<^bold>\<frown>  ( \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0) \<^bold>\<frown> \<^bold>\<top>" 
+  then obtain v1 and v2 and  v3 and  vF where "v=v1\<parallel>v2" and "v2=vF\<parallel>v3" and "ts,vF \<Turnstile>  \<^bold>\<not>cl(c) \<^bold>\<and> \<^bold>\<l> > 0" by blast
+  then have "\<parallel>ext vF\<parallel> \<noteq> \<parallel>len vF ts c\<parallel>" 
+    by (metis "1" cl_def len_view_hchop_left len_view_hchop_right length_ge_def mconjunct1 mconjunct2 mnotE restriction.restrict_def satisfies_def view.hchop_def)
+  then show "ts,v \<Turnstile> \<^bold>\<bottom>" using 1 
+    by (metis \<open>v2=vF\<parallel>v3\<close> \<open>v=v1\<parallel>v2\<close> cl_def len_view_hchop_left len_view_hchop_right satisfies_def)
+qed
 
-lemma free_no_res:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. re(c)))" 
-unfolding valid_def  satisfies_def re_def using nat_int.card_empty_zero one_neq_zero 
-  by (metis less_irrefl)
+lemma res_not_free: "ts,v \<Turnstile>\<^bold>\<exists> c. re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>free" 
+  by (metis (mono_tags, lifting) card_non_empty_geq_one  hmlsl.re_def hmlsl_axioms  less_irrefl mccontr mexistsB_def mexists_def  order_refl satisfies_def) 
 
-lemma free_no_clm:"\<Turnstile>(free \<^bold>\<rightarrow>  \<^bold>\<not>(\<^bold>\<exists> c. cl(c)))" 
-unfolding valid_def  satisfies_def cl_def using nat_int.card_empty_zero one_neq_zero by (metis less_irrefl)
+lemma clm_not_free: "ts,v \<Turnstile>\<^bold>\<exists> c. cl(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>free"
+  by (metis (mono_tags, lifting) card_non_empty_geq_one  hmlsl.cl_def hmlsl_axioms  less_irrefl mccontr mexistsB_def mexists_def  order_refl satisfies_def) 
 
-lemma free_decompose:"\<Turnstile>free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free)"
+lemma free_no_res:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c. re(c))" 
+  by (metis (no_types, lifting) mclassical mnotE res_not_free)
+
+lemma free_no_clm:"ts,v \<Turnstile> free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c. cl(c))" 
+  by (metis (no_types, lifting) mclassical mnotE clm_not_free)
+
+(*
+lemma free_decompose:"ts,v \<Turnstile>free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free)"
 proof - 
   {
   fix ts v
   assume assm:"ts,v \<Turnstile>free"
   obtain v1 and v2 
     where non_empty_v1_v2:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0"
-    unfolding valid_def using assm length_dense unfolding valid_def satisfies_def hchop_def by blast
+    unfolding valid_def using assm length_dense unfolding valid_def satisfies_def hchop_def 
   have one_lane:"|lan v1| = 1 \<and> |lan v2| = 1" 
     using assm view.hchop_def non_empty_v1_v2 unfolding satisfies_def hchop_def
     by auto
@@ -1203,6 +1220,8 @@ lemma free_dense:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<fro
 
 lemma free_dense2:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
 unfolding valid_def hchop_def satisfies_def  using horizontal_chop_empty_left horizontal_chop_empty_right  by fastforce
+
+*)
 
 text \<open>
 The next lemmas show the connection between the spatial. In particular,
