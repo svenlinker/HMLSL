@@ -138,7 +138,7 @@ definition cl:: "cars \<Rightarrow> \<sigma>" ("cl'(_')" 70)
     "cl(c) \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel>> 0 \<and> len v ts c = ext v \<and> 
                       restrict v (clm ts) c = lan v \<and> |lan v| = 1" 
 
-abbreviation free:: "\<sigma>" ("free")
+definition free:: "\<sigma>" ("free")
   where 
     "free \<equiv> \<lambda> ts v. \<parallel>ext v\<parallel> > 0 \<and> |lan v| = 1 \<and>
                   (\<forall>c.  \<parallel>len v ts c\<parallel> = 0 \<or> 
@@ -767,7 +767,7 @@ lemma clm_ge_zero:"ts,v \<Turnstile>cl(c) \<Longrightarrow> ts,v \<Turnstile> \<
   by (simp add: length_ge_def cl_def satisfies_def) 
 
 lemma free_ge_zero:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<l>>0"
-  by (simp add: length_ge_def satisfies_def)
+  by (simp add: length_ge_def free_def satisfies_def)
 
 lemma width_res:"ts,v \<Turnstile>re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 1"
   by (simp add: re_def satisfies_def width_eq_def)
@@ -776,7 +776,7 @@ lemma width_clm:"ts,v \<Turnstile>cl(c) \<Longrightarrow> ts,v \<Turnstile> \<^b
   by (simp add: cl_def satisfies_def width_eq_def)
 
 lemma width_free:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> = 1"
-  by (simp add: satisfies_def width_eq_def)
+  by (simp add: free_def satisfies_def width_eq_def)
 
 lemma width_somewhere_res:"ts,v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle> \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<omega> \<ge> 1" 
   using leq_lan re_def satisfies_def width_geq_def by fastforce
@@ -1126,10 +1126,10 @@ proof
 qed
 
 lemma res_not_free: "ts,v \<Turnstile>\<^bold>\<exists> c. re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>free" 
-  by (metis (mono_tags, lifting) card_non_empty_geq_one  hmlsl.re_def hmlsl_axioms  less_irrefl mccontr mexistsB_def mexists_def  order_refl satisfies_def) 
+  by (metis (mono_tags, lifting) free_def card_non_empty_geq_one  hmlsl.re_def hmlsl_axioms  less_irrefl mccontr mexistsB_def mexists_def  order_refl satisfies_def) 
 
 lemma clm_not_free: "ts,v \<Turnstile>\<^bold>\<exists> c. cl(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>free"
-  by (metis (mono_tags, lifting) card_non_empty_geq_one  hmlsl.cl_def hmlsl_axioms  less_irrefl mccontr mexistsB_def mexists_def  order_refl satisfies_def) 
+  by (metis (mono_tags, lifting) free_def card_non_empty_geq_one  hmlsl.cl_def hmlsl_axioms  less_irrefl mccontr mexistsB_def mexists_def  order_refl satisfies_def) 
 
 lemma free_no_res:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c. re(c))" 
   by (metis (no_types, lifting) mclassical mnotE res_not_free)
@@ -1137,28 +1137,28 @@ lemma free_no_res:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^
 lemma free_no_clm:"ts,v \<Turnstile> free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c. cl(c))" 
   by (metis (no_types, lifting) mclassical mnotE clm_not_free)
 
-(*
-lemma free_decompose:"ts,v \<Turnstile>free \<^bold>\<rightarrow> ( free \<^bold>\<frown> free)"
+lemma free_no_clm2:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<forall>c. \<^bold>\<not> cl(c)" using free_no_clm 
+  by (metis mallI mclassical mexI mnotE)
+
+
+lemma free_decompose:"ts,v \<Turnstile>free \<Longrightarrow> ts,v \<Turnstile> ( free \<^bold>\<frown> free)"
 proof - 
-  {
-  fix ts v
   assume assm:"ts,v \<Turnstile>free"
   obtain v1 and v2 
     where non_empty_v1_v2:"(v=v1\<parallel>v2) \<and> \<parallel>ext v1\<parallel> > 0 \<and> \<parallel>ext v2\<parallel> > 0"
-    unfolding valid_def using assm length_dense unfolding valid_def satisfies_def hchop_def 
+     using assm length_dense  
+     using free_def satisfies_def view.horizontal_chop_non_empty by fastforce
   have one_lane:"|lan v1| = 1 \<and> |lan v2| = 1" 
-    using assm view.hchop_def non_empty_v1_v2 unfolding satisfies_def hchop_def
-    by auto
+    using assm view.hchop_def non_empty_v1_v2 
+    using free_def satisfies_def by auto    
   have nothing_on_v1:
     " (\<forall>c. \<parallel>len v1 ts c\<parallel> = 0 
-        \<or> (restrict v1 (clm ts) c = \<emptyset> \<and> restrict v1 (res ts) c = \<emptyset>))"  using assm unfolding satisfies_def
-    by (metis (no_types, lifting) len_empty_on_subview1 non_empty_v1_v2
-        restriction_stable1)
+        \<or> (restrict v1 (clm ts) c = \<emptyset> \<and> restrict v1 (res ts) c = \<emptyset>))"  using assm 
+    by (metis free_def len_empty_subview non_empty_v1_v2 restriction.restriction_stable1 satisfies_def view.horizontal_chop_leq1)
   have nothing_on_v2:
     " (\<forall>c. \<parallel>len v2 ts c\<parallel> = 0 
-        \<or> (restrict v2 (clm ts) c = \<emptyset> \<and> restrict v2 (res ts) c = \<emptyset>))"   using assm unfolding satisfies_def
-    by (metis (no_types, lifting)  len_empty_on_subview2 non_empty_v1_v2
-        restriction_stable2)
+        \<or> (restrict v2 (clm ts) c = \<emptyset> \<and> restrict v2 (res ts) c = \<emptyset>))"   using assm 
+    by (metis free_def len_empty_subview non_empty_v1_v2 restriction.restriction_stable2 satisfies_def view.horizontal_chop_leq2)
   have  
     "(v=v1\<parallel>v2) 
     \<and> 0 < \<parallel>ext v1\<parallel> \<and> |lan v1| = 1 
@@ -1168,21 +1168,19 @@ proof -
     \<and> (\<forall>c. \<parallel>len v2 ts c\<parallel> = 0 
         \<or>( restrict v2 (clm ts) c = \<emptyset> \<and> restrict v2 (res ts) c = \<emptyset>))"
     using non_empty_v1_v2 nothing_on_v1 nothing_on_v2 one_lane by blast      
-  then have "ts,v \<Turnstile>(free \<^bold>\<frown> free)" unfolding satisfies_def hchop_def by blast
-}
-  from this show ?thesis unfolding valid_def 
-    by (simp add: satisfies_def)
+  then show "ts,v \<Turnstile>(free \<^bold>\<frown> free)" 
+    using free_def hmlsl.hchop_def hmlsl_axioms satisfies_def by auto
 qed
 
-lemma free_compose:"\<Turnstile>(free \<^bold>\<frown> free) \<^bold>\<rightarrow> free"
+lemma free_compose:"ts,v \<Turnstile>(free \<^bold>\<frown> free) \<Longrightarrow> ts,v \<Turnstile> free"
 proof -
-  {
-  fix ts v
   assume assm:"ts,v \<Turnstile>free \<^bold>\<frown> free"
   have len_ge_0:"\<parallel>ext v\<parallel> > 0" 
-    unfolding valid_def using assm length_meld unfolding valid_def satisfies_def hchop_def by blast
-  have widt_one:"|lan v| = 1" using assm unfolding satisfies_def hchop_def    
-    by (metis horizontal_chop_width_stable)
+     using assm length_meld  
+     using free_def length_def rchop_def satisfies_def view.hchop_def by force
+  have width_one:"|lan v| = 1" using assm 
+    using free_def satisfies_def view.horizontal_chop_width_stable by force  
+  obtain v1 and v2 where c:"v=v1\<parallel>v2" and f1:"ts,v1 \<Turnstile>free" and f2:"ts,v2 \<Turnstile>free" using assm by blast
   have no_car:
     "(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"  
   proof (rule ccontr)
@@ -1195,43 +1193,66 @@ proof -
       by blast
     from ex have 1:"\<parallel>len v ts c\<parallel> > 0" 
       using less_eq_real_def real_int.length_ge_zero by auto
+    have 2:"\<parallel>len v1 ts c\<parallel> > 0 \<or> \<parallel>len v2 ts c\<parallel> > 0" using c 
+      using "1" len_hchop_add by auto
     have "(restrict v (clm ts) c \<noteq> \<emptyset> \<or> restrict v (res ts) c \<noteq> \<emptyset>)" using ex ..
     then show False
     proof
-      assume "restrict v (clm ts) c \<noteq> \<emptyset>"
-      then show False using assm unfolding satisfies_def hchop_def
-        by (metis (no_types, hide_lams)  add.left_neutral ex len_hchop_add
-            restriction.restrict_def view.hchop_def)    
+      assume a:"restrict v (clm ts) c \<noteq> \<emptyset>"
+      then have a1:"restrict v1 (clm ts) c \<noteq> \<emptyset>"  
+         using c restriction.restriction_stable1 by auto
+      have a2: "restrict v2 (clm ts) c \<noteq> \<emptyset>" using a c restriction.restriction_stable2 by auto
+      from 2 show False
+      proof 
+        assume b:"\<parallel>len v1 ts c\<parallel> > 0 "
+        then show False using assm free_def  a1 
+          by (metis f1  less_irrefl less_trans  satisfies_def)
+      next
+        assume b:"\<parallel>len v2 ts c\<parallel> > 0 "
+        then show False using assm free_def  a2 
+          by (metis f2  less_irrefl less_trans  satisfies_def)
+      qed
     next
-      assume "restrict v (res ts) c \<noteq> \<emptyset>"
-      then show False using assm unfolding satisfies_def hchop_def
-        by (metis (no_types, hide_lams)  add.left_neutral ex len_hchop_add 
-            restriction.restrict_def view.hchop_def)  
+      assume a:"restrict v (res ts) c \<noteq> \<emptyset>"
+      then have a1:"restrict v1 (res ts) c \<noteq> \<emptyset>"  
+         using c restriction.restriction_stable1 by auto
+      have a2: "restrict v2 (res ts) c \<noteq> \<emptyset>" using a c restriction.restriction_stable2 by auto
+     from 2 show False
+      proof 
+        assume b:"\<parallel>len v1 ts c\<parallel> > 0 "
+        then show False using assm free_def  a1 
+          by (metis f1  less_irrefl less_trans  satisfies_def)
+      next
+        assume b:"\<parallel>len v2 ts c\<parallel> > 0 "
+        then show False using assm free_def  a2 
+          by (metis f2  less_irrefl less_trans  satisfies_def)
+      qed
     qed
   qed
-  have "ts,v \<Turnstile>free"
-    using len_ge_0 widt_one no_car unfolding satisfies_def by blast
-}
-  from this show ?thesis unfolding valid_def satisfies_def by blast
+  show "ts,v \<Turnstile>free"
+    using len_ge_0 width_one no_car  
+    by (simp add: free_def satisfies_def)
 qed
 
 
-lemma free_dense:"\<Turnstile>free \<^bold>\<leftrightarrow> (free \<^bold>\<frown> free)"
+lemma free_dense:"(ts,v \<Turnstile>free) = (ts,v \<Turnstile> free \<^bold>\<frown> free)"
  using free_decompose free_compose unfolding valid_def satisfies_def by blast
 
-lemma free_dense2:"\<Turnstile>free \<^bold>\<rightarrow> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
-unfolding valid_def hchop_def satisfies_def  using horizontal_chop_empty_left horizontal_chop_empty_right  by fastforce
+lemma free_dense2:"ts,v \<Turnstile>free  \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<top> \<^bold>\<frown> free \<^bold>\<frown> \<^bold>\<top>"
+  using hchop_weaken  by simp
 
-*)
+
 
 text \<open>
 The next lemmas show the connection between the spatial. In particular,
 if the view consists of one lane and a non-zero extension, where neither
 a reservation nor a car resides, the view satisfies free (and vice versa). 
 \<close>
+
 (*
 lemma no_cars_means_free:
-  "\<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<^bold>\<rightarrow> free" 
+  "ts,v \<Turnstile>((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))) \<Longrightarrow> ts,v \<Turnstile> free" 
+
 proof -
   {
   fix ts v
@@ -1274,7 +1295,7 @@ proof -
       have "|restrict v3 (clm ts) c| =1 " 
         using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> clm_one restriction_stable restriction_stable1
         by auto
-      have v3_one_lane:"|lan v3| = 1" 
+      have v3_one_lane:"|lan v3| = 1" horizontal_chop_empty_left horizontal_chop_empty_right
         using \<open>v2=v3\<parallel>v4\<close> \<open>v=v1\<parallel>v2\<close> hchop_def one_lane
         by auto
       have clm_fills_v3:"restrict v3 (clm ts) c = lan v3" 
