@@ -40,7 +40,18 @@ Similar to the situation with perfect sensors, needed to instantiate the
 sensor function, to ensure that the perceived length does not change
 during spatial transitions.
 \<close>
-  
+
+lemma forwards_res_act:
+ "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts,v \<Turnstile> cl(c)) \<longrightarrow> (ts',v \<Turnstile> re(c))"
+  unfolding hmlsl.satisfies_def hmlsl.re_def hmlsl.cl_def 
+  by (metis create_reservation_restrict_union inf_sup_aci(5) create_reservation_length_stable restriction.restrict_view sup.absorb_iff1)
+
+lemma forwards_res_stab:
+ "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts,v \<Turnstile> re(c)) \<longrightarrow> (ts',v \<Turnstile> re(c))"
+  unfolding hmlsl.satisfies_def hmlsl.re_def 
+  by (metis inf.absorb1 order_trans create_reservation_length_stable restrict_def' restriction.restrict_subseteq traffic.create_res_subseteq1) 
+
+
 lemma backwards_res_act:
   "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))"
 proof
@@ -70,8 +81,8 @@ proof
     hence "restrict v (res ts)c = lan v" using restriction.restrict_eq_lan_subs
         restrict_one assm  
       using local.hmlsl.re_def local.hmlsl.satisfies_def by auto
-    then show ?thesis using assm len_eq 
-      by (simp add: local.hmlsl.re_def local.hmlsl.satisfies_def)
+    then show ?thesis using assm len_eq  
+      using local.hmlsl.mdisjI1 local.hmlsl.re_def local.hmlsl.satisfies_def by auto
   next
     assume restr_res_empty:"restrict v (res ts) c = \<emptyset>"
     then have  clm_non_empty: "restrict v (clm ts) c \<noteq> \<emptyset>" 
@@ -86,7 +97,7 @@ proof
         restrict_one assm   
       using local.hmlsl.re_def local.hmlsl.satisfies_def by auto
     then show ?thesis using assm len_eq 
-      by (simp add: local.hmlsl.cl_def local.hmlsl.re_def local.hmlsl.satisfies_def)
+      using local.hmlsl.cl_def local.hmlsl.mdisjI2 local.hmlsl.re_def local.hmlsl.satisfies_def by auto
   qed
 qed
 
@@ -127,31 +138,17 @@ text\<open>
 We now proceed to prove the \emph{reservation lemma}, which was 
 crucial in the manual safety proof \cite {Hilscher2011}. 
 \<close>
-lemma reservation1: "\<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<^bold>\<rightarrow> \<^bold>\<box>r(c) re(c)" 
-proof -
-  { fix ts v ts'
-  assume assm:"ts,v \<Turnstile>re(c) \<^bold>\<or> cl(c)" and ts'_def:"ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow>ts'"
-  from assm have  "re(c) ts' v" unfolding hmlsl.satisfies_def
-  proof
-    assume re:  "re(c) ts v" 
-    then show ?thesis  
-      using local.hmlsl.re_def regular_sensors.create_reservation_length_stable restrict_view restriction.create_reservation_restrict_union sup.absorb_iff1 ts'_def by fastforce
-  next
-    assume cl:"cl(c) ts v"
-    then show ?thesis  
-      by (metis (no_types, lifting) dual_order.antisym local.hmlsl.cl_def local.hmlsl.re_def regular_sensors.create_reservation_length_stable restrict_view restriction.create_reservation_restrict_union sup_ge2 ts'_def)
-  qed
-  }
-  then show ?thesis using hmlsl.satisfies_def hmlsl.valid_def  sorry
-qed
+lemma reservation1: "ts,v \<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<box>r(c) re(c)" 
+  using hmlsl_regular.forwards_res_act hmlsl_regular.forwards_res_stab local.hmlsl.res_box_def local.hmlsl.satisfies_def by fastforce
 
-lemma reservation2: "\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<rightarrow> (re(c) \<^bold>\<or> cl(c))" 
+
+lemma reservation2: "ts,v \<Turnstile>(\<^bold>\<box>r(c) re(c)) \<Longrightarrow> ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" 
   using backwards_res_act traffic.always_create_res   
-  by (metis (no_types, lifting) local.hmlsl.satisfies_def local.hmlsl.valid_def)
+  by (metis local.hmlsl.res_box_def local.hmlsl.satisfies_def)
   
     
-lemma reservation:"\<Turnstile>(\<^bold>\<box>r(c) re(c)) \<^bold>\<leftrightarrow> (re(c) \<^bold>\<or> cl(c))"
-  using reservation1 reservation2 local.hmlsl.valid_def hmlsl.satisfies_def sorry      
+lemma reservation:"(ts,v \<Turnstile>\<^bold>\<box>r(c) re(c)) = (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))" 
+  using hmlsl_regular.reservation1 hmlsl_regular.reservation2 by blast
 end
 end
   

@@ -36,6 +36,7 @@ sublocale hmlsl<sensors
   by (simp add: sensors.intro sensors_ge)
 
 context hmlsl
+
 begin
 
 text\<open>
@@ -201,9 +202,9 @@ lemma mFalseE: "ts,v \<Turnstile> \<^bold>\<bottom> \<Longrightarrow> P"
 text\<open>Disjunction\<close>
 lemma mdisjE:
 assumes major: "ts,v \<Turnstile> P \<^bold>\<or>  Q"
-    and minorP: "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>R"
-    and minorQ: "ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> R"
-  shows "ts,v \<Turnstile>R" 
+    and minorP: "ts,v \<Turnstile> P \<Longrightarrow> R"
+    and minorQ: "ts,v \<Turnstile> Q \<Longrightarrow> R"
+  shows "R" 
   using major minorP minorQ mor_def satisfies_def by auto
 
 lemma mdisjI1: "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>P \<^bold>\<or> Q" 
