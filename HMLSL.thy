@@ -408,6 +408,10 @@ subsubsection\<open>Equational\<close>
 lemma mrefl:" ts,v \<Turnstile> x \<^bold>= x" 
   by (simp add: meq_def satisfies_def) 
 
+lemma rigid_eq:" x = y \<Longrightarrow> ts,v \<Turnstile> x \<^bold>= y" 
+  by (simp add: mrefl)
+
+
 subsubsection\<open>Modal Operators\<close>
 lemma hchopE: 
   assumes "ts,v \<Turnstile>P \<^bold>\<frown> Q " 
@@ -613,43 +617,58 @@ lemma iff_atomize[atomize]:"((ts,v \<Turnstile>P) = (ts,v \<Turnstile>Q)) \<equi
 
 print_facts
 
-lemma simp_thms:
-  shows not_not: "ts,v \<Turnstile>(\<^bold>\<not> \<^bold>\<not> P) \<^bold>\<leftrightarrow> P"
+lemma not_not: "ts,v \<Turnstile>(\<^bold>\<not> \<^bold>\<not> P) \<^bold>\<leftrightarrow> P"   
   using miffI mnot_mnotE by (presburger)
 lemma Not_eq_iff: "(ts,v \<Turnstile> ((\<^bold>\<not> P) \<^bold>\<leftrightarrow> (\<^bold>\<not>  Q))) = (ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q)"
   by (simp add: mequ_def mnot_def)
-lemma
 
-    "(P \<noteq> Q) = (P = (\<not> Q))"
-    "(P \<or> \<not>P) = True"    "(\<not> P \<or> P) = True"
-    "(x = x) = True"
-  and not_True_eq_False [code]: "(\<not> True) = False"
-  and not_False_eq_True [code]: "(\<not> False) = True"
-  and
-    "(\<not> P) \<noteq> P"  "P \<noteq> (\<not> P)"
-    "(True = P) = P"
-  and eq_True: "(P = True) = P"
-  and "(False = P) = (\<not> P)"
-  and eq_False: "(P = False) = (\<not> P)"
-  and
-    "(True \<longrightarrow> P) = P"  "(False \<longrightarrow> P) = True"
-    "(P \<longrightarrow> True) = True"  "(P \<longrightarrow> P) = True"
-    "(P \<longrightarrow> False) = (\<not> P)"  "(P \<longrightarrow> \<not> P) = (\<not> P)"
-    "(P \<and> True) = P"  "(True \<and> P) = P"
-    "(P \<and> False) = False"  "(False \<and> P) = False"
-    "(P \<and> P) = P"  "(P \<and> (P \<and> Q)) = (P \<and> Q)"
-    "(P \<and> \<not> P) = False"    "(\<not> P \<and> P) = False"
-    "(P \<or> True) = True"  "(True \<or> P) = True"
-    "(P \<or> False) = P"  "(False \<or> P) = P"
-    "(P \<or> P) = P"  "(P \<or> (P \<or> Q)) = (P \<or> Q)" and
-    "(\<forall>x. P) = P"  "(\<exists>x. P) = P"  "\<exists>x. x = t"  "\<exists>x. t = x"
-  and
-    "\<And>P. (\<exists>x. x = t \<and> P x) = P t"
-    "\<And>P. (\<exists>x. t = x \<and> P x) = P t"
-    "\<And>P. (\<forall>x. x = t \<longrightarrow> P x) = P t"
-    "\<And>P. (\<forall>x. t = x \<longrightarrow> P x) = P t"
-    "(\<forall>x. x \<noteq> t) = False"  "(\<forall>x. t \<noteq> x) = False"
-  by (blast, blast, blast, blast, blast, iprover+)
+lemma prop_simps[simp]:
+    "((ts,v \<Turnstile> P) \<noteq> (ts,v \<Turnstile>Q)) == ((ts,v \<Turnstile> P) = (ts,v \<Turnstile>\<^bold>\<not>Q))" 
+    "ts,v \<Turnstile> P \<^bold>\<or> \<^bold>\<not>P == True" 
+    "ts,v \<Turnstile> \<^bold>\<not>P \<^bold>\<or> P == True" 
+    "ts,v \<Turnstile> x \<^bold>= x == True"   
+    "ts,v \<Turnstile> \<^bold>\<not> \<^bold>\<top> == ts,v \<Turnstile>\<^bold>\<bottom>" 
+    "ts,v \<Turnstile>\<^bold>\<not> \<^bold>\<bottom> == ts,v \<Turnstile> \<^bold>\<top>" 
+    "(ts,v \<Turnstile> \<^bold>\<not>P) \<noteq> (ts,v \<Turnstile>P)" 
+    "(ts,v \<Turnstile>  P) \<noteq> (ts,v \<Turnstile>\<^bold>\<not>P)" 
+    "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<leftrightarrow> P) == ts,v \<Turnstile> P"
+    "ts,v \<Turnstile>(P \<^bold>\<leftrightarrow> \<^bold>\<top>) == ts,v \<Turnstile> P"
+    "ts,v \<Turnstile>(\<^bold>\<bottom> \<^bold>\<leftrightarrow> P) == ts,v \<Turnstile> (\<^bold>\<not> P)"
+    "ts,v \<Turnstile>(P \<^bold>\<leftrightarrow> \<^bold>\<bottom>) == ts,v \<Turnstile> (\<^bold>\<not> P)"
+    "ts,v \<Turnstile> (\<^bold>\<top> \<^bold>\<rightarrow> P) == ts,v \<Turnstile> P"  
+    "ts,v \<Turnstile> (\<^bold>\<bottom> \<^bold>\<rightarrow> P) == True"
+    "ts,v \<Turnstile>(P \<^bold>\<rightarrow> \<^bold>\<top>) == True"  
+    "ts,v \<Turnstile>(P \<^bold>\<rightarrow> P) == True"
+    "ts,v \<Turnstile>(P \<^bold>\<rightarrow> \<^bold>\<bottom>) == ts,v \<Turnstile> (\<^bold>\<not> P)"  
+    "ts,v \<Turnstile>(P \<^bold>\<rightarrow> \<^bold>\<not> P) == ts,v \<Turnstile> (\<^bold>\<not> P)"
+    "ts,v \<Turnstile>(P \<^bold>\<and> \<^bold>\<top>) == ts,v \<Turnstile> P"  
+    "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<and> P) == ts,v \<Turnstile> P"
+    "ts,v \<Turnstile>(P \<^bold>\<and> \<^bold>\<bottom>) == False"  
+    "ts,v \<Turnstile>(\<^bold>\<bottom> \<^bold>\<and> P) == False"
+    "ts,v \<Turnstile>(P \<^bold>\<and> P) == ts,v \<Turnstile> P"  
+    "ts,v \<Turnstile>(P \<^bold>\<and> (P \<^bold>\<and> Q)) == ts,v \<Turnstile>(P \<^bold>\<and> Q)"
+    "ts,v \<Turnstile>(P \<^bold>\<and> \<^bold>\<not> P) == False"    
+    "ts,v \<Turnstile>(\<^bold>\<not> P \<^bold>\<and> P) == False"
+    "ts,v \<Turnstile>(P \<^bold>\<or> \<^bold>\<top>) == True"  
+    "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<or> P) == True"
+    "ts,v \<Turnstile>(P \<^bold>\<or> \<^bold>\<bottom>) == ts,v \<Turnstile> P"  
+    "ts,v \<Turnstile>(\<^bold>\<bottom> \<^bold>\<or> P) == ts,v \<Turnstile> P"
+    "ts,v \<Turnstile>(P \<^bold>\<or> P) == ts,v \<Turnstile> P "  
+    "ts,v \<Turnstile>(P \<^bold>\<or> (P \<^bold>\<or> Q)) == ts,v \<Turnstile>(P \<^bold>\<or> Q)"
+  by (simp add: satisfies_def mimp_def mtrue_def mfalse_def mnot_def mand_def mor_def mequ_def meq_def)+
+
+lemma quant_simps[simp]:
+    "ts,v \<Turnstile>(\<^bold>\<forall>x. P) == ts,v \<Turnstile> P"  
+    "ts,v \<Turnstile>(\<^bold>\<exists> x. P) == ts,v \<Turnstile> P"  
+    "ts,v \<Turnstile> \<^bold>\<exists> x. x \<^bold>= t"  
+    "ts,v \<Turnstile> \<^bold>\<exists> x. t \<^bold>= x"
+    "\<And>P. (ts,v \<Turnstile> \<^bold>\<exists> x. x \<^bold>= t \<^bold>\<and> P x) == ts,v \<Turnstile> P t"  
+    "\<And>P. (ts,v \<Turnstile> \<^bold>\<exists> x. t \<^bold>= x \<^bold>\<and> P x) == ts,v \<Turnstile> P t"
+    "\<And>P. (ts,v \<Turnstile> \<^bold>\<forall> x. x \<^bold>= t \<^bold>\<rightarrow> P x) == ts,v \<Turnstile> P t"
+    "\<And>P. (ts,v \<Turnstile> \<^bold>\<forall> x. t \<^bold>= x \<^bold>\<rightarrow> P x) == ts,v \<Turnstile> P t"
+    "ts,v \<Turnstile> (\<^bold>\<forall>x. \<^bold>\<not> x \<^bold>= t) == False"  
+    "ts,v \<Turnstile> (\<^bold>\<forall>x. \<^bold>\<not> t \<^bold>= x) == False" 
+  by (simp add: mand_def meq_def mexistsB_def mexists_def mforallB_def mforall_def mimp_def satisfies_def mnot_def)+
 
 lemma de_Morgan_mdisj: "(ts,v \<Turnstile> \<^bold>\<not> (P \<^bold>\<or> Q)) \<longleftrightarrow> (ts,v \<Turnstile>\<^bold>\<not> P \<^bold>\<and> \<^bold>\<not> Q)" 
   using hmlsl.mor_def hmlsl_axioms mand_def mnot_def by auto
@@ -664,8 +683,8 @@ lemma not_mall: "(ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<forall>x. P x)) \<l
 
 (*lemma mimp_mall :"(ts,v \<Turnstile>( \<^bold>\<forall>x. Px) \<^bold>\<rightarrow> Q) \<longleftrightarrow> (ts,v \<Turnstile> \<^bold>\<exists> x. ( P x \<^bold>\<rightarrow> Q))  "*) 
 
-lemma not_mex: "(ts,v \<Turnstile> \<^bold>\<not> (\<^bold>\<exists> x. P x)) \<longleftrightarrow> (ts,v \<Turnstile>(\<^bold>\<forall>x. \<^bold>\<not> P x))" 
-  by (metis mallI mclassical mexE mexI mexistsB_def mforallB_def mforall_def mnotE  satisfies_def)
+lemma not_mex: "(ts,v \<Turnstile> \<^bold>\<not> (\<^bold>\<exists> x. P x)) == (ts,v \<Turnstile>(\<^bold>\<forall>x. \<^bold>\<not> P x))" 
+  by (simp add: satisfies_def mexistsB_def mforallB_def mforall_def mexists_def mnot_def)
 
 (*lemma mimp_mex: "(ts,v \<Turnstile> ((\<^bold>\<exists> x. P x) \<^bold>\<rightarrow> Q)) \<longleftrightarrow> (ts,v \<Turnstile> \<^bold>\<forall>x.( P x \<^bold>\<rightarrow> Q))" 
   by (metis (mono_tags, lifting) mallE mallI mimpE' mimpI mnotE' mnotI2 not_m ex) 
@@ -1597,7 +1616,7 @@ proof -
   show "ts,v \<Turnstile> free"  
   proof (rule mccontr)
     have no_car: "ts,v \<Turnstile>\<^bold>\<not>( \<^bold>\<exists> c.  (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))"
-      using no_car1 sorry      
+      using no_car1  by (simp add: satisfies_def mnot_def mforall_def mexists_def mforallB_def mexistsB_def)     
     assume "ts,v \<Turnstile> \<^bold>\<not> free"
     hence contra:
       "\<not>(\<forall>c. \<parallel>len v ts c\<parallel> = 0 \<or> restrict v (clm ts) c = \<emptyset> \<and> restrict v (res ts) c = \<emptyset>)"
@@ -1757,7 +1776,14 @@ proof -
   then have "ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>)" 
     by (meson mallE)
   then show "ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<top> \<^bold>\<frown> (re(c)) \<^bold>\<frown> \<^bold>\<top>)"  
-    sorry
+  proof -
+    have "\<not> (ts , v \<Turnstile> \<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>)"
+      using \<open>ts , v \<Turnstile> \<^bold>\<not>\<^bold>\<top> \<^bold>\<frown> (cl(c) \<^bold>\<or> re(c)) \<^bold>\<frown> \<^bold>\<top>\<close> mnotE by blast
+    then have "\<not> (ts , v \<Turnstile> \<^bold>\<top> \<^bold>\<frown> re(c) \<^bold>\<frown> \<^bold>\<top>)"
+      by (meson hchopE hchopI mdisjI2)
+    then show ?thesis
+      by force
+  qed
 qed
 
 
