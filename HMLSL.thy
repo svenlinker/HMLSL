@@ -1796,36 +1796,62 @@ lemma two_clm_width: "ts,v \<Turnstile>cl(c) \<^bold>\<smile> cl(c) \<Longrighta
 lemma two_res_no_car: "ts,v \<Turnstile>re(c) \<^bold>\<smile> re(c) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c. ( cl(c) \<^bold>\<or> re(c)) )" 
   by (metis (no_types, lifting) add_eq_self_zero cl_def mclassical mexE mor_def one_add_one one_neq_zero re_def satisfies_def two_res_width width_eq_def)
 
-(*
-lemma two_lanes_no_car:"\<Turnstile>(\<^bold>\<not> \<^bold>\<omega>= 1) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
-unfolding valid_def  by simp
 
-lemma empty_no_car:"\<Turnstile>( \<^bold>\<l> = 0) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
-unfolding valid_def  by simp
+lemma two_lanes_no_car:"ts,v \<Turnstile>(\<^bold>\<not> \<^bold>\<omega>= 1) \<Longrightarrow> ts,v \<Turnstile>  \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
+  by (metis (no_types, lifting) hmlsl.mclassical hmlsl.mnotE hmlsl_axioms mexE  mor_def satisfies_def width_clm width_res)  
 
-lemma car_one_lane_non_empty: "\<Turnstile>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c))) \<^bold>\<rightarrow> ((\<^bold>\<omega> =1) \<^bold>\<and> (\<^bold>\<l> > 0))"
-unfolding valid_def  by blast
+
+lemma two_lanes_no_car':"ts,v \<Turnstile>(\<^bold>\<not> \<^bold>\<omega>= 1) \<^bold>\<rightarrow> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
+  by (metis (no_types, lifting) hmlsl.mclassical hmlsl.mnotE hmlsl_axioms mexE mimpI mor_def satisfies_def width_clm width_res)  
+
+
+lemma length_contra: 
+  assumes "ts,v \<Turnstile> \<^bold>\<l> = x" 
+  and "ts,v \<Turnstile>  \<^bold>\<l> > x"
+  shows "ts,v \<Turnstile> \<^bold>\<bottom>" 
+proof -
+  from assms have 1:"\<parallel>ext v\<parallel> = x " 
+    by (simp add: length_eq_def satisfies_def)
+  from assms have 2:"\<parallel>ext v\<parallel> > x"
+    by (simp add: length_ge_def satisfies_def)
+  from 1 and 2 show "ts,v \<Turnstile>\<^bold>\<bottom>" by simp
+qed
+
+lemma empty_no_car:"ts,v \<Turnstile>( \<^bold>\<l> = 0) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<not>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))" 
+proof
+  assume 1:"ts,v \<Turnstile> ( \<^bold>\<l> = 0)" and 2:" ts,v \<Turnstile> (\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c)))"
+  then obtain c where "ts,v \<Turnstile> cl(c) \<^bold>\<or> re(c)"  
+    by (meson mexE) 
+  then show "ts,v \<Turnstile> \<^bold>\<bottom> " 
+    using "1" clm_ge_zero length_contra res_ge_zero by auto
+qed
+
+lemma car_one_lane_non_empty: "ts,v \<Turnstile>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c))) \<Longrightarrow> ts,v \<Turnstile> ((\<^bold>\<omega> =1) \<^bold>\<and> (\<^bold>\<l> > 0))"
+  by (metis empty_no_car  length_geq_def length_geq_zero mclassical mconjI mcontext_conjI  mdisjE mnotE  two_lanes_no_car)
+
 
 lemma one_lane_notfree:
-  "\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free) \<^bold>\<rightarrow> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-  unfolding valid_def
-proof (rule allI|rule impI)+
-  fix ts v
-  assume assm:"ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free)"
-  hence not_free:"ts,v \<Turnstile>\<^bold>\<not> free" by blast
+  assumes  "ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<and> (\<^bold>\<not> free)" 
+  shows " ts,v \<Turnstile> ( (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"  
+proof -
+  from assms have not_free:"ts,v \<Turnstile>\<^bold>\<not> free" by auto
   with free_eq_no_cars have 
     "ts,v \<Turnstile>\<^bold>\<not> ((\<^bold>\<l>>0) \<^bold>\<and> (\<^bold>\<omega> = 1) \<^bold>\<and> (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>)))"
-   unfolding valid_def by blast
+    using mnotI2 by auto
   hence "ts,v \<Turnstile> \<^bold>\<not>  (\<^bold>\<forall>c. \<^bold>\<not> (\<^bold>\<top> \<^bold>\<frown>  ( cl(c) \<^bold>\<or> re(c) ) \<^bold>\<frown> \<^bold>\<top>))" 
-    using assm by blast
-  thus "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> )" by blast
+    using assms 
+    by (meson hmlsl.mclassical hmlsl.mconjI hmlsl.mconjunct1 hmlsl.mconjunct2 hmlsl.mnotE hmlsl_axioms)
+  thus "ts,v \<Turnstile>(\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> )" 
+    using  mor_def
+    by ((simp add:  satisfies_def mnot_def mforall_def mexists_def mforallB_def mexistsB_def hchop_def mtrue_def)
+        ;auto)
 qed
 
 lemma one_lane_empty_or_car:
-  "\<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<^bold>\<rightarrow> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
-unfolding valid_def  using one_lane_notfree unfolding valid_def by blast
-end
-*)
+  "ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<Longrightarrow> ts,v \<Turnstile> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
+ using one_lane_notfree 
+  by (metis (full_types) mclassical mconjE mcontext_conjI mdisjI1 mdisjI2)
+
 lemma valid_imp_sat: \<open>\<Turnstile> \<phi> \<Longrightarrow> ts,v \<Turnstile> \<phi>\<close>
   by (simp add: valid_def)
 
