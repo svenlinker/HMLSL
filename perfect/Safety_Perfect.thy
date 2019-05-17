@@ -78,33 +78,44 @@ and we start with an initially safe traffic snapshot, then
 all reachable traffic snapshots are also safe.
 \<close>
     
-theorem safety:"\<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC \<^bold>\<rightarrow> \<^bold>G (\<^bold>\<forall> e. safe e)"
-  unfolding hmlsl.valid_def
-proof (rule allI|rule impI)+
-  fix ts v ts' 
+theorem 
+safety:
+  includes hmlsl.hmlsl_simps hmlsl.dynamic_rules
+  assumes "ts,v \<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC " 
+  shows "ts,v \<Turnstile>\<^bold>G (\<^bold>\<forall> e. safe e)"
+proof (rule hmlsl.globallyI| rule hmlsl.mallI | rule hmlsl.mimpI)+
+  fix ts' 
   fix e c::cars
-  assume assm:"ts,v \<Turnstile> ( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC" 
   assume  abs:"ts \<^bold>\<Rightarrow> ts'"
-  assume nequals: "ts,v \<Turnstile>\<^bold>\<not>(c \<^bold>=e)"
-  from assm have init:"ts,v \<Turnstile> ( \<^bold>\<forall>e. safe e )" by simp
-  from assm have DC :"ts,v \<Turnstile> DC" by simp
-  from assm have LC: "ts,v \<Turnstile> LC" by simp
+  assume nequals: "ts',(move ts ts' v) \<Turnstile>\<^bold>\<not>(c \<^bold>=e)"
+  from assms have init:"ts,v \<Turnstile> ( \<^bold>\<forall>e. safe e )"
+    by (meson local.hmlsl.mconjE)
+  from assms have DC :"ts,v \<Turnstile> DC" 
+    by (meson local.hmlsl.mconjE)   
+  from assms have LC: "ts,v \<Turnstile> LC" 
+        by (meson local.hmlsl.mconjE)
   from abs show "ts',move ts ts' v \<Turnstile>  \<^bold>\<not> \<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle> " 
   proof (induction)
     case (refl) 
-    have "move ts ts v = v" using traffic.move_nothing by simp
-    thus ?case using init traffic.move_nothing nequals  by auto
+    have "move ts ts v = v" 
+      by (simp add: view.move_nothing) 
+    then have "ts, move ts ts v \<Turnstile> ( \<^bold>\<forall>e. safe e )" using init 
+      by presburger
+    with nequals show ?case 
+      by (metis (mono_tags, lifting) local.hmlsl.eq_rigid local.hmlsl.mallE local.hmlsl.mclassical local.hmlsl.mimpE' local.hmlsl.mnotE)
+(*    thus ?case using init view.move_nothing  nequals *) 
   next
     case (evolve ts' ts'' )
     have local_DC:
       "ts',move ts ts' v \<Turnstile> \<^bold>\<forall> c d. \<^bold>\<not>(c \<^bold>= d) \<^bold>\<rightarrow>
                                \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle> \<^bold>\<rightarrow> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(d)\<^bold>\<rangle>"
-      using "evolve.hyps" DC by simp
+      using "evolve.hyps" DC 
+      by fastforce
     show ?case  
     proof 
       assume e_def:" (ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>)"
       from "evolve.IH"  and nequals have 
-        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" by fastforce
+        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" sorry
       hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
         using local_DC by blast
       have move_eq:"move ts' ts'' (move ts ts' v) = move ts ts'' v" 

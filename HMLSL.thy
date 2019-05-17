@@ -622,7 +622,7 @@ lemma not_not: "ts,v \<Turnstile>(\<^bold>\<not> \<^bold>\<not> P) \<^bold>\<lef
 lemma Not_eq_iff: "(ts,v \<Turnstile> ((\<^bold>\<not> P) \<^bold>\<leftrightarrow> (\<^bold>\<not>  Q))) = (ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q)"
   by (simp add: mequ_def mnot_def)
 
-lemma prop_simps[simp]:
+lemma prop_simps:
     "((ts,v \<Turnstile> P) \<noteq> (ts,v \<Turnstile>Q)) == ((ts,v \<Turnstile> P) = (ts,v \<Turnstile>\<^bold>\<not>Q))" 
     "ts,v \<Turnstile> P \<^bold>\<or> \<^bold>\<not>P == True" 
     "ts,v \<Turnstile> \<^bold>\<not>P \<^bold>\<or> P == True" 
@@ -657,7 +657,7 @@ lemma prop_simps[simp]:
     "ts,v \<Turnstile>(P \<^bold>\<or> (P \<^bold>\<or> Q)) == ts,v \<Turnstile>(P \<^bold>\<or> Q)"
   by (simp add: satisfies_def mimp_def mtrue_def mfalse_def mnot_def mand_def mor_def mequ_def meq_def)+
 
-lemma quant_simps[simp]:
+lemma quant_simps:
     "ts,v \<Turnstile>(\<^bold>\<forall>x. P) == ts,v \<Turnstile> P"  
     "ts,v \<Turnstile>(\<^bold>\<exists> x. P) == ts,v \<Turnstile> P"  
     "ts,v \<Turnstile> \<^bold>\<exists> x. x \<^bold>= t"  
@@ -734,6 +734,9 @@ bundle hmlsl_simps =
                       mnot_mnotE[simp]
                       hchop_neg1[simp]
                       hchop_neg2[simp]
+                      prop_simps[simp]
+                      quant_simps[simp]
+                      
 
 lemma hchop_disj_distr_right1:"ts,v \<Turnstile> \<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>) \<Longrightarrow> ts,v \<Turnstile> (\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)" 
   using hchop_def mor_def satisfies_def by auto
