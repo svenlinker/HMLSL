@@ -48,7 +48,8 @@ proof
   then have "ts,u \<Turnstile>re(c)" using 1 
     by (metis local.hmlsl.re_def local.hmlsl.satisfies_def switch_length_stable switch_restrict_stable view.switch_def)
   then show "ts,v \<Turnstile> \<^bold>@d re(c)" 
-    using \<open>v = d > u\<close> view.switch_unique by blast
+    using \<open>v = d > u\<close> view.switch_unique 
+    by (metis local.hmlsl.atI)
 qed
     
 lemma at_res2:"ts,v \<Turnstile>(\<^bold>\<forall>d. \<^bold>@d re(c)) \<Longrightarrow> ts,v \<Turnstile> re(c)" 
@@ -85,7 +86,8 @@ proof
   then have "ts,u \<Turnstile>cl(c)" using 1 
     by (metis local.hmlsl.cl_def local.hmlsl.satisfies_def switch_length_stable switch_restrict_stable view.switch_def)
   then show "ts,v \<Turnstile> \<^bold>@d cl(c)" 
-    using \<open>v = d > u\<close> view.switch_unique by blast
+    using \<open>v = d > u\<close> view.switch_unique 
+    by (metis local.hmlsl.atI)
 qed
     
 lemma at_clm2:"ts,v \<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c)) \<Longrightarrow> ts,v \<Turnstile> cl(c)" 
@@ -183,7 +185,7 @@ qed
 lemma backwards_res_act_somewhere:
   "(ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> \<^bold>\<langle>re(c)\<^bold>\<rangle>) \<longrightarrow> (ts,v \<Turnstile>\<^bold>\<langle> re(c) \<^bold>\<or> cl(c)\<^bold>\<rangle> )"
   using backwards_res_act 
-  by auto 
+  using local.hmlsl.someI local.hmlsl.somewhere_leq by auto
 
 lemma backwards_res_stab:
   "(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
