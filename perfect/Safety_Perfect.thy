@@ -80,7 +80,7 @@ all reachable traffic snapshots are also safe.
     
 theorem 
 safety:
-  includes hmlsl.hmlsl_simps hmlsl.dynamic_rules
+  includes hmlsl.hmlsl_simps hmlsl.dynamic_rules 
   assumes "ts,v \<Turnstile>( \<^bold>\<forall>e. safe e ) \<^bold>\<and> DC \<^bold>\<and> LC " 
   shows "ts,v \<Turnstile>\<^bold>G (\<^bold>\<forall> e. safe e)"
 proof (rule hmlsl.globallyI| rule hmlsl.mallI | rule hmlsl.mimpI)+
@@ -115,17 +115,18 @@ proof (rule hmlsl.globallyI| rule hmlsl.mallI | rule hmlsl.mimpI)+
     proof 
       assume e_def:" (ts'',move ts ts'' v \<Turnstile>  \<^bold>\<langle>re(c) \<^bold>\<and> re(e) \<^bold>\<rangle>)"
       from "evolve.IH"  and nequals have 
-        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" sorry
+        ts'_safe:"ts',move ts ts' v \<Turnstile> \<^bold>\<not>(c \<^bold>= e) \<^bold>\<and> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>" 
+        by (metis local.hmlsl.eq_rigid local.hmlsl.mconjI local.hmlsl.prop_simps(7))
       hence no_coll_after_evol:"ts',move ts ts' v \<Turnstile> \<^bold>\<box>\<^bold>\<tau> \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"
-        using local_DC by blast
+        using local_DC local.hmlsl.mimpE local.hmlsl.mspec hmlsl.mallE sorry
       have move_eq:"move ts' ts'' (move ts ts' v) = move ts ts'' v" 
         using "evolve.hyps" traffic.abstract.evolve traffic.abstract.refl 
           traffic.move_trans 
         by blast
       from no_coll_after_evol and "evolve.hyps" have 
-        "ts'',move ts' ts'' (move ts ts' v) \<Turnstile>  \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"  
-        by blast
-      thus False using e_def using  move_eq by fastforce
+        "ts'',move ts' ts'' (move ts ts' v) \<Turnstile>  \<^bold>\<not>\<^bold>\<langle>re(c) \<^bold>\<and> re(e)\<^bold>\<rangle>"          
+        by (simp add: local.hmlsl.satisfies_def local.hmlsl.time_box_def)
+      thus "ts'',move ts ts'' v \<Turnstile> \<^bold>\<bottom>" using e_def  move_eq local.hmlsl.mnotE by auto
     qed
   next
     case (cr_res ts' ts'')

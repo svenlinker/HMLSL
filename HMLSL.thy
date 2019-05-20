@@ -27,7 +27,7 @@ and a view with a Boolean value.
 \<close>
 type_synonym \<sigma> = " traffic \<Rightarrow> view \<Rightarrow> bool"
 
-locale hmlsl = restriction+sensors
+locale hmlsl = restriction + sensors
 (*  fixes sensors::"cars \<Rightarrow> traffic \<Rightarrow> cars \<Rightarrow> real" 
   assumes sensors_ge:"(sensors e ts c) > 0"  *)
 begin
@@ -235,11 +235,11 @@ lemma mconjE:
   using mand_def satisfies_def 
   using major minor by auto
 
-lemma mcontext_conjI:
+(*lemma mcontext_conjI:
   assumes "ts,v \<Turnstile>P" "ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile>Q"
   shows "ts,v \<Turnstile> P \<^bold>\<and> Q"
   using mand_def satisfies_def assms(1) assms(2) by auto
-
+*)
 
 text\<open>Negation\<close>
 
@@ -453,9 +453,19 @@ lemma atE:
   where "v =c> u" and "ts,u \<Turnstile> P" 
   by (metis assms at_def satisfies_def view.switch_exists)
 
+lemma atE': "ts,v \<Turnstile> \<^bold>@c P \<Longrightarrow> v=c>u \<Longrightarrow> ts,u \<Turnstile> P" 
+  by (metis atE view.switch_unique)
+
 lemma atI:
   "\<lbrakk>\<And>u. v =c> u \<Longrightarrow> ts,u \<Turnstile> P\<rbrakk> \<Longrightarrow> ts,v \<Turnstile> \<^bold>@c P" 
   by (simp add: at_def satisfies_def)
+
+lemma atI':
+  assumes "v=c>u" and " ts,u \<Turnstile> P"
+  shows " ts,v \<Turnstile> \<^bold>@c P"  
+  using assms atI view.switch_unique by blast
+
+
 
 
 subsubsection\<open>Global Invariants\<close>
@@ -565,7 +575,7 @@ declare miffCE [elim!]
 bundle chop_rules = hchopE [elim!] vchopE [elim!]   hchopI [intro!] vchopI [intro!]
 bundle somewhere_rules =    someE [elim!]    someI [intro!]
 bundle spatial_rules =  hchopE [elim!] vchopE [elim!]   hchopI [intro!] vchopI [intro!]  someE [elim!]    someI [intro!]
-   atE [elim!] atI [intro!]
+   atE [elim!] atI [intro!] atE'[elim] atI'[intro]
 
 bundle dynamic_rules =
    globallyE [elim!]
@@ -602,24 +612,25 @@ lemma miff_mallI:
   shows "(ts,v \<Turnstile> \<^bold>\<forall> x. P x) = (ts,v \<Turnstile>\<^bold>\<forall> x. Q x)"
   using assms by blast
 
-declare                       mimp_cong[cong]
-                      miff_mexI[cong] 
-                      miff_mallI[cong]
-
+(*declare                       mimp_cong[cong]
+ and                     miff_mexI[cong] 
+    and                  miff_mallI[cong]
+*)
 
 
 
 
 subsubsection\<open>HMLSL Simplifier Rules\<close>
 
-lemma iff_atomize[atomize]:"((ts,v \<Turnstile>P) = (ts,v \<Turnstile>Q)) \<equiv> (ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q)" 
+(*lemma iff_atomize[atomize]:"((ts,v \<Turnstile>P) = (ts,v \<Turnstile>Q)) \<equiv> (ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q)" 
   by (simp add: mequ_def satisfies_def)
+*)
 
 print_facts
 
 lemma not_not: "ts,v \<Turnstile>(\<^bold>\<not> \<^bold>\<not> P) \<^bold>\<leftrightarrow> P"   
   using miffI mnot_mnotE by (presburger)
-lemma Not_eq_iff: "(ts,v \<Turnstile> ((\<^bold>\<not> P) \<^bold>\<leftrightarrow> (\<^bold>\<not>  Q))) = (ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q)"
+lemma not_eq_iff: "(ts,v \<Turnstile> ((\<^bold>\<not> P) \<^bold>\<leftrightarrow> (\<^bold>\<not>  Q))) = (ts,v \<Turnstile>P \<^bold>\<leftrightarrow> Q)"
   by (simp add: mequ_def mnot_def)
 
 lemma prop_simps:
@@ -736,7 +747,10 @@ bundle hmlsl_simps =
                       hchop_neg2[simp]
                       prop_simps[simp]
                       quant_simps[simp]
-                      
+
+
+lemma t:"(ts,v \<Turnstile> P \<Longrightarrow> ts,v \<Turnstile> Q) \<Longrightarrow> (ts,v \<Turnstile> Q \<Longrightarrow> ts,v \<Turnstile> P) \<Longrightarrow> (ts,v \<Turnstile>P) = (ts,v \<Turnstile> Q)" 
+  by blast
 
 lemma hchop_disj_distr_right1:"ts,v \<Turnstile> \<phi> \<^bold>\<frown> (\<psi> \<^bold>\<or> \<chi>) \<Longrightarrow> ts,v \<Turnstile> (\<phi> \<^bold>\<frown> \<psi>)\<^bold>\<or>(\<phi> \<^bold>\<frown> \<chi>)" 
   using hchop_def mor_def satisfies_def by auto
@@ -941,7 +955,8 @@ lemma globally_all_iff:"(ts,v \<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>
   by (metis hmlsl.globallyI hmlsl_axioms mallI mspec)
 
 lemma globally_all_iff':"ts,v\<Turnstile> (\<^bold>G(\<^bold>\<forall>c. \<phi>)) \<^bold>\<leftrightarrow> (\<^bold>\<forall>c.( \<^bold>G \<phi>))" 
-  by (metis globally_all_iff )
+  using globally_all_iff by auto
+(*  by (metis globally_all_iff )*)
 
 lemma globally_refl:" ts,v \<Turnstile>(\<^bold>G \<phi>) \<Longrightarrow> ts,v \<Turnstile> \<phi>" 
   using globallyE abstract.refl 
@@ -1830,7 +1845,7 @@ proof
 qed
 
 lemma car_one_lane_non_empty: "ts,v \<Turnstile>(\<^bold>\<exists> c.(cl(c) \<^bold>\<or> re(c))) \<Longrightarrow> ts,v \<Turnstile> ((\<^bold>\<omega> =1) \<^bold>\<and> (\<^bold>\<l> > 0))"
-  by (metis empty_no_car  length_geq_def length_geq_zero mclassical mconjI mcontext_conjI  mdisjE mnotE  two_lanes_no_car)
+  by (metis empty_no_car  length_geq_def length_geq_zero mclassical mconjI mconjI  mdisjE mnotE  two_lanes_no_car)
 
 
 lemma one_lane_notfree:
@@ -1853,10 +1868,11 @@ qed
 lemma one_lane_empty_or_car:
   "ts,v \<Turnstile>(\<^bold>\<omega> =1) \<^bold>\<and>(\<^bold>\<l>> 0) \<Longrightarrow> ts,v \<Turnstile> (free \<^bold>\<or> (\<^bold>\<top> \<^bold>\<frown> (\<^bold>\<exists> c. (re(c) \<^bold>\<or> cl(c))) \<^bold>\<frown> \<^bold>\<top> ))"
  using one_lane_notfree 
-  by (metis (full_types) mclassical mconjE mcontext_conjI mdisjI1 mdisjI2)
+  by (metis (full_types) mclassical mconjE mconjI mdisjI1 mdisjI2)
 
 lemma valid_imp_sat: \<open>\<Turnstile> \<phi> \<Longrightarrow> ts,v \<Turnstile> \<phi>\<close>
   by (simp add: valid_def)
+
 
 end
 end

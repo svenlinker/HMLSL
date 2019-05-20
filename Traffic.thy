@@ -470,21 +470,21 @@ This fits to the level of abstraction by hiding the dynamics completely
 inside of the model.
 \<close>
 
-inductive evolve::"traffic \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<leadsto> _")
+inductive evolve::"traffic \<Rightarrow> traffic \<Rightarrow> bool" ("_ \<^bold>\<leadsto> _") for ts
 where refl : "ts \<^bold>\<leadsto> ts" |
- change: "\<exists>c. \<exists>f. (ts \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts'' \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
- drive:  "\<exists>x. x \<ge> 0 \<and>  ( ts \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts') \<Longrightarrow> ts' \<^bold>\<leadsto> ts''    \<Longrightarrow> ts \<^bold>\<leadsto> ts''" 
+ change: "ts \<^bold>\<leadsto> ts' \<Longrightarrow> \<exists>c. \<exists>f. (ts' \<^bold>\<midarrow>dyn(c,f)\<^bold>\<rightarrow>ts'') \<Longrightarrow> ts \<^bold>\<leadsto> ts''" |
+ drive:  "ts \<^bold>\<leadsto> ts'    \<Longrightarrow> \<exists>x. x \<ge> 0 \<and>  ( ts' \<^bold>\<midarrow>x\<^bold>\<rightarrow> ts'') \<Longrightarrow> ts \<^bold>\<leadsto> ts''" 
 
-lemma evolve_trans:"(ts0 \<^bold>\<leadsto> ts1) \<Longrightarrow> (ts1 \<^bold>\<leadsto> ts2) \<Longrightarrow> (ts0 \<^bold>\<leadsto> ts2)"
+lemma evolve_trans:"(ts1 \<^bold>\<leadsto> ts2) \<Longrightarrow> (ts0 \<^bold>\<leadsto> ts1) \<Longrightarrow> (ts0 \<^bold>\<leadsto> ts2)"
 proof (induction rule:evolve.induct)
-  case (refl ts)
+  case (refl)
   then show ?case by simp
 next
-  case (drive ts ts' ts'')
-  then show ?case by (metis evolve.drive)
+  case (drive ts' ts'')
+  then show ?case using evolve.drive by blast
 next
-  case (change ts ts' ts'')
-  then show ?case by (metis evolve.change)
+  case (change ts' ts'')
+  then show ?case using evolve.change by blast
 qed
 
 text \<open>
@@ -493,7 +493,7 @@ A traffic snapshot \(ts^\prime\) is reachable from \(ts\) via an abstract transi
 if there is an arbitrary sequence of transitions from \(ts\) to \(ts^\prime\).
 \<close>
  
-inductive abstract::"traffic \<Rightarrow> traffic \<Rightarrow> bool"  ("_ \<^bold>\<Rightarrow> _") for ts
+inductive abstract::"traffic \<Rightarrow> traffic \<Rightarrow> bool"  ("_ \<^bold>\<Rightarrow> _") for ts 
 where refl: "(ts \<^bold>\<Rightarrow> ts)" |
   evolve:"  ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> ts' \<^bold>\<leadsto> ts''   \<Longrightarrow> ts \<^bold>\<Rightarrow> ts''" |
   cr_clm:" ts \<^bold>\<Rightarrow> ts' \<Longrightarrow>\<exists>c. \<exists> n.  (ts' \<^bold>\<midarrow>c(c,n)\<^bold>\<rightarrow> ts'')     \<Longrightarrow> ts \<^bold>\<Rightarrow> ts''" |
@@ -501,15 +501,15 @@ where refl: "(ts \<^bold>\<Rightarrow> ts)" |
   cr_res:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c.  (ts' \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" |
   wd_res:"ts \<^bold>\<Rightarrow> ts' \<Longrightarrow> \<exists>c. \<exists> n.  (ts' \<^bold>\<midarrow>wdr(c,n)\<^bold>\<rightarrow> ts'') \<Longrightarrow>  ts \<^bold>\<Rightarrow> ts''" 
   
-  
+print_facts  
 lemma abs_trans:" (ts1 \<^bold>\<Rightarrow> ts2) \<Longrightarrow>(ts0 \<^bold>\<Rightarrow> ts1) \<Longrightarrow> (ts0 \<^bold>\<Rightarrow> ts2)"  
-proof (induction  rule:abstract.induct    )
-  case refl
+proof (induction  rule:abstract.induct   )
+case refl
   then show ?case by simp
 next
   case (evolve ts' ts'')
   then show ?case 
-    using traffic.evolve by blast  
+    using abstract.intros by blast  
 next
   case (cr_clm ts' ts'')
   then show ?case 
@@ -594,99 +594,91 @@ qed
 declare [[show_types]]
 
 lemma always_create_res:"\<exists>ts'. (ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')"  
-proof -
-  fix ts
-  show " \<exists>ts'. (ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts')"
-  proof (cases "clm ts c = \<emptyset>")
-    case True
-    obtain ts' where ts'_def:"ts' = ts" by simp
-    then have "ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts'" 
-      using create_reservation_def True fun_upd_triv 
-      by auto
-    thus ?thesis ..
-  next
-    case False
-    obtain ts1 :: snapshot where ts1_def:"ts1 = Rep_traffic ts" by blast
-    then have 1:"sane ts1" 
-      using Rep_traffic by blast
-    obtain ts' where ts'_def : "ts' = \<lparr> snapshot.pos = snapshot.pos ts1, 
-                        snapshot.res = (snapshot.res ts1)(c:=((snapshot.res ts1 c)\<squnion>(snapshot.clm ts1 c) )),
-                        snapshot.clm = (snapshot.clm ts1)(c:=\<emptyset>),
-                                snapshot.dyn = (snapshot.dyn ts1), 
-                                snapshot.physical_size =(snapshot.physical_size ts1), 
-                                snapshot.braking_distance =(snapshot.braking_distance ts1)
-                         \<rparr>" by blast
-    have "snapshot.clm ts' c = \<emptyset>" using ts'_def  by simp
-    have disj:"\<forall>c. snapshot.res ts' c \<sqinter> snapshot.clm ts' c = \<emptyset>" using 1 
-      by (simp add: inter_empty1 sane_def ts'_def)
-    have ps_ge_zero: "(\<forall>c . snapshot.physical_size ts' c > 0)" 
-      using ts'_def sane_def 1 by simp
-    have sd_ge_zero: "(\<forall>c . snapshot.braking_distance ts' c > 0)" 
-      using ts'_def sane_def 1 by simp
-    have re_geq_one:"\<forall>d. |snapshot.res ts' d| \<ge> 1" 
-    proof 
-      fix d
-      show " |snapshot.res ts' d| \<ge> 1"
-      proof (cases "c = d")
-        case True
-        then have "snapshot.res ts' d = res ts d \<squnion> clm ts c" 
-          by (simp add: ts1_def traffic.clm.rep_eq traffic.res.rep_eq ts'_def) 
-        then have "res ts d \<sqsubseteq> snapshot.res ts' d" by simp
-        then show ?thesis using sane_def 
-          by (metis bot.extremum_unique card_non_empty_geq_one traffic.res_non_empty)
-      next
-        case False
-        then show ?thesis 
-          using "1" sane_def ts'_def by auto
-      qed
+proof (cases "clm ts c = \<emptyset>")
+  case True
+  obtain ts' where ts'_def:"ts' = ts" by simp
+  then have "ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> ts'" 
+    using create_reservation_def True fun_upd_triv by auto
+  thus ?thesis ..
+next
+  case False
+  obtain ts1 :: snapshot where ts1_def:"ts1 = Rep_traffic ts" by blast
+  then have 1:"sane ts1" using Rep_traffic by blast
+  obtain ts' where ts'_def : "ts' = \<lparr> snapshot.pos = snapshot.pos ts1, 
+                          snapshot.res = (snapshot.res ts1)(c:=((snapshot.res ts1 c)\<squnion>(snapshot.clm ts1 c) )),
+                          snapshot.clm = (snapshot.clm ts1)(c:=\<emptyset>),
+                                  snapshot.dyn = (snapshot.dyn ts1), 
+                                  snapshot.physical_size =(snapshot.physical_size ts1), 
+                                  snapshot.braking_distance =(snapshot.braking_distance ts1)
+                           \<rparr>" by blast
+  have "snapshot.clm ts' c = \<emptyset>" using ts'_def  by simp
+  have disj:"\<forall>c. snapshot.res ts' c \<sqinter> snapshot.clm ts' c = \<emptyset>" using 1 
+    by (simp add: inter_empty1 sane_def ts'_def)
+  have ps_ge_zero: "(\<forall>c . snapshot.physical_size ts' c > 0)" 
+    using ts'_def sane_def 1 by simp
+  have sd_ge_zero: "(\<forall>c . snapshot.braking_distance ts' c > 0)" 
+    using ts'_def sane_def 1 by simp
+  have re_geq_one:"\<forall>d. |snapshot.res ts' d| \<ge> 1" 
+  proof 
+    fix d
+    show " |snapshot.res ts' d| \<ge> 1"
+    proof (cases "c = d")
+      case True
+      then have "snapshot.res ts' d = res ts d \<squnion> clm ts c" 
+        by (simp add: ts1_def traffic.clm.rep_eq traffic.res.rep_eq ts'_def) 
+      then have "res ts d \<sqsubseteq> snapshot.res ts' d" by simp
+      then show ?thesis using sane_def 
+        by (metis bot.extremum_unique card_non_empty_geq_one traffic.res_non_empty)
+    next
+      case False
+      then show ?thesis using "1" sane_def ts'_def by auto
     qed
-    have re_leq_two:"\<forall>c. |(snapshot.res ts') c| \<le> 2" using ts'_def sane_def 1 clmNextRes ts1_def 
-      using card_un_add by auto
-    have cl_leq_one:"\<forall>c. |(snapshot.clm ts') c| \<le> 1" 
-      using sane_def 1 nat_int.card_empty_zero ts'_def by auto
-    have add_leq_two:"\<forall>c . |snapshot.res ts' c| + |snapshot.clm ts' c| \<le> 2" 
-      by (metis "1" add.right_neutral card_empty_zero fun_upd_apply re_leq_two sane_def select_convs(2) simps(3) ts'_def) 
-   
-    have clNextRe :
-      "\<forall>c. (snapshot.clm ts' c) \<noteq> \<emptyset> \<longrightarrow> 
-        (\<exists> n.  n \<^bold>\<in> (snapshot.res ts' c) \<squnion> (snapshot.clm ts' c) \<and> (n+1) \<^bold>\<in> (snapshot.res ts' c) \<squnion> (snapshot.clm ts' c))"
-      using sane_def 1 ts'_def 
-      using traffic.clm.rep_eq traffic.clmNextRes traffic.res.rep_eq ts1_def by auto
-    have cont1: "\<forall>c. continuous (snapshot.res ts' c)" 
-    proof 
-      fix d
-      show "continuous (snapshot.res ts' d)"
-      proof (cases "c = d")
-        case False
-        then show ?thesis using sane_def ts'_def 
-          using "1" by auto
-      next
-        case True
-        then have "continuous (res ts c \<squnion> clm ts c)" 
-          by (metis "1"    nchop_cont nchop_def sane_def sup_bot.left_neutral sup_commute traffic.clm.rep_eq traffic.clm_consec_res  traffic.res.rep_eq  ts1_def) 
-        then show ?thesis using sane_def ts'_def 
-          by (simp add: True traffic.clm.rep_eq traffic.res.rep_eq ts1_def)
-      qed
+  qed
+  have re_leq_two:"\<forall>c. |(snapshot.res ts') c| \<le> 2" using ts'_def sane_def 1 clmNextRes ts1_def 
+   using card_un_add by auto
+  have cl_leq_one:"\<forall>c. |(snapshot.clm ts') c| \<le> 1" 
+    using sane_def 1 nat_int.card_empty_zero ts'_def by auto
+  have add_leq_two:"\<forall>c . |snapshot.res ts' c| + |snapshot.clm ts' c| \<le> 2" 
+    by (metis "1" add.right_neutral card_empty_zero fun_upd_apply re_leq_two sane_def select_convs(2) simps(3) ts'_def)   
+  have clNextRe :
+    "\<forall>c. (snapshot.clm ts' c) \<noteq> \<emptyset> \<longrightarrow> 
+      (\<exists> n.  n \<^bold>\<in> (snapshot.res ts' c) \<squnion> (snapshot.clm ts' c) \<and> (n+1) \<^bold>\<in> (snapshot.res ts' c) \<squnion> (snapshot.clm ts' c))"
+    using sane_def 1 ts'_def traffic.clm.rep_eq traffic.clmNextRes traffic.res.rep_eq ts1_def by auto
+  have cont1: "\<forall>c. continuous (snapshot.res ts' c)" 
+  proof 
+    fix d
+    show "continuous (snapshot.res ts' d)"
+    proof (cases "c = d")
+      case False
+      then show ?thesis using sane_def ts'_def 
+        using "1" by auto
+    next
+      case True
+      then have "continuous (res ts c \<squnion> clm ts c)" 
+        by (metis "1"    nchop_cont nchop_def sane_def sup_bot.left_neutral sup_commute traffic.clm.rep_eq traffic.clm_consec_res  traffic.res.rep_eq  ts1_def) 
+      then show ?thesis using sane_def ts'_def 
+        by (simp add: True traffic.clm.rep_eq traffic.res.rep_eq ts1_def)
     qed
-    have cont2: "\<forall>c. continuous (snapshot.clm ts' c)" 
-      using "1" empty_continuous sane_def ts'_def by auto
-    then have "sane ts'" using 1 
-      using add_leq_two cl_leq_one disj re_geq_one re_leq_two sane_def ts'_def cont1 cont2 
-      by (simp add: re_leq_two)
-    then have "ts' \<in> {ts. sane ts}" by blast
-    then have "ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> Abs_traffic ts'" 
-    proof -
-      obtain tt :: "snapshot \<Rightarrow> traffic" where
+  qed
+  have cont2: "\<forall>c. continuous (snapshot.clm ts' c)" 
+    using "1" empty_continuous sane_def ts'_def by auto
+  then have "sane ts'" using 1 
+    using add_leq_two cl_leq_one disj re_geq_one re_leq_two sane_def ts'_def cont1 cont2 
+    by (simp add: re_leq_two)
+  then have "ts' \<in> {ts. sane ts}" by blast
+  then have "ts \<^bold>\<midarrow>r(c)\<^bold>\<rightarrow> Abs_traffic ts'" 
+  proof -
+    obtain tt :: "snapshot \<Rightarrow> traffic" where
     f1: "\<lparr>snapshot.pos = snapshot.pos ts1, res = (snapshot.res ts1) (c := snapshot.res ts1 c \<squnion> snapshot.clm ts1 c), clm = (snapshot.clm ts1)(c := bot), dyn = snapshot.dyn ts1, physical_size = snapshot.physical_size ts1, braking_distance = snapshot.braking_distance ts1\<rparr> = Rep_traffic (tt \<lparr>snapshot.pos = snapshot.pos ts1, res = (snapshot.res ts1) (c := snapshot.res ts1 c \<squnion> snapshot.clm ts1 c), clm = (snapshot.clm ts1)(c := bot), dyn = snapshot.dyn ts1, physical_size = snapshot.physical_size ts1, braking_distance = snapshot.braking_distance ts1\<rparr>)"
-    by (metis (full_types) Rep_traffic_cases \<open>(ts'::snapshot) \<in> {ts::snapshot. sane ts}\<close> ts'_def)
-  then have "Abs_traffic ts' = tt \<lparr>snapshot.pos = snapshot.pos ts1, res = (snapshot.res ts1) (c := snapshot.res ts1 c \<squnion> snapshot.clm ts1 c), clm = (snapshot.clm ts1)(c := bot), dyn = snapshot.dyn ts1, physical_size = snapshot.physical_size ts1, braking_distance = snapshot.braking_distance ts1\<rparr>"
-    by (metis (no_types) Rep_traffic_inverse ts'_def)
-  then show ?thesis
-    using f1 by (simp add: ts1_def traffic.braking_distance.rep_eq traffic.clm.rep_eq traffic.create_reservation_def traffic.dyn.rep_eq traffic.physical_size.rep_eq traffic.pos.rep_eq traffic.res.rep_eq)
+      by (metis (full_types) Rep_traffic_cases \<open>(ts'::snapshot) \<in> {ts::snapshot. sane ts}\<close> ts'_def)
+    then have "Abs_traffic ts' = tt \<lparr>snapshot.pos = snapshot.pos ts1, res = (snapshot.res ts1) (c := snapshot.res ts1 c \<squnion> snapshot.clm ts1 c), clm = (snapshot.clm ts1)(c := bot), dyn = snapshot.dyn ts1, physical_size = snapshot.physical_size ts1, braking_distance = snapshot.braking_distance ts1\<rparr>"
+      by (metis (no_types) Rep_traffic_inverse ts'_def)
+    then show ?thesis
+      using f1 by (simp add: ts1_def traffic.braking_distance.rep_eq traffic.clm.rep_eq traffic.create_reservation_def traffic.dyn.rep_eq traffic.physical_size.rep_eq traffic.pos.rep_eq traffic.res.rep_eq)
   qed
-    then show ?thesis by blast
-  qed
+  then show ?thesis by blast
 qed
+
 
 lemma create_clm_eq_res:"(ts \<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow> ts')  \<longrightarrow> res ts c = res ts' c "
   using create_claim_def by auto

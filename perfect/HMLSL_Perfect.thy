@@ -38,29 +38,33 @@ text \<open>
 Hence we can prove several lemmas on the relation between the hybrid modality
 and the spatial atoms.
 \<close>
-  
-lemma at_res1:"ts, v \<Turnstile>(re(c)) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<forall>d. \<^bold>@d re(c))"  
+print_induct_rules
+print_claset
+print_rules
+
+lemma at_res1:
+  includes hmlsl.spatial_rules 
+  shows "ts, v \<Turnstile>(re(c)) \<Longrightarrow> ts,v \<Turnstile> (\<^bold>\<forall>d. \<^bold>@d re(c))"  
 proof
   fix d
   assume 1:"ts,v \<Turnstile> re(c)"
   obtain u where "v=d>u" 
     using view.switch_exists by blast
-  then have "ts,u \<Turnstile>re(c)" using 1 
+  then have "ts,u \<Turnstile>re(c)" using 1  
     by (metis local.hmlsl.re_def local.hmlsl.satisfies_def switch_length_stable switch_restrict_stable view.switch_def)
   then show "ts,v \<Turnstile> \<^bold>@d re(c)" 
-    using \<open>v = d > u\<close> view.switch_unique 
-    by (metis local.hmlsl.atI)
+    using \<open>v = d > u\<close>  using hmlsl.atI' by (metis)
 qed
     
 lemma at_res2:"ts,v \<Turnstile>(\<^bold>\<forall>d. \<^bold>@d re(c)) \<Longrightarrow> ts,v \<Turnstile> re(c)" 
- using view.switch_refl 
-  by (metis local.hmlsl.at_def local.hmlsl.mforallB_def local.hmlsl.mforall_def local.hmlsl.satisfies_def)
+ using view.switch_refl local.hmlsl.atE' by blast
     
-lemma at_res:"(ts,v \<Turnstile>re(c)) = (ts,v \<Turnstile> \<^bold>\<forall>d. \<^bold>@d re(c))"
-unfolding hmlsl.valid_def hmlsl.satisfies_def using at_res1 at_res2 unfolding hmlsl.valid_def hmlsl.satisfies_def by blast
+lemma at_res:"(ts,v \<Turnstile>re(c)) = (ts,v \<Turnstile> \<^bold>\<forall>d. \<^bold>@d re(c))" 
+  using at_res1 at_res2 by blast
     
 lemma at_res_inst:"ts,v \<Turnstile> (\<^bold>@d re(c)) \<Longrightarrow> ts,v \<Turnstile> re(c)" 
-  by (metis local.hmlsl.atE local.hmlsl.re_def local.hmlsl.satisfies_def switch_length_stable switch_restrict_stable view.switch_def)
+  using at_res1 switch_length_stable switch_restrict_stable  
+  by (meson local.hmlsl.atE' local.hmlsl.mallE view.switch_exists view.switch_symm) 
 (*proof -
   {
   fix ts v
@@ -91,14 +95,14 @@ proof
 qed
     
 lemma at_clm2:"ts,v \<Turnstile>(\<^bold>\<forall>d. \<^bold>@d cl(c)) \<Longrightarrow> ts,v \<Turnstile> cl(c)" 
- using view.switch_refl 
-  by (metis local.hmlsl.at_def local.hmlsl.mforallB_def local.hmlsl.mforall_def local.hmlsl.satisfies_def)
+ using view.switch_refl local.hmlsl.atE' by blast
   
-lemma at_clm:"(ts,v \<Turnstile>cl(c)) = (ts,v \<Turnstile> \<^bold>\<forall>d. \<^bold>@d cl(c))"
-  using at_clm1 at_clm2 unfolding hmlsl.valid_def hmlsl.satisfies_def hmlsl.at_def by blast
+lemma at_clm:"(ts,v \<Turnstile>cl(c)) = (ts,v \<Turnstile> \<^bold>\<forall>d. \<^bold>@d cl(c))" 
+  using at_clm1 at_clm2 by blast
     
 lemma at_clm_inst:"ts,v \<Turnstile> (\<^bold>@d cl(c)) \<Longrightarrow> ts,v \<Turnstile>cl(c)" 
-  by (metis local.hmlsl.atE local.hmlsl.cl_def local.hmlsl.satisfies_def switch_length_stable switch_restrict_stable view.switch_def)
+using at_clm1 switch_length_stable switch_restrict_stable  
+  by (meson local.hmlsl.atE' local.hmlsl.mallE view.switch_exists view.switch_symm) 
 (*proof - 
   {
   fix ts v
@@ -127,7 +131,7 @@ during spatial transitions.
 \<close>
 
 lemma forwards_res_act:
- "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts,v \<Turnstile> cl(c)) \<longrightarrow> (ts',v \<Turnstile> re(c))"
+ "(ts \<^bold>\<midarrow>r(c) \<^bold>\<rightarrow> ts') \<and> (ts,v \<Turnstile> cl(c)) \<longrightarrow> (ts',v \<Turnstile> re(c))" 
   unfolding hmlsl.satisfies_def hmlsl.re_def hmlsl.cl_def 
   by (metis create_reservation_restrict_union inf_sup_aci(5) perfect_sensors.create_reservation_length_stable restriction.restrict_view sup.absorb_iff1)
 
@@ -188,18 +192,18 @@ lemma backwards_res_act_somewhere:
   using local.hmlsl.someI local.hmlsl.somewhere_leq by auto
 
 lemma backwards_res_stab:
-  "(ts \<^bold>\<midarrow>r(d) \<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
+  "(ts \<^bold>\<midarrow>r(d)\<^bold>\<rightarrow> ts') \<and>  (d \<noteq>c) \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
   using perfect_sensors.create_reservation_length_stable restriction.restrict_def'
     traffic.create_res_subseteq1_neq  unfolding hmlsl.satisfies_def hmlsl.re_def
   by auto
   
 lemma backwards_c_res_stab:
-  "(ts \<^bold>\<midarrow>c(d,n) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
+  "(ts \<^bold>\<midarrow>c(d,n)\<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
   using create_claim_length_stable traffic.create_clm_eq_res unfolding hmlsl.satisfies_def hmlsl.re_def 
   by (metis (mono_tags, lifting) traffic.create_claim_def) 
     
 lemma backwards_wdc_res_stab:
-  "(ts \<^bold>\<midarrow>wdc(d) \<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
+  "(ts \<^bold>\<midarrow>wdc(d)\<^bold>\<rightarrow> ts') \<and> (ts',v \<Turnstile> re(c)) \<longrightarrow> (ts,v \<Turnstile> re(c))"
   using withdraw_claim_length_stable traffic.withdraw_clm_eq_res unfolding hmlsl.satisfies_def hmlsl.re_def 
   by (metis (mono_tags, lifting) traffic.withdraw_claim_def) 
     
@@ -214,8 +218,10 @@ crucial in the manual safety proof \cite {Hilscher2011}.
 \<close>
 
 
-lemma reservation1: "ts,v \<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<box>r(c) re(c)"  
-  using hmlsl_perfect.forwards_res_act hmlsl_perfect.forwards_res_stab local.hmlsl.res_box_def local.hmlsl.satisfies_def by fastforce
+lemma reservation1: 
+  includes hmlsl.dynamic_rules
+  shows "ts,v \<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<Longrightarrow> ts,v \<Turnstile> \<^bold>\<box>r(c) re(c)"  
+  using hmlsl_perfect.forwards_res_act hmlsl_perfect.forwards_res_stab by blast
 (*  using hmlsl_perfect.forwards_res_act hmlsl_perfect.forwards_res_stab local.hmlsl.satisfies_def local.hmlsl.valid_def by auto*)
 (*proof -
   {
@@ -242,12 +248,17 @@ lemma reservation1: "ts,v \<Turnstile>(re(c) \<^bold>\<or> cl(c)) \<Longrightarr
 qed
 *)
 
-lemma reservation2: "ts,v \<Turnstile>(\<^bold>\<box>r(c) re(c)) \<Longrightarrow> ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))" 
-  by (metis always_create_res hmlsl_perfect.backwards_res_act local.hmlsl.res_box_def local.hmlsl.satisfies_def)
+lemma reservation2: 
+  includes hmlsl.dynamic_rules 
+  shows "ts,v \<Turnstile>(\<^bold>\<box>r(c) re(c)) \<Longrightarrow> ts,v \<Turnstile> (re(c) \<^bold>\<or> cl(c))"
+  using backwards_res_act backwards_res_stab always_create_res 
+  by (meson local.hmlsl.crResE)
+(*  by (metis always_create_res hmlsl_perfect.backwards_res_act local.hmlsl.res_box_def local.hmlsl.satisfies_def)*)
 (*  using backwards_res_act traffic.always_create_res unfolding hmlsl.valid_def hmlsl.satisfies_def by blast*)
-    
-lemma reservation:"(ts,v \<Turnstile>\<^bold>\<box>r(c) re(c)) = (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))"
- using reservation1 reservation2 unfolding hmlsl.valid_def unfolding hmlsl.valid_def hmlsl.satisfies_def by blast
+
+lemma reservation:"(ts,v \<Turnstile>\<^bold>\<box>r(c) re(c)) = (ts,v \<Turnstile> re(c) \<^bold>\<or> cl(c))" 
+  using reservation1 reservation2  by iprover
+  (*unfolding hmlsl.valid_def unfolding hmlsl.valid_def hmlsl.satisfies_def by blast*)
 end
 end
   
